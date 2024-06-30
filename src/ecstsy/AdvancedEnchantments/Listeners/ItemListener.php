@@ -28,7 +28,7 @@ class ItemListener implements Listener {
         }
     }
 
-    // TODO: recode everything below, pulled from my private plugin, wont work intendedly yet
+    // TODO: recode ALL Methods below, pulled from my private plugin, wont work intendedly yet
     
     public function onDropScroll(InventoryTransactionEvent $event): void
     {
