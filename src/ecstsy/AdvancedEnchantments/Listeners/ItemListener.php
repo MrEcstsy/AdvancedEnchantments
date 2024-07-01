@@ -2,12 +2,14 @@
 
 namespace ecstsy\AdvancedEnchantments\Listeners;
 
+use ecstsy\AdvancedEnchantments\Loader;
 use ecstsy\AdvancedEnchantments\Utils\Utils;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\inventory\transaction\action\SlotChangeAction;
+use pocketmine\inventory\transaction\InventoryTransaction;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\enchantment\StringToEnchantmentParser;
 use pocketmine\item\Item;
@@ -15,9 +17,16 @@ use pocketmine\item\ItemTypeIds;
 use pocketmine\item\StringToItemParser;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\Player;
+use pocketmine\utils\Config;
+use pocketmine\world\sound\AnvilFallSound;
 use pocketmine\world\sound\XpLevelUpSound;
+use pocketmine\utils\TextFormat as C;
 
 class ItemListener implements Listener {
+
+    private array $scrollItems;
+
+    private array $validItems;
 
     public function onBlockPlace(BlockPlaceEvent $event): void {
         $item = $event->getItem();
@@ -27,110 +36,205 @@ class ItemListener implements Listener {
             $event->cancel();
         }
     }
-
-    // TODO: recode ALL Methods below, pulled from my private plugin, wont work intendedly yet
     
-    public function onDropScroll(InventoryTransactionEvent $event): void
-    {
-        $transaction = $event->getTransaction();
-        $actions = array_values($transaction->getActions());
-        if (count($actions) === 2) {
-            foreach ($actions as $i => $action) {
-                $items = [ItemTypeIds::DIAMOND_HELMET, ItemTypeIds::DIAMOND_CHESTPLATE, ItemTypeIds::DIAMOND_LEGGINGS, ItemTypeIds::DIAMOND_BOOTS, ItemTypeIds::DIAMOND_SWORD, ItemTypeIds::DIAMOND_SHOVEL, ItemTypeIds::DIAMOND_PICKAXE, ItemTypeIds::DIAMOND_AXE, ItemTypeIds::DIAMOND_HOE];
-                if ($action instanceof SlotChangeAction
-                    && ($otherAction = $actions[($i + 1) % 2]) instanceof SlotChangeAction
-                    && (
-                        ($itemClickedWith = $action->getTargetItem())->getTypeId() === VanillaItems::INK_SAC()->getTypeId() || 
-                        ($itemClickedWith->getTypeId() === VanillaItems::PAPER()->getTypeId() ||
-                        $itemClickedWith->getTypeId() === StringToItemParser::getInstance()->parse("empty_map")->getTypeId() || 
-                        $itemClickedWith->getTypeId() === VanillaItems::MAGMA_CREAM()->getTypeId())
-                    )
-                    && ($itemClicked = $action->getSourceItem())->getTypeId() !== VanillaItems::AIR()->getTypeId()
-                    && in_array($itemClicked->getTypeId(), $items)
-                    && $itemClickedWith->getCount() === 1
-                    && $itemClickedWith->getNamedTag()->getTag("scrolls")
-                ) {
-                    $scrollType = $itemClickedWith->getNamedTag()->getString("scrolls");
-                    $event->cancel();
+     public function __construct(Config $config) {
+        $this->loadConfigItems($config);
+        $this->validItems = [];
+    }
 
-                    if ($scrollType === "blackscroll") {
-                        $enchantments = $itemClicked->getEnchantments();
+    private function loadConfigItems(): void {
+        $config = Loader::getInstance()->getConfig();
+        $this->scrollItems = [];
 
-                        if (!empty($enchantments)) {
-                            $randomKey = array_rand($enchantments);
-                            $removedEnchantment = $enchantments[$randomKey];
-    
-                            $itemClicked->removeEnchantment($removedEnchantment->getType());
-    
-                            $lore = $itemClicked->getLore();
-                            $enchantmentName = $removedEnchantment->getType()->getName();
-                            $rarity = $removedEnchantment->getType()->getRarity();
-                            $loreLine = EnchantUtils::translateRarityToColor($rarity) . $enchantmentName;
-                            $loreLineIndex = array_search($loreLine, $lore);
-                            if ($loreLineIndex !== false) {
-                                unset($lore[$loreLineIndex]);
-                                $itemClicked->setLore($lore);
-                            }
-
-                            $action->getInventory()->addItem(Utils::createEnchantmentBook($removedEnchantment->getType(), $removedEnchantment->getLevel(), $itemClickedWith->getNamedTag()->getInt("black_scroll"), rand(1, 100)));
-                        }
-    
-                        $action->getInventory()->setItem($action->getSlot(), $itemClicked);
-                        $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
-                        $transaction->getSource()->getWorld()->addSound($transaction->getSource()->getLocation(), new XpLevelUpSound(100));
-                        return;
-                    } elseif ($scrollType === "transmog") {
-                        $enchantments = $itemClicked->getEnchantments();
-                        $enchantments = CustomEnchantments::sortEnchantmentsByRarity($enchantments);
-                        $itemName = $itemClicked->getName();
-                        
-                        if (preg_match('/ §r§l§8\[§r§f\d+§l§8\]§r/', $itemName)) {
-                            $itemName = preg_replace('/ §r§l§8\[§r§f\d+§l§8\]§r/', '', $itemName);
-                        }
-                        
-                        $enchantmentCount = count($enchantments);
-                        $itemName .= " §r§l§8[§r§f{$enchantmentCount}§l§8]§r";
-                        $itemClicked->setCustomName($itemName);
-                        
-                        foreach ($enchantments as $enchantmentInstance) {
-                            $itemClicked->removeEnchantment($enchantmentInstance->getType());
-                        }
-                        
-                        foreach ($enchantments as $enchantmentInstance) {
-                            $itemClicked->addEnchantment($enchantmentInstance);
-                        }
-                        
-                        $action->getInventory()->setItem($action->getSlot(), $itemClicked);
-                        $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
-                        $transaction->getSource()->getWorld()->addSound($transaction->getSource()->getLocation(), new XpLevelUpSound(100));
-                        return;
-                    } elseif ($scrollType === "whitescroll") {
-                        $itemClicked->getNamedTag()->setString("protected", "true");
-                        $lore = "§r§l§fPROTECTED";
-                        $itemClicked->setLore([$lore]);
-
-                        $action->getInventory()->setItem($action->getSlot(), $itemClicked);
-                        $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
-                        $transaction->getSource()->getWorld()->addSound($transaction->getSource()->getLocation(), new XpLevelUpSound(100));
-                        return;
-                    } elseif ($scrollType === "killcounter") {
-                        if ($itemClicked->getNamedTag()->getTag("killcounter")) {
-                            $transaction->getSource()->sendMessage(C::colorize("&r&l&c(!) &r&cThis item already has a player kill counter!"));
-                            $transaction->getSource()->getWorld()->addSound($transaction->getSource()->getLocation(), new AnvilFallSound());
-                            return;
-                        }
-
-                        $event->cancel();
-                        $lore = "§r§ePlayer Kills: §60";
-                        $itemClicked->setLore([$lore]);
-                        $itemClicked->getNamedTag()->setString("scrolls", "killcounter");
-                        $action->getInventory()->setItem($action->getSlot(), $itemClicked);
-                        $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
-                        $transaction->getSource()->getWorld()->addSound($transaction->getSource()->getLocation(), new XpLevelUpSound(100));
-                    }
+        foreach ($config->get("items", []) as $key => $data) {
+            if (isset($data['type'])) {
+                $itemType = strtolower($data['type']);
+                $parsedItem = StringToItemParser::getInstance()->parse($itemType);
+                if ($parsedItem !== null) {
+                    $this->scrollItems[$key] = $parsedItem->getTypeId();
+                } else {
+                    Loader::getInstance()->getLogger()->warning("Failed to parse item type for $key: $itemType");
                 }
             }
         }
+    }
+
+    public function onDropScroll(InventoryTransactionEvent $event): void {
+        $transaction = $event->getTransaction();
+        $actions = array_values($transaction->getActions());
+
+        var_dump("before count");
+        if (count($actions) === 2) {
+            var_dump("count 2 so passed");
+            foreach ($actions as $i => $action) {
+                var_dump("foreach passed");
+
+                if ($action instanceof SlotChangeAction) {
+                    var_dump("action is SlotChangeAction");
+
+                    $otherAction = $actions[($i + 1) % 2];
+                    if ($otherAction instanceof SlotChangeAction) {
+                        var_dump("otherAction is SlotChangeAction");
+
+                        $itemClickedWith = $action->getTargetItem();
+                        var_dump("itemClickedWith", $itemClickedWith->getName());
+
+                        if ($itemClickedWith->getTypeId() !== VanillaItems::AIR()->getTypeId()) {
+                            var_dump("itemClickedWith is not air");
+
+                            if ($this->isScrollItem($itemClickedWith)) {
+                                var_dump("itemClickedWith is scroll item");
+
+                                $itemClicked = $action->getSourceItem();
+                                var_dump("itemClicked", $itemClicked->getName());
+
+                                if ($itemClicked->getTypeId() !== VanillaItems::AIR()->getTypeId()) {
+                                    var_dump("itemClicked is not air");
+
+                                    if (in_array($itemClicked->getTypeId(), $this->getValidItemTypeIds(), true)) {
+                                        var_dump("itemClicked is valid item");
+
+                                        if ($itemClickedWith->getCount() === 1) {
+                                            var_dump("itemClickedWith count is 1");
+
+                                            if ($itemClickedWith->getNamedTag()->getTag("advancedscrolls")) {
+                                                var_dump("itemClickedWith has advancedscrolls tag");
+
+                                                $scrollType = $itemClickedWith->getNamedTag()->getString("advancedscrolls");
+                                                var_dump("scrollType", $scrollType);
+                                                $event->cancel();
+
+                                                if ($scrollType === "whitescroll") {
+                                                    var_dump("whitescroll found");
+                                                    $this->applyWhiteScroll($action, $otherAction, $itemClicked);
+                                                    var_dump("whitescroll done");
+                                                } elseif ($scrollType === "blackscroll") {
+                                                    $this->handleBlackScroll($action, $otherAction, $itemClicked, $itemClickedWith, $transaction);
+                                                } elseif ($scrollType === "transmog") {
+                                                    $this->handleTransmogScroll($action, $otherAction, $itemClicked, $transaction);
+                                                } elseif ($scrollType === "killcounter") {
+                                                    $this->handleKillCounterScroll($action, $otherAction, $itemClicked, $transaction);
+                                                }
+                                            } else {
+                                                var_dump("itemClickedWith does not have advancedscrolls tag");
+                                            }
+                                        } else {
+                                            var_dump("itemClickedWith count is not 1");
+                                        }
+                                    } else {
+                                        var_dump("itemClicked is not valid item");
+                                    }
+                                } else {
+                                    var_dump("itemClicked is air");
+                                }
+                            } else {
+                                var_dump("itemClickedWith is not scroll item");
+                            }
+                        } else {
+                            var_dump("itemClickedWith is air");
+                        }
+                    } else {
+                        var_dump("otherAction is not SlotChangeAction");
+                    }
+                } else {
+                    var_dump("action is not SlotChangeAction");
+                }
+            }
+        }
+    }
+
+    private function applyWhiteScroll(SlotChangeAction $action, SlotChangeAction $otherAction, Item $itemClicked): void {
+        $itemClicked->getNamedTag()->setString("protected", "true");
+        $lore = $itemClicked->getLore();
+        $lore[] = C::colorize("§r§l§fPROTECTED");
+        $itemClicked->setLore($lore);
+
+        $action->getInventory()->setItem($action->getSlot(), $itemClicked);
+        $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
+    }
+
+    private function isScrollItem(Item $item): bool {
+        $typeId = $item->getTypeId();
+        $isScroll = in_array($typeId, $this->scrollItems, true);
+        return $isScroll;
+    }
+
+    private function getValidItemTypeIds(): array {
+        return array_map(function($itemName) {
+            $parsedItem = StringToItemParser::getInstance()->parse($itemName);
+            return $parsedItem ? $parsedItem->getTypeId() : null;
+        }, $this->validItems);
+    }
+
+    private function handleBlackScroll(SlotChangeAction $action, SlotChangeAction $otherAction, Item $itemClicked, Item $itemClickedWith, InventoryTransaction $transaction): void {
+        $enchantments = $itemClicked->getEnchantments();
+        if (!empty($enchantments)) {
+            $randomKey = array_rand($enchantments);
+            $removedEnchantment = $enchantments[$randomKey];
+            $itemClicked->removeEnchantment($removedEnchantment->getType());
+
+            $lore = $itemClicked->getLore();
+            $enchantmentName = $removedEnchantment->getType()->getName();
+            $rarity = $removedEnchantment->getType()->getRarity();
+            $loreLine = EnchantUtils::translateRarityToColor($rarity) . $enchantmentName;
+            $loreLineIndex = array_search($loreLine, $lore);
+            if ($loreLineIndex !== false) {
+                unset($lore[$loreLineIndex]);
+                $itemClicked->setLore($lore);
+            }
+
+            $action->getInventory()->addItem(Utils::createEnchantmentBook(
+                $removedEnchantment->getType(), 
+                $removedEnchantment->getLevel(), 
+                $itemClickedWith->getNamedTag()->getInt("black_scroll"), 
+                rand(1, 100)
+            ));
+        }
+
+        $action->getInventory()->setItem($action->getSlot(), $itemClicked);
+        $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
+        $transaction->getSource()->getWorld()->addSound($transaction->getSource()->getLocation(), new XpLevelUpSound(100));
+    }
+
+    private function handleTransmogScroll($action, $otherAction, $itemClicked, $transaction): void {
+        $enchantments = $itemClicked->getEnchantments();
+        $enchantments = CustomEnchantments::sortEnchantmentsByRarity($enchantments);
+        $itemName = $itemClicked->getName();
+
+        if (preg_match('/ §r§l§8\[§r§f\d+§l§8\]§r/', $itemName)) {
+            $itemName = preg_replace('/ §r§l§8\[§r§f\d+§l§8\]§r/', '', $itemName);
+        }
+
+        $enchantmentCount = count($enchantments);
+        $itemName .= " §r§l§8[§r§f{$enchantmentCount}§l§8]§r";
+        $itemClicked->setCustomName($itemName);
+
+        foreach ($enchantments as $enchantmentInstance) {
+            $itemClicked->removeEnchantment($enchantmentInstance->getType());
+        }
+
+        foreach ($enchantments as $enchantmentInstance) {
+            $itemClicked->addEnchantment($enchantmentInstance);
+        }
+
+        $action->getInventory()->setItem($action->getSlot(), $itemClicked);
+        $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
+        $transaction->getSource()->getWorld()->addSound($transaction->getSource()->getLocation(), new XpLevelUpSound(100));
+    }
+
+    private function handleKillCounterScroll($action, $otherAction, $itemClicked, $transaction): void {
+        if ($itemClicked->getNamedTag()->getTag("killcounter")) {
+            $transaction->getSource()->sendMessage(C::colorize("&r&l&c(!) &r&cThis item already has a player kill counter!"));
+            $transaction->getSource()->getWorld()->addSound($transaction->getSource()->getLocation(), new AnvilFallSound());
+            return;
+        }
+
+        $lore = "§r§ePlayer Kills: §60";
+        $itemClicked->setLore([$lore]);
+        $itemClicked->getNamedTag()->setString("scrolls", "killcounter");
+        $action->getInventory()->setItem($action->getSlot(), $itemClicked);
+        $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
+        $transaction->getSource()->getWorld()->addSound($transaction->getSource()->getLocation(), new XpLevelUpSound(100));
     }
 
     public function onDropEnchantBook(InventoryTransactionEvent $event): void
