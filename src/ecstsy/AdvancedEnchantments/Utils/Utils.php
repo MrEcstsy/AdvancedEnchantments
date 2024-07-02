@@ -4,6 +4,7 @@ namespace ecstsy\AdvancedEnchantments\Utils;
 
 use ecstsy\AdvancedEnchantments\Loader;
 use pocketmine\console\ConsoleCommandSender;
+use pocketmine\data\bedrock\EnchantmentIdMap;
 use pocketmine\entity\Entity;
 use pocketmine\inventory\Inventory;
 use pocketmine\item\enchantment\EnchantmentInstance;
@@ -298,19 +299,24 @@ class Utils {
         $cfg = self::getConfiguration("config.yml");
         switch ($scroll) {
             case "whitescroll":
-                $item = StringToItemParser::getInstance()->parse($cfg->getNested("items.transmogscroll.type"));
+                $item = StringToItemParser::getInstance()->parse($cfg->getNested("white-scroll.item.type"));
 
-                $item->setCustomName(TextFormat::colorize($cfg->getNested("items.transmogscroll.name")));
+                if ($item !== null) {
+                    $item->setCount($amount);
+                    $item->setCustomName(TextFormat::colorize($cfg->getNested("white-scroll.item.name")));
 
-                $lore = $cfg->getNested("items.transmogscroll.lore");
-                $item->setLore(array_map(function ($line) {
-                    return TextFormat::colorize($line);
-                }, $lore));
+                    $lore = $cfg->getNested("white-scroll.item.lore");
+                    $item->setLore(array_map(function ($line) {
+                        return TextFormat::colorize($line);
+                    }, $lore));
 
-                $item->getNamedTag()->setString("advancedscrolls", "whitescroll");
+                    $item->getNamedTag()->setString("advancedscrolls", "whitescroll");
+                } else {
+                    Loader::getInstance()->getLogger()->warning("Invalid parsed item for scroll: $scroll");
+                }   
                 break;
             case "blackscroll":
-                $item = StringToItemParser::getInstance()->parse($cfg->getNested("items.black-scroll.type"));    
+                $item = StringToItemParser::getInstance()->parse($cfg->getNested("items.black-scroll.type"))->setCount($amount);    
 
                 $item->setCustomName(TextFormat::colorize($cfg->getNested("items.black-scroll.name")));
 
@@ -457,6 +463,10 @@ class Utils {
             return $tag instanceof StringTag && $tag->getValue() === $value;
         }
         return false;
+    }
+
+    public static function applyDisplayEnchant(Item $item): void {
+        $item->addEnchantment(new EnchantmentInstance(EnchantmentIdMap::getInstance()->fromId(CustomEnchantmentIds::FAKE_ENCH_ID)));
     }
 
 }
