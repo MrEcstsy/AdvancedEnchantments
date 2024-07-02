@@ -3,6 +3,7 @@
 namespace ecstsy\AdvancedEnchantments;
 
 use ecstsy\AdvancedEnchantments\Commands\AECommand;
+use ecstsy\AdvancedEnchantments\Enchantments\CEGroups;
 use ecstsy\AdvancedEnchantments\Listeners\ItemListener;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
@@ -19,7 +20,7 @@ class Loader extends PluginBase {
     }
 
     public function onEnable(): void {
-        $resources = ["config.yml", "enchantments.yml"];
+        $resources = ["config.yml", "enchantments.yml", "groups.yml"];
         foreach ($resources as $resource) {
             $this->saveResource($resource);
         }
@@ -47,6 +48,8 @@ class Loader extends PluginBase {
         foreach ($listeners as $listener) {
             $this->getServer()->getPluginManager()->registerEvents($listener, $this);
         }
+        
+        CEGroups::init();
     }
 
     private function saveAllFilesInDirectory(string $directory): void {
