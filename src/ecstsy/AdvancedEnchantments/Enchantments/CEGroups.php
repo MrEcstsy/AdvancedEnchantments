@@ -63,4 +63,14 @@ final class CEGroups {
         $fallbackGroupData = self::getGroupData(self::getFallbackGroup());
         return $fallbackGroupData['group_name'] ?? "Unknown";
     }
+
+    public static function getGroupNameById(int $groupId): ?string {
+        foreach (self::$groups as $groupName => $groupData) {
+            if ($groupData['id'] === $groupId) {
+                return $groupName;
+            }
+        }
+        // Return the name for the fallback group if the group ID does not match any group
+        return self::$fallbackGroup;
+    }
 }
