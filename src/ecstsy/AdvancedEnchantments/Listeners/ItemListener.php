@@ -24,9 +24,13 @@ use pocketmine\utils\TextFormat as C;
 
 class ItemListener implements Listener {
 
-    private array $scrollItems;
+    private array $scrollItems = [];
+    private array $validItems = [];
 
-    private array $validItems;
+    public function __construct(Config $config) {
+        $this->loadConfigItems($config);
+        $this->initializeValidItems();
+    }
 
     public function onBlockPlace(BlockPlaceEvent $event): void {
         $item = $event->getItem();
@@ -35,11 +39,6 @@ class ItemListener implements Listener {
         if ($tag->getTag("advancedscrolls")) {
             $event->cancel();
         }
-    }
-    
-     public function __construct(Config $config) {
-        $this->loadConfigItems($config);
-        $this->validItems = [];
     }
 
     private function loadConfigItems(): void {
@@ -59,55 +58,45 @@ class ItemListener implements Listener {
         }
     }
 
+    private function initializeValidItems(): void {
+        $this->validItems = [
+            VanillaItems::DIAMOND_HELMET()->getTypeId(),
+            VanillaItems::DIAMOND_CHESTPLATE()->getTypeId(),
+            VanillaItems::DIAMOND_LEGGINGS()->getTypeId(),
+            VanillaItems::DIAMOND_BOOTS()->getTypeId(),
+            VanillaItems::DIAMOND_SWORD()->getTypeId(),
+            VanillaItems::DIAMOND_SHOVEL()->getTypeId(),
+            VanillaItems::DIAMOND_PICKAXE()->getTypeId(),
+            VanillaItems::DIAMOND_AXE()->getTypeId(),
+            VanillaItems::DIAMOND_HOE()->getTypeId(),
+        ];
+
+    }
+
     public function onDropScroll(InventoryTransactionEvent $event): void {
         $transaction = $event->getTransaction();
         $actions = array_values($transaction->getActions());
 
-        var_dump("before count");
         if (count($actions) === 2) {
-            var_dump("count 2 so passed");
             foreach ($actions as $i => $action) {
-                var_dump("foreach passed");
-
                 if ($action instanceof SlotChangeAction) {
-                    var_dump("action is SlotChangeAction");
-
                     $otherAction = $actions[($i + 1) % 2];
                     if ($otherAction instanceof SlotChangeAction) {
-                        var_dump("otherAction is SlotChangeAction");
-
                         $itemClickedWith = $action->getTargetItem();
-                        var_dump("itemClickedWith", $itemClickedWith->getName());
 
                         if ($itemClickedWith->getTypeId() !== VanillaItems::AIR()->getTypeId()) {
-                            var_dump("itemClickedWith is not air");
-
                             if ($this->isScrollItem($itemClickedWith)) {
-                                var_dump("itemClickedWith is scroll item");
-
                                 $itemClicked = $action->getSourceItem();
-                                var_dump("itemClicked", $itemClicked->getName());
 
                                 if ($itemClicked->getTypeId() !== VanillaItems::AIR()->getTypeId()) {
-                                    var_dump("itemClicked is not air");
-
-                                    if (in_array($itemClicked->getTypeId(), $this->getValidItemTypeIds(), true)) {
-                                        var_dump("itemClicked is valid item");
-
+                                    if (in_array($itemClicked->getTypeId(), $this->validItems, true)) {
                                         if ($itemClickedWith->getCount() === 1) {
-                                            var_dump("itemClickedWith count is 1");
-
                                             if ($itemClickedWith->getNamedTag()->getTag("advancedscrolls")) {
-                                                var_dump("itemClickedWith has advancedscrolls tag");
-
                                                 $scrollType = $itemClickedWith->getNamedTag()->getString("advancedscrolls");
-                                                var_dump("scrollType", $scrollType);
                                                 $event->cancel();
 
                                                 if ($scrollType === "whitescroll") {
-                                                    var_dump("whitescroll found");
                                                     $this->applyWhiteScroll($action, $otherAction, $itemClicked);
-                                                    var_dump("whitescroll done");
                                                 } elseif ($scrollType === "blackscroll") {
                                                     $this->handleBlackScroll($action, $otherAction, $itemClicked, $itemClickedWith, $transaction);
                                                 } elseif ($scrollType === "transmog") {
@@ -115,29 +104,13 @@ class ItemListener implements Listener {
                                                 } elseif ($scrollType === "killcounter") {
                                                     $this->handleKillCounterScroll($action, $otherAction, $itemClicked, $transaction);
                                                 }
-                                            } else {
-                                                var_dump("itemClickedWith does not have advancedscrolls tag");
                                             }
-                                        } else {
-                                            var_dump("itemClickedWith count is not 1");
                                         }
-                                    } else {
-                                        var_dump("itemClicked is not valid item");
                                     }
-                                } else {
-                                    var_dump("itemClicked is air");
                                 }
-                            } else {
-                                var_dump("itemClickedWith is not scroll item");
                             }
-                        } else {
-                            var_dump("itemClickedWith is air");
                         }
-                    } else {
-                        var_dump("otherAction is not SlotChangeAction");
                     }
-                } else {
-                    var_dump("action is not SlotChangeAction");
                 }
             }
         }
@@ -157,13 +130,6 @@ class ItemListener implements Listener {
         $typeId = $item->getTypeId();
         $isScroll = in_array($typeId, $this->scrollItems, true);
         return $isScroll;
-    }
-
-    private function getValidItemTypeIds(): array {
-        return array_map(function($itemName) {
-            $parsedItem = StringToItemParser::getInstance()->parse($itemName);
-            return $parsedItem ? $parsedItem->getTypeId() : null;
-        }, $this->validItems);
     }
 
     private function handleBlackScroll(SlotChangeAction $action, SlotChangeAction $otherAction, Item $itemClicked, Item $itemClickedWith, InventoryTransaction $transaction): void {
