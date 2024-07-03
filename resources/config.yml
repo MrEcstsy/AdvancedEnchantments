@@ -298,3 +298,36 @@ white-scroll:
     - '&fPrevents an item from being destroyed'
     - '&fdue to a failed Enchantment Book.'
     - '&ePlace scroll on item to apply.'
+destroy:
+  # Should book be destroyed if it fails?
+  enabled: true
+  # Should Item be destroyed?
+  destroy-item: false
+chances:
+  # Should book chances be random?
+  random: true
+  # If not random, what should be the simple values?
+  # Can use `<min-max>` to define range between
+  success: 92
+  destroy: 8
+  # If applying book fails, should the plugin destroy item 100% of the time or use Destroy from book to give a chance to
+  # neither apply to enchant neither destroy. If set to "enabled: true', item will always be destroyed.
+  destroy-if-fail:
+    enabled: false
+
+enchantment-book:
+  # If true, books can be applied to items in anvils.
+  anvil-application: false
+  # If true, books can be applied to items by dragging and dropping them on the item in an inventory.
+  drag-drop-application: true
+  item:
+    type: 'enchanted_book'
+    force-glow: false
+  # Variables: {enchant}, {enchant-no-color}, {description}, {level-description}, {applies}, {success}, {destroy}, {color}, {max-level}
+  name: '&r{group-color}&l{enchant-no-color} {level}'
+  lore:
+  - '&r&a{success}% Success Rate'
+  - '&r&c{destroy}% Destroy Rate'
+  - '&r&e{description}'
+  - '&r&7{applies-to} Enchantment'
+  - "&r&7Drag n' drop onto item to enchant"
