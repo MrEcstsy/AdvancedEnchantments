@@ -2,14 +2,14 @@
 
 namespace ecstsy\AdvancedEnchantments\Listeners;
 
+use ecstsy\AdvancedEnchantments\Enchantments\CEGroups;
 use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantment;
 use ecstsy\AdvancedEnchantments\Utils\Utils;
 use pocketmine\block\Block;
-use pocketmine\block\VanillaBlocks;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
-use pocketmine\item\StringToItemParser;
 use pocketmine\player\Player;
+use pocketmine\utils\TextFormat as C;
 use pocketmine\world\Position;
 
 class EnchantmentListener implements Listener {
@@ -46,7 +46,12 @@ class EnchantmentListener implements Listener {
 
                                     $cooldown = $enchantmentData['levels'][$level]['cooldown'];
                                     $this->setCooldown($playerName, $enchantmentName, $cooldown);
-
+                                    
+                                    $color = CEGroups::translateGroupToColor($enchantment->getRarity());
+                                    if (isset($enchantmentData['settings']['showActionBar']) && $enchantmentData['settings']['showActionBar']) {
+                                        $actionBarMessage = C::WHITE . "Used " . $color . ucfirst($enchantmentName) . " " . Utils::getRomanNumeral($level);
+                                        $player->sendActionBarMessage($actionBarMessage);
+                                    }
                                 }
                             }
                         }
