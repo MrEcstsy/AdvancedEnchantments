@@ -5,6 +5,7 @@ namespace ecstsy\AdvancedEnchantments;
 use ecstsy\AdvancedEnchantments\Commands\AECommand;
 use ecstsy\AdvancedEnchantments\Enchantments\CEGroups;
 use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantments;
+use ecstsy\AdvancedEnchantments\Listeners\EnchantmentListener;
 use ecstsy\AdvancedEnchantments\Listeners\ItemListener;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
@@ -45,7 +46,7 @@ class Loader extends PluginBase {
 
         ]);
 
-        $listeners = [new ItemListener($this)];
+        $listeners = [new ItemListener($this->getConfig()), new EnchantmentListener()];
 
         foreach ($listeners as $listener) {
             $this->getServer()->getPluginManager()->registerEvents($listener, $this);
