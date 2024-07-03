@@ -4,10 +4,12 @@ namespace ecstsy\AdvancedEnchantments;
 
 use ecstsy\AdvancedEnchantments\Commands\AECommand;
 use ecstsy\AdvancedEnchantments\Enchantments\CEGroups;
+use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantments;
 use ecstsy\AdvancedEnchantments\Listeners\ItemListener;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
 use ecstsy\AdvancedEnchantments\utils\LanguageManager;
+use muqsit\invmenu\InvMenuHandler;
 
 class Loader extends PluginBase {
 
@@ -50,6 +52,12 @@ class Loader extends PluginBase {
         }
         
         CEGroups::init();
+
+        if (!InvMenuHandler::isRegistered()) {
+            InvMenuHandler::register($this);
+        }
+
+        CustomEnchantments::getAll();
     }
 
     private function saveAllFilesInDirectory(string $directory): void {
