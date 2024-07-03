@@ -1,0 +1,106 @@
+# << Example configuration >>
+# lastchance:    <-- Enchantment name
+#  display: "{group-color}Last Chance"    <-- Display in item lore
+#  id: 1000 <-- Enchantment ID, using anythingb below 1000 is NOT recommended
+#  description: "Has a chance to heal when on low hearts"    <-- Enchantment Description
+#  applies-to: "Chestplate"    <-- What applies to (display purposes)
+#  type: "DEFENSE"    <-- Enchantment type (controls when enchantment activates)
+#  group: "COMMON"    <-- Enchantment group (For enchanter and right-click random books)
+#  settings:
+#    required-enchants:
+#      - "springs:1" # Can require specific level
+#      - "gears"
+#    not-applyable-with:
+#      - "frozen"
+#  applies:    <-- List of items that it applies
+#    - ALL_CHESTPLATE    <-- Item(s) list
+#  levels:    < -- All Levels are under here
+#    1:     <-- Level indicator
+#      chance: 30    <-- Chance for enchantment to activate
+#      conditions: "%victim health% > 5 : %stop%"    <-- Condition (read more about it at Conditions)
+#      description: "Has the lowest chance to heal when on low hearts"    <-- Per level description (different description for each level - optional)
+#      effects:    <-- All enchantment effects
+#        - "ADD_HEALTH:2 %victim%"    <-- Effect(s) list
+
+#  Display (String) (No spaces or enchantment will break)
+#    Determines how will enchantment look in item lore
+
+#  Applies-to (String)
+#    Display used in Custom Enchantment books for %description% variable
+
+#  Group (Setting)
+#    INFO: Create enchantment groups in config.yml under enchanter configuration.
+#   Enchantment groups are used for enchanter, to sell specific type books. You can group them
+#   and add a group-wide color, then obtain it with variable %group-color% (shown in example enchantments below).
+
+#  Enchantment Types List: https://ae.advancedplugins.net/enchantments/creating-enchantments/type-list
+
+#  Applies (Material)
+#    Determines which items will have the effects
+#    The Latest Materials list: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
+#    NOTICE: You can use "LEATHER_ARMOR, IRON_ARMOR, CHAIN_ARMOR, GOLD_ARMOR or DIAMOND_ARMOR" to
+#    instantly add availability for all specific armor type pieces.
+#    Use "ALL_ARMOR" to add all armor pieces.
+#    Use "ALL_HELMET" to add all helmets.
+#    Use "ALL_CHESTPLATE" to add all chestplates.
+#    Use "ALL_BOOTS" to add all boots.
+#    Use "ALL_SWORD" to add all swords.
+#    Use "ALL_PICKAXE" to add all pickaxes.
+#    Use "ALL_AXE" to add all axes.
+#    Use "ALL_EDIBLE" to add all foods.
+#    And so on, but make sure to use non-plural names of items!
+
+#  Levels (Numbers)
+#    Effects for each level, use as display in examples.
+
+#  Enchantment Effect List: https://ae.advancedplugins.net/enchantments/creating-enchantments/effect-list
+
+#        # You can use tags <random word>word1,word2,word3</random word>, it will get a random word from listed words.
+#        # You can use tags <random number>x-y</random number> while x < y, it will generate a random number between two given integers.
+#        # e.g.: "STEAL_MONEY:<random number>10000-50000</random number>"
+#        # Use <chance>x</chance> to set per-effect chance, x being a chance percentage.
+#        # e.g.: "POTION:SPEED:1:100 {attacker} <chance>25</chance>"
+
+#        # You also may use {victim} or {attacker} flag to give effects to different players (in ATTACK, BOW, DEATH, KILL_PLAYER and DEFENSE types).
+#        # Example usage: - "POTION:POISON:1:50 attacker}', this will give Level 2 POISON potion effect to the player who attacked.
+#        # If none is provided, effects will be given to the player who had custom enchanted item.
+#        # You can add {combo} instead of numbers, to use number of combo's player has (eg. to limit combo number: "{combo} > 0 && {combo} < 5 : {continue}')
+#        # You can add {damage} instead of numbers, to use number of damage has been done (for ATTACK and DEFENSE)
+
+#  Area of effect: https://ae.advancedplugins.net/enchantments/radius-of-effect-enchantments
+#  Conditions:  https://ae.advancedplugins.net/enchantments/enchantment-conditions
+
+# Settings for enchantments
+# *** This is not a required configuration section and each enchantment doesn't need to have it ***
+#  settings:
+#    required-enchants:
+#      - "springs"
+#    not-applyable-with:
+#      - "frozen"
+#    removeable: false # Makes enchantment non-removeable with blackscrolls
+#    disable-in-enchanter: true # Players can no longer obtain enchantment from Enchanter
+gemify:
+  display: '{group-color}Gemify'
+  id: 1000
+  description: Chance for an ore block to turn into it's block
+  applies-to: Pickaxe
+  type: MINING
+  group: FABLED
+  settings:
+    showActionBar: true
+  applies:
+    - ALL_PICKAXE
+  levels:
+    '1':
+      chance: 3
+      cooldown: 5 
+      effects:
+        - PLAY_SOUND:random.levelup @Self
+        - 'SET_BLOCK:GOLD_BLOCK @Block <condition>%block type% contains GOLD_ORE : %allow%</condition>'
+        - 'SET_BLOCK:IRON_BLOCK @Block <condition>%block type% contains IRON_ORE : %allow%</condition>'
+        - 'SET_BLOCK:COAL_BLOCK @Block <condition>%block type% contains COAL_ORE : %allow%</condition>'
+        - 'SET_BLOCK:EMERALD_BLOCK @Block <condition>%block type% contains EMERALD_ORE : %allow%</condition>'
+        - 'SET_BLOCK:COPPER_BLOCK @Block <condition>%block type% contains copper_ore : %allow%</condition>'
+        - 'SET_BLOCK:REDSTONE_BLOCK @Block <condition>%block type% contains redstone_ore : %allow%</condition>'
+        - 'SET_BLOCK:LAPIS_BLOCK @Block <condition>%block type% contains lapis_ore : %allow%</condition>'
+        - 'SET_BLOCK:DIAMOND_BLOCK @Block <condition>%block type% contains diamond_ore : %allow%</condition>'
