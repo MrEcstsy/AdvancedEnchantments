@@ -102,7 +102,10 @@ class EnchantmentListener implements Listener {
                         Utils::playSound($player, $effect['sound']);
                     }
                     break;
-
+                case "ADD_PARTICLE":
+                    if (isset($effect['particle'])) {
+                        Utils::spawnParticle($block->getPosition(), $effect['particle']);
+                    }
                 case 'SET_BLOCK':
                     if (isset($effect['from'], $effect['to'])) {
                         $fromBlockName = str_replace(' ', '_', strtoupper($effect['from'])); 
@@ -120,8 +123,66 @@ class EnchantmentListener implements Listener {
                         }
                     }
                     break;
-                }
+                case 'ADD_POTION':
+                    if (isset($effect['potion'])) {
+                        // for adding potion effects by chance when damaged or damaging
+                    }
+                    break;    
+                case "REMOVE_POTION":
+                    if (isset($effect['potion'])) {
+                        
+                    }
+                    break;
+                case "PLANT_SEEDS":
+                    if (isset($effect['seed'])) {
+                        
+                    }    
+                    break;
+                case "DOUBLE_DAMAGE":
+                            
+                    break;
+                case "WAIT":
+                    //  TODO: Implememt wait method in ticks
+                    //  then run the next effect
+                    // e.g: - type: "WAIT"
+                    //        duration: 20
+                    //      - type: "DO_HARM"
+                    //        damage: {1-3}
+                    // This would wait 20 ticks before running the next effect
+                    
+                    break;
+                case "DO_HARM":
+
+                    break;    
+                case "MESSAGE":
+                    if (isset($effect['text'])) {
+                        $player->sendMessage(C::colorize($effect['message'])); // TODO add target player e.g: victim, attacker, self
+                    }
+                    break;
+                case "EFFECT_STATIC":
+                    if (isset($effect['effect'])) {
+                        // for adding potion effects when worn / held
+                    }    
+                    break;
+                case "SMELT":
+                    // Smelt mined blocks
+                    break;    
+                case "EXP":
+                    // for increasing xp drop on mined blocks
+                    break;    
+                case "DROP_HEAD":
+                    // use CB Heads plugin for this... or use their code?
+                    break;    
+                case 'PULL_AWAY':
+                    // pushing players / entties away from victim
+                    break;
+                case 'CANCEL_EVENT':
+                    // cancels an event, e.g canceling fall damage, or "absorbing damage"
+                    break;    
+                case 'BURN':
+                    // set attackers on fire
+                    break;
             }
         }
-
+    }
 }
