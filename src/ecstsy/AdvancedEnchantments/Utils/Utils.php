@@ -2,7 +2,10 @@
 
 namespace ecstsy\AdvancedEnchantments\Utils;
 
+use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantmentIds;
 use ecstsy\AdvancedEnchantments\Loader;
+use pocketmine\block\Block;
+use pocketmine\block\VanillaBlocks;
 use pocketmine\console\ConsoleCommandSender;
 use pocketmine\data\bedrock\EnchantmentIdMap;
 use pocketmine\entity\Entity;
@@ -469,4 +472,48 @@ class Utils {
         $item->addEnchantment(new EnchantmentInstance(EnchantmentIdMap::getInstance()->fromId(CustomEnchantmentIds::FAKE_ENCH_ID)));
     }
 
+    /**
+     * Gets the block instance from a string name
+     *
+     * @param string $blockName
+     * @return Block
+     */
+    public static function getBlockFromString(string $blockName): Block {
+        switch (strtoupper($blockName)) {
+            case 'GOLD_ORE':
+                return VanillaBlocks::GOLD_ORE();
+            case 'IRON_ORE':
+                return VanillaBlocks::IRON_ORE();
+            case 'COAL_ORE':
+                return VanillaBlocks::COAL_ORE();
+            case 'EMERALD_ORE':
+                return VanillaBlocks::EMERALD_ORE();
+            case 'COPPER_ORE':
+                return VanillaBlocks::COPPER_ORE();
+            case 'REDSTONE_ORE':
+                return VanillaBlocks::REDSTONE_ORE();
+            case 'LAPIS_ORE':
+                return VanillaBlocks::LAPIS_LAZULI_ORE();
+            case 'DIAMOND_ORE':
+                return VanillaBlocks::DIAMOND_ORE();
+            case 'GOLD_BLOCK':
+                return VanillaBlocks::GOLD();
+            case 'IRON_BLOCK':
+                return VanillaBlocks::IRON();
+            case 'COAL_BLOCK':
+                return VanillaBlocks::COAL();
+            case 'EMERALD_BLOCK':
+                return VanillaBlocks::EMERALD();
+            case 'COPPER_BLOCK':
+                return VanillaBlocks::COPPER();
+            case 'REDSTONE_BLOCK':
+                return VanillaBlocks::REDSTONE();
+            case 'LAPIS_BLOCK':
+                return VanillaBlocks::LAPIS_LAZULI();
+            case 'DIAMOND_BLOCK':
+                return VanillaBlocks::DIAMOND();
+            default:
+                return VanillaBlocks::AIR();
+        }
+    }
 }
