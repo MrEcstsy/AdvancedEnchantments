@@ -141,29 +141,29 @@ class ItemListener implements Listener {
             $randomKey = array_rand($enchantments);
             $removedEnchantment = $enchantments[$randomKey];
             $itemClicked->removeEnchantment($removedEnchantment->getType());
-
+    
             $lore = $itemClicked->getLore();
             $enchantmentName = $removedEnchantment->getType()->getName();
             $rarity = $removedEnchantment->getType()->getRarity();
-            $loreLine = EnchantUtils::translateRarityToColor($rarity) . $enchantmentName;
+            $loreLine = CEGroups::translateGroupToColor($rarity) . $enchantmentName;
             $loreLineIndex = array_search($loreLine, $lore);
             if ($loreLineIndex !== false) {
                 unset($lore[$loreLineIndex]);
-                $itemClicked->setLore($lore);
+                $itemClicked->setLore(array_values($lore));
             }
-
+    
             $action->getInventory()->addItem(Utils::createEnchantmentBook(
                 $removedEnchantment->getType(), 
                 $removedEnchantment->getLevel(), 
-                $itemClickedWith->getNamedTag()->getInt("black_scroll"), 
+                $itemClickedWith->getNamedTag()->getInt("blackscroll-success"), 
                 rand(1, 100)
             ));
         }
-
+    
         $action->getInventory()->setItem($action->getSlot(), $itemClicked);
         $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
         $transaction->getSource()->getWorld()->addSound($transaction->getSource()->getLocation(), new XpLevelUpSound(100));
-    }
+    }   
 
     private function handleTransmogScroll($action, $otherAction, $itemClicked, $transaction): void {
         $cfg = Utils::getConfiguration("config.yml");
