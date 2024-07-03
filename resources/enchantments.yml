@@ -93,14 +93,32 @@ gemify:
   levels:
     '1':
       chance: 3
-      cooldown: 5 
+      cooldown: 5     
       effects:
-        - PLAY_SOUND:random.levelup @Self
-        - 'SET_BLOCK:GOLD_BLOCK @Block <condition>%block type% contains GOLD_ORE : %allow%</condition>'
-        - 'SET_BLOCK:IRON_BLOCK @Block <condition>%block type% contains IRON_ORE : %allow%</condition>'
-        - 'SET_BLOCK:COAL_BLOCK @Block <condition>%block type% contains COAL_ORE : %allow%</condition>'
-        - 'SET_BLOCK:EMERALD_BLOCK @Block <condition>%block type% contains EMERALD_ORE : %allow%</condition>'
-        - 'SET_BLOCK:COPPER_BLOCK @Block <condition>%block type% contains copper_ore : %allow%</condition>'
-        - 'SET_BLOCK:REDSTONE_BLOCK @Block <condition>%block type% contains redstone_ore : %allow%</condition>'
-        - 'SET_BLOCK:LAPIS_BLOCK @Block <condition>%block type% contains lapis_ore : %allow%</condition>'
-        - 'SET_BLOCK:DIAMOND_BLOCK @Block <condition>%block type% contains diamond_ore : %allow%</condition>'
+        - type: PLAY_SOUND
+          sound: "random.levelup"
+          target: self
+        - type: SET_BLOCK
+          from: GOLD_ORE
+          to: GOLD_BLOCK
+        - type: SET_BLOCK
+          from: IRON_ORE
+          to: IRON_BLOCK
+        - type: SET_BLOCK
+          from: COAL_ORE
+          to: COAL_BLOCK
+        - type: SET_BLOCK
+          from: EMERALD_ORE
+          to: EMERALD_BLOCK
+        - type: SET_BLOCK
+          from: COPPER_ORE
+          to: COPPER_BLOCK
+        - type: SET_BLOCK
+          from: REDSTONE_ORE
+          to: REDSTONE_BLOCK
+        - type: SET_BLOCK
+          from: LAPIS_ORE
+          to: LAPIS_BLOCK
+        - type: SET_BLOCK
+          from: DIAMOND_ORE
+          to: DIAMOND_BLOCK
