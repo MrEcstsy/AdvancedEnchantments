@@ -2,6 +2,9 @@
 
 namespace ecstsy\AdvancedEnchantments\Listeners;
 
+use ecstsy\AdvancedEnchantments\Enchantments\CEGroups;
+use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantment;
+use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantments;
 use ecstsy\AdvancedEnchantments\Loader;
 use ecstsy\AdvancedEnchantments\Utils\Utils;
 use pocketmine\event\block\BlockPlaceEvent;
@@ -117,15 +120,15 @@ class ItemListener implements Listener {
     }
 
     private function applyWhiteScroll(SlotChangeAction $action, SlotChangeAction $otherAction, Item $itemClicked): void {
+        $cfg = Utils::getConfiguration("config.yml");
         $itemClicked->getNamedTag()->setString("protected", "true");
         $lore = $itemClicked->getLore();
-        $lore[] = C::colorize("§r§l§fPROTECTED");
+        $lore[] = C::colorize($cfg->getNested("items.white-scroll.lore-display"));
         $itemClicked->setLore($lore);
 
         $action->getInventory()->setItem($action->getSlot(), $itemClicked);
         $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
     }
-
     private function isScrollItem(Item $item): bool {
         $typeId = $item->getTypeId();
         $isScroll = in_array($typeId, $this->scrollItems, true);
@@ -163,30 +166,35 @@ class ItemListener implements Listener {
     }
 
     private function handleTransmogScroll($action, $otherAction, $itemClicked, $transaction): void {
+        $cfg = Utils::getConfiguration("config.yml");
         $enchantments = $itemClicked->getEnchantments();
         $enchantments = CustomEnchantments::sortEnchantmentsByRarity($enchantments);
         $itemName = $itemClicked->getName();
-
-        if (preg_match('/ §r§l§8\[§r§f\d+§l§8\]§r/', $itemName)) {
-            $itemName = preg_replace('/ §r§l§8\[§r§f\d+§l§8\]§r/', '', $itemName);
+    
+        $countFormat = $cfg->getNested("items.transmogscroll.enchants-count-formatting");
+    
+        // TODO: prevent transmog from adding the count to the item name multiple times when applying more transmog scrolls to it
+        if (preg_match('/\s\[\d+\]$/', $itemName)) {
+            $itemName = preg_replace('/\s\[\d+\]$/', '', $itemName);
         }
-
+    
         $enchantmentCount = count($enchantments);
-        $itemName .= " §r§l§8[§r§f{$enchantmentCount}§l§8]§r";
-        $itemClicked->setCustomName($itemName);
-
+        $itemName .= " " . str_replace("{count}", $enchantmentCount, $countFormat);
+    
+        $itemClicked->setCustomName(C::colorize($itemName));
+    
         foreach ($enchantments as $enchantmentInstance) {
             $itemClicked->removeEnchantment($enchantmentInstance->getType());
         }
-
+    
         foreach ($enchantments as $enchantmentInstance) {
             $itemClicked->addEnchantment($enchantmentInstance);
         }
-
+    
         $action->getInventory()->setItem($action->getSlot(), $itemClicked);
         $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
         $transaction->getSource()->getWorld()->addSound($transaction->getSource()->getLocation(), new XpLevelUpSound(100));
-    }
+    }    
 
     private function handleKillCounterScroll($action, $otherAction, $itemClicked, $transaction): void {
         if ($itemClicked->getNamedTag()->getTag("killcounter")) {
