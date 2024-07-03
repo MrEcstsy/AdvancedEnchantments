@@ -2,6 +2,8 @@
 
 namespace ecstsy\AdvancedEnchantments\Utils;
 
+use ecstsy\AdvancedEnchantments\Enchantments\CEGroups;
+use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantment;
 use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantmentIds;
 use ecstsy\AdvancedEnchantments\Loader;
 use pocketmine\block\Block;
@@ -10,11 +12,13 @@ use pocketmine\console\ConsoleCommandSender;
 use pocketmine\data\bedrock\EnchantmentIdMap;
 use pocketmine\entity\Entity;
 use pocketmine\inventory\Inventory;
+use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\enchantment\StringToEnchantmentParser;
 use pocketmine\item\Item;
 use pocketmine\item\StringToItemParser;
 use pocketmine\item\VanillaItems;
+use pocketmine\math\AxisAlignedBB;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
@@ -23,6 +27,7 @@ use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat;
+use pocketmine\world\Position;
 
 class Utils {
 
@@ -515,5 +520,79 @@ class Utils {
             default:
                 return VanillaBlocks::AIR();
         }
+    }
+
+    public static function createRandomCEBook(string $rarity, int $amount = 1): Item {
+        $groupData = CEGroups::getGroupData($rarity);
+        if (!$groupData) {
+            $groupData = CEGroups::getGroupData(CEGroups::getFallbackGroup());
+        }
+
+        $config = self::getConfiguration("config.yml");
+        $bookConfig = $config->getNested("enchanter-books", []);
+        $bookType = $bookConfig['type'] ?? 'book';
+        $bookName = $bookConfig['name'] ?? '&r&l{group-color}{group-name} Enchantment Book &r&7(Right Click)';
+        $bookLore = $bookConfig['lore'] ?? [
+            '&r&7Examine to receive a random',
+            '&r&f{group-name} &7enchantment book'
+        ];
+
+        $item = StringToItemParser::getInstance()->parse($bookType)->setCount($amount);
+
+        $color = CEGroups::translateGroupToColor($groupData['id']);
+        $name = str_replace(['{group-color}', '{group-name}'], [$color, $groupData['group_name']], $bookName);
+        $lore = array_map(function ($line) use ($color, $groupData) {
+            return TextFormat::colorize(str_replace(['{group-color}', '{group-name}'], [$color, $groupData['group_name']], $line));
+        }, $bookLore);
+
+        $item->setCustomName(TextFormat::colorize($name));
+        $item->setLore($lore);
+        $item->getNamedTag()->setString("random_book", strtolower($rarity));
+
+        return $item;
+    }
+
+    public static function createEnchantmentBook(Enchantment $enchantment, int $level = 1, int $successChance = 100, int $destroyChance = 100): ?Item {
+        $config = self::getConfiguration("config.yml");
+        $bookConfig = $config->getNested("enchantment-book", []);
+        $bookItemType = $bookConfig['item']['type'] ?? 'enchanted_book';
+
+        $item = StringToItemParser::getInstance()->parse($bookItemType)->setCount(1);
+
+        $rarity = $enchantment->getRarity();
+        $color = CEGroups::translateGroupToColor($rarity);
+        $groupName = CEGroups::getGroupName($rarity);
+
+        $name = str_replace(
+            ['{group-color}', '{enchant-no-color}', '{level}'],
+            [$color, ucfirst($enchantment->getName()), self::getRomanNumeral($level)],
+            $bookConfig['name']
+        );
+
+        $description = "";
+        $appliesTo = "";
+        if ($enchantment instanceof CustomEnchantment) {
+            $description = $enchantment->getDescription();
+            $enchantConfig = self::getConfiguration("enchantments.yml");
+            $enchantData = $enchantConfig->get($enchantment->getName(), []);
+            $appliesTo = $enchantData['applies-to'] ?? "Unknown";
+        }
+
+        $lore = array_map(function ($line) use ($color, $enchantment, $successChance, $destroyChance, $level, $groupName, $description, $appliesTo) {
+            return TextFormat::colorize(str_replace(
+                ['{group-color}', '{enchant-no-color}', '{description}', '{level}', '{success}', '{destroy}', '{applies-to}', '{max-level}'],
+                [$color, ucfirst($enchantment->getName()), $description, self::getRomanNumeral($level), $successChance, $destroyChance, $appliesTo, $enchantment->getMaxLevel()],
+                $line
+            ));
+        }, $bookConfig['lore']);
+
+        $item->setCustomName(TextFormat::colorize($name));
+        $item->setLore($lore);
+        $item->getNamedTag()->setString("enchant_book", strtolower($enchantment->getName()));
+        $item->getNamedTag()->setInt("level", $level);
+        $item->getNamedTag()->setInt("successrate", $successChance);
+        $item->getNamedTag()->setInt("destroyrate", $destroyChance);
+
+        return $item;
     }
 }
