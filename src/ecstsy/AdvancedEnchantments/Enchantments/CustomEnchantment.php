@@ -17,7 +17,7 @@ use pocketmine\item\Sword;
 class CustomEnchantment extends Enchantment {
     private string $description;
 
-    public function __construct(string $name, int $rarity, string $description, int $maxLevel, int $primaryFlag, int $secondaryFlag = ItemFlags::NONE) {
+    public function __construct(string $name, int $id,int $rarity, string $description, int $maxLevel, int $primaryFlag, int $secondaryFlag = ItemFlags::NONE) {
         $this->description = $description;
 
         parent::__construct($name, $rarity, $primaryFlag, $secondaryFlag, $maxLevel);

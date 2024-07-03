@@ -8,7 +8,10 @@ use pocketmine\utils\TextFormat as C;
 final class CEGroups {
 
     private static array $groups = [];
+
     private static ?string $fallbackGroup = null;
+
+    private static array $enchantments = [];
 
     public static function init(): void {
         $config = Utils::getConfiguration("groups.yml");
@@ -72,5 +75,16 @@ final class CEGroups {
         }
         // Return the name for the fallback group if the group ID does not match any group
         return self::$fallbackGroup;
+    }
+
+    public static function getAllForRarity(string $groupName): array {
+        $enchantments = [];
+        foreach (self::$enchantments as $enchantment) {
+            if (isset($enchantment['group']) && strtoupper($enchantment['group']) === strtoupper($groupName)) {
+                $enchantments[] = $enchantment;
+            }
+        }
+
+        return $enchantments;
     }
 }
