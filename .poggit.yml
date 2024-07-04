@@ -11,4 +11,7 @@ projects:
         version: 4.6.5
       - src: "Paroxity/Commando/Commando"
         version: "^3.2.0"
+      - src: "muqsit/simplepackethandler/SimplePacketHandler"
+        branch: pm5
+        version: "^0.1.4"
 ...
