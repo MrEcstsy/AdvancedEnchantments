@@ -595,4 +595,381 @@ class Utils {
 
         return $item;
     }
+
+        /**
+     * Applies the enchantment effects
+     *
+     * @param Player $player
+     * @param Block $block
+     * @param array $effects
+     */
+    public static function applyPlayerEffects(Player $source, ?Player $target, array $effects): void {
+            if (empty($effects)) {
+                return;
+            }
+        
+            $effect = array_shift($effects);
+        
+            if (!isset($effect['type'])) {
+                self::applyPlayerEffects($source, $target, $effects);
+                return;
+            }
+
+            switch ($effect['type']) {
+                case 'PLAY_SOUND':
+                    if (isset($effect['sound'])) {
+                        if ($source instanceof Player) {
+                            Utils::playSound($source, $effect['sound']);
+                        }                   
+                    }
+                    break;
+                case "ADD_PARTICLE":
+                    if (isset($effect['particle'])) {
+                        if ($target instanceof Player) {
+                            Utils::spawnParticle($target->getPosition(), $effect['particle']);
+                        }                  
+                    }
+                case 'ADD_POTION':
+                    if (isset($effect['potion'], $effect['duration'], $effect['amplifier'])) {
+                        $potion = StringToEffectParser::getInstance()->parse($effect['potion']);
+                        if ($potion === null) {
+                            throw new \RuntimeException("Invalid potion effect '" . $effect['potion'] . "'");
+                        }
+    
+                        if ($target instanceof Player) {
+                            $target->getEffects()->add(new EffectInstance($potion, $effect['duration'], $effect['amplifier']));
+                        } 
+                    }
+                    break;
+                case "REMOVE_POTION":
+                    if (isset($effect['potion'])) {
+                        
+                    }
+                    break;
+                case "DOUBLE_DAMAGE":
+                            
+                    break;
+                case "WAIT":
+                    if (isset($effect['time'])) {
+                        $task = new ClosureTask(function() use ($source, $target, $effects): void {
+                            self::applyPlayerEffects($source, $target, $effects);
+                        });
+                        Loader::getInstance()->getScheduler()->scheduleDelayedTask($task, $effect['time']);
+                        return;
+                    }
+                    break;
+                case "DO_HARM":
+                    if (isset($effect['value']) && $target instanceof Player) {
+                        $damage = Utils::parseLevel($effect['value']);
+                        $target->attack(new EntityDamageEvent($target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage));
+                    }
+                    break;    
+                case "MESSAGE":
+                    if (isset($effect['text'])) {
+                        $message = TextFormat::colorize($effect['text']);
+                        if ($source instanceof Player) {
+                            if ($effect['target'] === 'self') {
+                                $source->sendMessage($message);
+                            } elseif ($effect['target'] === 'victim' && $target instanceof Player) {
+                                $target->sendMessage($message);
+                            } elseif ($effect['target'] === 'attacker' && $source instanceof Player && $target instanceof Player) {
+                                $source->sendMessage($message);
+                            }
+                        }
+                    }
+                    break;
+                case "EFFECT_STATIC":
+                    if (isset($effect['effect'])) {
+                        // for adding potion effects when worn / held
+                    }    
+                    break;
+                case "EXP":
+                    // for increasing xp drop on mined blocks
+                    break;    
+                case "DROP_HEAD":
+                    // use CB Heads plugin for this... or use their code?
+                    break;    
+                case 'PULL_AWAY':
+                    // pushing players / entties away from victim
+                    break;
+                case 'CANCEL_EVENT':
+                    // cancels an event, e.g canceling fall damage, or "absorbing damage"
+                    break;    
+                case 'BURN':
+                    // set attackers on fire
+                    break;
+                case 'ADD_FOOD':
+                    break;    
+                case 'REMOVE_FOOD':
+                    break;
+                case 'TP_DROPS':
+                    // Teleport drops to players inventory sorta like auto pickup
+                    break;          
+                case 'GAURD':
+                    // Summon a mob on defense
+                    break;      
+                case 'INCREASE_DAMAGE':
+                    // Increase damage, need to implement a condition check so it can be made to work for e.g with zombies, or players or whichever mob
+                    break;    
+                case 'PULL_CLOSER':
+                    // Pulls closer to victim
+                    break;
+                case 'LIGHTNING':
+                    // Strike lighting at the entity
+                    break;
+                case 'EXTINGUISH':
+                    // Removes fire from player, or entity (removes fire from using LIGHTNING type)
+                    break;
+                case 'ADD_DURABILITY':
+                    // Not sure if its possible to do this anymore?
+                    break;             
+                case 'BOOST':
+                    // Launch entity or player into the air e.g launching victim into air when low hp
+                    break;
+                case 'TELEPORT_BEHIND':
+                    // Teleport behind entity / player
+                    break;     
+                case 'ADD_HEALTH':
+                    // Add health to player
+                    break;
+                case 'CURE':
+                    // Remove a bad potion effect
+                    break;
+                case 'NEGATE_DAMAGE':
+                    // Negate damage
+                    break;    
+                case 'DISABLE_ACTIVATION':
+                    // Prevents an enchantment from activating
+                    break;
+                case 'DECREASE_DAMAGE':
+                    // Decrease damage
+                    break;
+                case 'ADD_DURABILITY_CURRENT_ITEM':
+                    // When item breaks the item that has the enchantment with this effect will be remove the enchantment to restore the item to full durability, might have to check when the durability is low e.g at 1
+                    break;            
+                case 'REMOVE_ENCHANT':
+                    // Removes an enchantment from an item
+                    // used for the example above and for any other reason ppl can be creative...
+                    break;   
+                case 'FIREBALL':
+                    // Arrows turn into fireballs 
+                    break;
+                case 'RESET_COMBO':
+                    // Resets combo
+                    break;
+                case 'KILL':
+                    // Not sure how this would work, but would kill x amount of entities in a mob stack
+                    break;
+                case 'STEAL_HEALTH':
+                    break;
+                case 'HALF_DAMAGE':
+                    // Intended to make attacker do half the damage, can be paired with 'ADD_DURABILITY_CURRENT_ITEM' to make an enchant that does 'half damage' in exchange for repairing the item
+                    break;           
+                case 'REPAIR':
+                    break;
+                case 'REMOVE_RANDOM_ARMOR':
+                    break;
+                case 'SPAWN_ARROWS':
+                    // Spawn arrows over opponent
+                    break;         
+                case 'KEEP_ON_DEATH':
+                    break;
+                case 'DISARM':
+                    break;
+                case 'REVIVE':
+                    // 'Revive' the target when killed
+                    break;              
+                case 'PUMPKIN':
+                    // Show the pumpin vignette to the target
+                    break;                  
+                case "STOP_KNOCKBACK":
+
+                    break;
+                case 'REMOVE_SOULS':
+
+                    break;
+                case 'MORE_DROPS':
+
+                    break;      
+                case 'SHUFFLE_HOTBAR':
+
+                    break;           
+                case 'ADD_SOULS':
+                        
+                    break;
+            }
+
+            self::applyPlayerEffects($source, $target, $effects);
+    }
+
+    public static function getSeedItem(?string $seedType): ?Item {
+        $seedTypeLower = $seedType !== null ? strtolower($seedType) : null;
+    
+        switch ($seedTypeLower) {
+            case "wheat":
+                return VanillaItems::WHEAT_SEEDS();
+            case "carrot":
+                return VanillaItems::CARROT();
+            case "potato":
+                return VanillaItems::POTATO();
+            case "beetroot":
+                return VanillaItems::BEETROOT_SEEDS();
+            default:
+                return VanillaItems::WHEAT_SEEDS();
+        }
+    }
+    
+
+    public static function getSeedBlock(Item $seedItem): ?Block {
+        $blockName = strtolower(str_replace(" ", "_", $seedItem->getName()));
+        $block = StringToItemParser::getInstance()->parse($blockName);
+        if ($block instanceof Block) {
+            return $block;
+        }
+        return null;
+    }
+
+    public static function getTargetPlayer(string $targetType, Player $sourcePlayer): ?Player {
+        switch ($targetType) {
+            case 'self':
+                return $sourcePlayer;
+            case 'victim':
+                return $sourcePlayer;
+            case 'attacker':
+                return $sourcePlayer;    
+            default:
+                return null;
+        }
+    }
+
+    public static function plantSeeds(Player $player, Block $targetBlock, int $radius, ?string $seedType): void {
+        $world = $player->getWorld();
+        $seedItem = Utils::getSeedItem($seedType);
+        if ($seedItem === null) {
+            return;
+        }
+    
+        $inventory = $player->getInventory()->getContents();
+        $seedsCount = 0;
+        foreach ($inventory as $item) {
+            if ($item->getTypeId() === $seedItem->getTypeId()) {
+                $seedsCount += $item->getCount();
+            }
+        }
+    
+        $positions = [];
+        for ($x = -$radius; $x <= $radius; $x++) {
+            for ($z = -$radius; $z <= $radius; $z++) {
+                $positions[] = $targetBlock->getPosition()->add($x, 0, $z);
+            }
+        }
+    
+        foreach ($positions as $position) {
+            if ($seedsCount <= 0) {
+                break;
+            }
+            $block = $world->getBlock($position);
+            if ($block instanceof Farmland) {
+                $aboveBlock = $world->getBlock($position->up());
+                if ($aboveBlock->isSolid() === false) {
+                    $seedBlock = Utils::getSeedBlock($seedItem);
+                    if ($seedBlock !== null) {
+                        $world->setBlock($position->up(), $seedBlock);
+                        $player->getInventory()->removeItem($seedItem->setCount(1));
+                        $seedsCount--;
+                    }
+                }
+            }
+        }
+    }
+
+    public static function applyBlockEffects(Entity $source, Block $block, array $effects): void {
+        foreach ($effects as $effect) {
+            if (!isset($effect['type'])) {
+                continue;
+            }
+    
+            switch ($effect['type']) {
+                case 'SET_BLOCK':
+                    if (isset($effect['from'], $effect['to'])) {
+                        $fromBlockName = str_replace(' ', '_', strtoupper($effect['from'])); 
+                        $toBlockName = str_replace(' ', '_', strtoupper($effect['to'])); 
+        
+                        if ($block instanceof Block && $block->getPosition() instanceof Position) {
+                            $blockName = str_replace(' ', '_', strtoupper($block->getName())); 
+        
+                            if ($blockName === $fromBlockName) {
+                                $newBlock = Utils::getBlockFromString($toBlockName);
+                                if ($newBlock instanceof Block) {
+                                    $block->getPosition()->getWorld()->setBlock($block->getPosition(), $newBlock);
+                                } 
+                            }
+                        }
+                    }
+                    break;
+                case "PLANT_SEEDS":
+                    if (isset($effect['radius'])) {
+                        $radius = (int)$effect['radius'];
+                        $seedType = $effect['seed-type'] ?? null;
+
+                        if ($source instanceof Player) {
+                            self::plantSeeds($source, $block, $radius, $seedType);
+                        }
+                    }    
+                break;
+                case "SMELT":
+                    // Smelt mined blocks
+                    break;    
+                case "EXP":
+                    // for increasing xp drop on mined blocks
+                    break; 
+                case 'BREAK_BLOCK':
+                    // Breaks blocks in radius
+                break;        
+                case 'BREAK_TREE':
+                    // Breaks an entire tree
+                    break; 
+                case 'VEINMINER':
+
+                    break;
+                case 'TP_DROPS':
+                        // Teleport drops to players inventory sorta like auto pickup
+                    break;                                 
+            }
+        }
+    }
+
+    public static function checkConditions(array $conditions, Player $player, Entity $victim): bool {
+        foreach ($conditions as $condition) {
+            $type = $condition['type'] ?? null;
+            $conditionMode = $condition['condition_mode'] ?? 'allow';
+    
+            if ($type === 'VICTIM_HEALTH') {
+                $greaterThan = $condition['greater-than'] ?? 0;
+                if ($conditionMode === 'stop' && $victim->getHealth() > $greaterThan) {
+                    return false; // Stop if victim's health is greater than the specified value
+                } elseif ($conditionMode === 'allow' && $victim->getHealth() <= $greaterThan) {
+                    return true; // Allow if victim's health is less than or equal to the specified value
+                }
+            } elseif ($type === 'IS_SNEAKING') {
+                $target = $condition['target'] ?? 'self';
+                $value = $condition['value'] ?? false;
+                if ($target === 'self') {
+                    $isSneaking = $player->isSneaking();
+                } else {
+                    if ($victim instanceof Player) {
+                        $isSneaking = $victim->isSneaking();
+                    }
+                }
+                if ($conditionMode === 'allow' && $isSneaking === $value) {
+                    return true; // Allow if the target's sneaking status matches the value
+                } elseif ($conditionMode === 'stop' && $isSneaking !== $value) {
+                    return false; // Stop if the target's sneaking status does not match the value
+                }
+            }
+            
+
+        }
+        return true; 
+    }
 }
