@@ -303,6 +303,7 @@ jellylegs:
         - type: CANCEL_EVENT
 aquatic:
   display: '{group-color}Aquatic'
+  id: 1004
   description: Breathe underwater.
   applies-to: Helmets
   type: EFFECT_STATIC
@@ -312,6 +313,34 @@ aquatic:
   levels:
     '1':
       effects:
-        - type: ADD_POTION
-          potion: 'water_breathing'
+        - type: EFFECT_STATIC
+          effect: 'water_breathing'
           amplifier: 0
+haste:
+  display: '{group-color}Haste'
+  id: 1005
+  description: Allows you to swing your tools faster.
+  applies-to: Tools
+  type: HELD
+  group: FABLED
+  applies:
+    - ALL_PICKAXE
+    - ALL_SHOVEL
+    - ALL_AXE
+  levels:
+    '1':
+      effects:
+        - type: EFFECT_STATIC
+          effect: 'haste'
+          amplifier: 0
+    '2':
+      effects:
+        - type: EFFECT_STATIC
+          effect: 'haste'
+          amplifier: 1
+    '3':
+      effects:
+        - type: EFFECT_STATIC
+          effect: 'haste'
+          amplifier: 2       
+
