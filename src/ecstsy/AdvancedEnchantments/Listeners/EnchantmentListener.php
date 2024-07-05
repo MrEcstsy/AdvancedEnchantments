@@ -5,23 +5,18 @@ namespace ecstsy\AdvancedEnchantments\Listeners;
 use ecstsy\AdvancedEnchantments\Enchantments\CEGroups;
 use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantment;
 use ecstsy\AdvancedEnchantments\Utils\Utils;
-use jojoe77777\FormAPI\SimpleForm;
-use pocketmine\block\Block;
 use pocketmine\block\Farmland;
-use pocketmine\entity\effect\EffectInstance;
-use pocketmine\entity\effect\StringToEffectParser;
-use pocketmine\entity\Entity;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
+use pocketmine\event\player\PlayerItemHeldEvent;
 use pocketmine\inventory\ArmorInventory;
 use pocketmine\inventory\transaction\action\SlotChangeAction;
 use pocketmine\item\Item;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as C;
-use pocketmine\world\Position;
 
 class EnchantmentListener implements Listener {
 
@@ -153,11 +148,13 @@ class EnchantmentListener implements Listener {
         }
     }
 
-    public function onInventoryTransaction(InventoryTransactionEvent $event) {
+    public function onInventoryTransaction(InventoryTransactionEvent $event): void {
         $transaction = $event->getTransaction();
         $player = $transaction->getSource();
-
+    
         if ($player instanceof Player) {
+            $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
+    
             foreach ($transaction->getActions() as $action) {
                 if ($action instanceof SlotChangeAction) {
                     $inventory = $action->getInventory();
@@ -165,13 +162,85 @@ class EnchantmentListener implements Listener {
                         $newArmorPiece = $action->getTargetItem();
                         $oldArmorPiece = $action->getSourceItem();
 
-                        
+                        // Adds Effects
+                        foreach ($newArmorPiece->getEnchantments() as $enchantmentInstance) {
+                            $enchantment = $enchantmentInstance->getType();
+                            if ($enchantment instanceof CustomEnchantment) {
+                                $enchantmentName = $enchantment->getName();
+
+                                if (isset($enchantmentConfig[$enchantmentName])) {
+                                    $enchantmentData = $enchantmentConfig[$enchantmentName];
+                                    $level = $enchantmentInstance->getLevel();
+
+                                    if ($enchantmentData['type'] === 'EFFECT_STATIC' && isset($enchantmentData['levels']["$level"]['effects'])) {
+                                        Utils::applyPlayerEffects($player, null, $enchantmentData['levels']["$level"]['effects']);
+                                    }
+                                }
+                            }
+                        }
+
+                        // Removes Effects
+                        foreach ($oldArmorPiece->getEnchantments() as $enchantmentInstance) {
+                            $enchantment = $enchantmentInstance->getType();
+                            if ($enchantment instanceof CustomEnchantment) {
+                                $enchantmentName = $enchantment->getName();
+
+                                if (isset($enchantmentConfig[$enchantmentName])) {
+                                    $enchantmentData = $enchantmentConfig[$enchantmentName];
+                                    $level = $enchantmentInstance->getLevel();
+
+                                    if ($enchantmentData['type'] === 'EFFECT_STATIC' && isset($enchantmentData['levels']["$level"]['effects'])) {
+                                        Utils::removePlayerEffects($player, $enchantmentData['levels']["$level"]['effects']);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
 
+    public function onPlayerHoldItem(PlayerItemHeldEvent $event): void {
+        $player = $event->getPlayer();
+        $item = $event->getItem();
+        $previousItem = $player->getInventory()->getItemInHand();
+
+        foreach ($item->getEnchantments() as $enchantmentInstance) {
+            $enchantment = $enchantmentInstance->getType();
+            if ($enchantment instanceof CustomEnchantment) {
+                $enchantmentName = $enchantment->getName();
+                $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
+
+                if ($enchantmentConfig !== null && isset($enchantmentConfig[$enchantmentName])) {
+                    $enchantmentData = $enchantmentConfig[$enchantmentName];
+                    $level = $enchantmentInstance->getLevel();
+
+                    if ($enchantmentData['type'] === 'HELD' && isset($enchantmentData['levels']["$level"]['effects'])) {
+                        Utils::applyPlayerEffects($player, null, $enchantmentData['levels']["$level"]['effects']);
+                    }
+                }
+            } 
+        }
+
+        foreach ($previousItem->getEnchantments() as $enchantmentInstance) {
+            $enchantment = $enchantmentInstance->getType();
+            if ($enchantment instanceof CustomEnchantment) {
+                $enchantmentName = $enchantment->getName();
+                $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
+    
+                if ($enchantmentConfig !== null && isset($enchantmentConfig[$enchantmentName])) {
+                    $enchantmentData = $enchantmentConfig[$enchantmentName];
+                    $level = $enchantmentInstance->getLevel();
+    
+                    if ($enchantmentData['type'] === 'HELD' && isset($enchantmentData['levels']["$level"]['effects'])) {
+                        Utils::removePlayerEffects($player, $enchantmentData['levels']["$level"]['effects']);
+                    }
+                }
+            }
+        }
+    }
+    
     private function applyEnchantmentEffects(Player $source, Player $target, Item $item, string $context): void {
         foreach ($item->getEnchantments() as $enchantmentInstance) {
             $enchantment = $enchantmentInstance->getType();
