@@ -680,7 +680,14 @@ class Utils {
                     break;
                 case "EFFECT_STATIC":
                     if (isset($effect['effect'])) {
-                        // for adding potion effects when worn / held
+                        $potion = StringToEffectParser::getInstance()->parse($effect['effect']);
+                        if ($potion === null) {
+                            throw new \RuntimeException("Invalid potion effect '" . $effect['effect'] . "'");
+                        }
+
+                        if ($source instanceof Player) {
+                            $source->getEffects()->add(new EffectInstance($potion, 20 * 999999, $effect['amplifier'] ?? 0));
+                        }
                     }    
                     break;
                 case "EXP":
@@ -971,5 +978,27 @@ class Utils {
 
         }
         return true; 
+    }
+
+    public static function removePlayerEffects(Player $player, array $effects): void {
+        foreach ($effects as $effect) {
+            if (!isset($effect['type'])) {
+                continue;
+            }
+
+            switch ($effect['type']) {
+                case 'EFFECT_STATIC':
+                    if (isset($effect['effect'])) {
+                        $potion = StringToEffectParser::getInstance()->parse($effect['effect']);
+                        if ($potion === null) {
+                            throw new \RuntimeException("Invalid potion effect '" . $effect['effect'] . "'");
+                        }
+
+                        $player->getEffects()->remove($potion);
+                    }
+                    break;
+
+            }
+        }
     }
 }
