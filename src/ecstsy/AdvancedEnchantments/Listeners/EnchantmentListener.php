@@ -4,10 +4,12 @@ namespace ecstsy\AdvancedEnchantments\Listeners;
 
 use ecstsy\AdvancedEnchantments\Enchantments\CEGroups;
 use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantment;
+use ecstsy\AdvancedEnchantments\Loader;
 use ecstsy\AdvancedEnchantments\Utils\Utils;
 use pocketmine\block\Farmland;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\entity\EntityDeathEvent;
 use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -117,6 +119,48 @@ class EnchantmentListener implements Listener {
             }
         }
     }
+    
+    public function onEntityDeath(EntityDeathEvent $event) {
+        $entity = $event->getEntity();
+        $cause = $entity->getLastDamageCause();
+    
+        if ($cause instanceof EntityDamageByEntityEvent) {
+            $attacker = $cause->getDamager();
+            if ($attacker instanceof Player) {
+                $hand = $attacker->getInventory()->getItemInHand();
+                foreach ($hand->getEnchantments() as $enchantmentInstance) {
+                    $enchantment = $enchantmentInstance->getType();
+                    if ($enchantment instanceof CustomEnchantment) {
+                        $enchantmentName = $enchantment->getName();
+                        $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
+    
+                        if ($enchantmentConfig !== null && isset($enchantmentConfig[$enchantmentName])) {
+                            $enchantmentData = $enchantmentConfig[$enchantmentName];
+    
+                            if ($enchantmentData['type'] === 'KILL_MOB') {
+                                $level = $enchantmentInstance->getLevel();
+                                if (isset($enchantmentData['levels']["$level"]['effects'])) {
+                                    Utils::applyPlayerEffects($attacker, $entity, $enchantmentData['levels']["$level"]['effects'], function ($formula, $level) use ($event) {
+                                        $exp = $event->getXpDropAmount();
+                                        $newFormula = str_replace(['{exp}', '{level}'], [$exp, $level], $formula);
+                                        $newExp = Utils::evaluateFormula($newFormula);
+                                        $event->setXpDropAmount($newExp);
+                                    });
+    
+                                    $color = CEGroups::translateGroupToColor($enchantment->getRarity());
+    
+                                    if (isset($enchantmentData['settings']['showActionBar']) && $enchantmentData['settings']['showActionBar']) {
+                                        $actionBarMessage = str_replace(["{enchant-color}", "{level}"], [$color . ucfirst($enchantmentName), Utils::getRomanNumeral($level)], Loader::getInstance()->getLang()->getNested("effects.used"));
+                                        $attacker->sendActionBarMessage(C::colorize($actionBarMessage));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }        
 
     public function onEntityDamage(EntityDamageEvent $event) {
         $entity = $event->getEntity();
