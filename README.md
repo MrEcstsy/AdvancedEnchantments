@@ -26,3 +26,4 @@
 - [ ] implement item name tag & lore crystal
 - [ ] UPDATE ALL configurations to fit standard pmmp configuratons (e.g replacing %placeholder% to {placeholder}
 - [ ] finish commands
+- [ ] more conditions
