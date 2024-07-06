@@ -1016,79 +1016,15 @@ class Utils {
         }
     }
 
-    public static function evaluateFormula(string $formula): float {    
-        if (!preg_match('/^[0-9+\-*/(). ]+$/', $formula)) {
-            throw new \InvalidArgumentException('Invalid formula: Only numbers, operators, parentheses, and spaces are allowed.');
+    public static function evaluateFormula(string $formula, int $level): float {
+        $formula = str_replace('{level}', $level, $formula);
+
+        try {
+            $result = eval("return $formula;");
+            return (float) $result;
+        } catch (\Throwable $e) {
+            throw new \RuntimeException('Failed to evaluate formula: ' . $e->getMessage());
         }
-    
-        $result = 0.0;
-        $formula = preg_replace_callback('/\b(\d+(\.\d+)?)\b/', function ($matches) {
-            return (float)$matches[0];
-        }, $formula);
-    
-        $result = Utils::safeEval($formula);
-        
-        return $result;
-    }
-    
-    public static function safeEval(string $formula): float {
-        $stack = new \SplStack();
-        $postfix = Utils::infixToPostfix($formula);
-        foreach ($postfix as $token) {
-            if (is_numeric($token)) {
-                $stack->push((float)$token);
-            } else {
-                $b = $stack->pop();
-                $a = $stack->pop();
-                switch ($token) {
-                    case '+':
-                        $stack->push($a + $b);
-                        break;
-                    case '-':
-                        $stack->push($a - $b);
-                        break;
-                    case '*':
-                        $stack->push($a * $b);
-                        break;
-                    case '/':
-                        if ($b == 0) {
-                            throw new \DivisionByZeroError('Division by zero');
-                        }
-                        $stack->push($a / $b);
-                        break;
-                }
-            }
-        }
-        return $stack->pop();
-    }
-    
-    public static function infixToPostfix(string $infix): array {
-        $precedence = ['+' => 1, '-' => 1, '*' => 2, '/' => 2];
-        $output = [];
-        $operators = new \SplStack();
-        $tokens = preg_split('/\s*([+\-*/()])\s*/', $infix, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
-    
-        foreach ($tokens as $token) {
-            if (is_numeric($token)) {
-                $output[] = $token;
-            } elseif ($token === '(') {
-                $operators->push($token);
-            } elseif ($token === ')') {
-                while (!$operators->isEmpty() && $operators->top() !== '(') {
-                    $output[] = $operators->pop();
-                }
-                $operators->pop(); 
-            } else {
-                while (!$operators->isEmpty() && $precedence[$operators->top()] >= $precedence[$token]) {
-                    $output[] = $operators->pop();
-                }
-                $operators->push($token);
-            }
-        }
-        while (!$operators->isEmpty()) {
-            $output[] = $operators->pop();
-        }
-        return $output;
     }
         
 }
