@@ -140,11 +140,17 @@ class EnchantmentListener implements Listener {
                             if ($enchantmentData['type'] === 'KILL_MOB') {
                                 $level = $enchantmentInstance->getLevel();
                                 if (isset($enchantmentData['levels']["$level"]['effects'])) {
-                                    Utils::applyPlayerEffects($attacker, $entity, $enchantmentData['levels']["$level"]['effects'], function ($formula, $level) use ($event) {
+                                    $effects = $enchantmentData['levels']["$level"]['effects'];
+
+                                    Utils::applyPlayerEffects($attacker, $entity, $effects, function ($formula, $level) use ($event) {
                                         $exp = $event->getXpDropAmount();
                                         $newFormula = str_replace(['{exp}', '{level}'], [$exp, $level], $formula);
-                                        $newExp = Utils::evaluateFormula($newFormula);
-                                        $event->setXpDropAmount($newExp);
+                                        try {
+                                            $newExp = Utils::evaluateFormula($newFormula, $level);
+                                            $event->setXpDropAmount($newExp);
+                                        } catch (\Throwable $e) {
+                                            Loader::getInstance()->getLogger()->error("Failed to evaluate formula: " . $e->getMessage());
+                                        }
                                     });
     
                                     $color = CEGroups::translateGroupToColor($enchantment->getRarity());
