@@ -7,16 +7,23 @@ use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantment;
 use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantmentIds;
 use ecstsy\AdvancedEnchantments\Loader;
 use pocketmine\block\Block;
+use pocketmine\block\Farmland;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\console\ConsoleCommandSender;
 use pocketmine\data\bedrock\EnchantmentIdMap;
+use pocketmine\entity\effect\EffectInstance;
+use pocketmine\entity\effect\StringToEffectParser;
 use pocketmine\entity\Entity;
+use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\inventory\Inventory;
+use pocketmine\item\Axe;
+use pocketmine\item\Bow;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\enchantment\StringToEnchantmentParser;
 use pocketmine\item\Item;
 use pocketmine\item\StringToItemParser;
+use pocketmine\item\Sword;
 use pocketmine\item\VanillaItems;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\nbt\tag\CompoundTag;
@@ -24,6 +31,7 @@ use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\network\mcpe\protocol\SpawnParticleEffectPacket;
 use pocketmine\player\Player;
+use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat;
@@ -596,11 +604,11 @@ class Utils {
         return $item;
     }
 
-        /**
+    /**
      * Applies the enchantment effects
      *
-     * @param Player $player
-     * @param Block $block
+     * @param Entity $source
+     * @param ?Entity $target
      * @param array $effects
      */
     public static function applyPlayerEffects(Player $source, ?Player $target, array $effects): void {
@@ -717,7 +725,13 @@ class Utils {
                     // cancels an event, e.g canceling fall damage, or "absorbing damage"
                     break;    
                 case 'BURN':
-                    // set attackers on fire
+                    if (isset($effect['time']) && isset($effect['target'])) {
+                        if ($effect['target'] === 'victim') {
+                            $target->setOnFire($effect['time']);
+                        } elseif ($effect['target'] === 'attacker') {
+                            $source->setOnFire($effect['time']);
+                        }
+                    }
                     break;
                 case 'ADD_FOOD':
                     break;    
@@ -754,7 +768,16 @@ class Utils {
                     // Add health to player
                     break;
                 case 'CURE':
-                    // Remove a bad potion effect
+                    if (isset($effect['type'])) {
+                        $potion = StringToEffectParser::getInstance()->parse($effect['type']);
+                        if ($potion === null) {
+                            throw new \RuntimeException("Invalid potion effect '" . $effect['type'] . "'");
+                        }
+
+                        if ($potion->isBad() && $source instanceof Player) {
+                            $source->getEffects()->remove($potion);
+                        }
+                    }
                     break;
                 case 'NEGATE_DAMAGE':
                     // Negate damage
@@ -782,6 +805,27 @@ class Utils {
                     // Not sure how this would work, but would kill x amount of entities in a mob stack
                     break;
                 case 'STEAL_HEALTH':
+                    if (isset($effect['amount']) && isset($effect['target'])) {
+                        $amount = self::parseLevel($effect['amount']); 
+                    
+                        if ($effect['target'] === 'attacker') {
+                            $currentHealth = $source->getHealth();
+                            $newHealth = max(0, min($currentHealth + $amount, $source->getMaxHealth()));
+                            $source->setHealth($newHealth);
+                    
+                            $currentVictimHealth = $target->getHealth();
+                            $newVictimHealth = max(0, $currentVictimHealth - $amount);
+                            $target->setHealth($newVictimHealth);
+                        } elseif ($effect['target'] === 'victim') {
+                            $currentHealth = $target->getHealth();
+                            $newHealth = max(0, min($currentHealth + $amount, $target->getMaxHealth()));
+                            $target->setHealth($newHealth);
+                    
+                            $currentAttackerHealth = $source->getHealth();
+                            $newAttackerHealth = max(0, $currentAttackerHealth - $amount);
+                            $source->setHealth($newAttackerHealth);
+                        }
+                    }
                     break;
                 case 'HALF_DAMAGE':
                     // Intended to make attacker do half the damage, can be paired with 'ADD_DURABILITY_CURRENT_ITEM' to make an enchant that does 'half damage' in exchange for repairing the item
@@ -987,11 +1031,40 @@ class Utils {
                 } elseif ($conditionMode === 'stop' && $isSneaking !== $value) {
                     return false; // Stop if the target's sneaking status does not match the value
                 }
+            } elseif ($type === 'IS_HOLDING') {
+                $target = $condition['target'] ?? 'self';
+                $value = $condition['value'] ?? null;
+                
+                if ($target === 'self') {
+                    $handItem = $player->getInventory()->getItemInHand();
+                } else {
+                    $handItem = $victim instanceof Player ? $victim->getInventory()->getItemInHand() : null;
+                }
+
+                if ($handItem !== null && (strtolower($value) === 'sword' || strtolower($value) === 'SWORD')) {
+                    if ($handItem instanceof Sword) {
+                        return true; // Allow if the player is holding a Sword
+                    }
+                }
+                
+                if ($handItem !== null && (strtolower($value) === 'axe' || strtolower($value) === 'AXE')) {
+                    if ($handItem instanceof Axe) {
+                        return true; // Allow if the player is holding an Axe
+                    }
+                }
+
+                if ($handItem !== null && (strtolower($value) === 'bow' || strtolower($value) === 'BOW')) {
+                    if ($handItem instanceof Bow) {
+                        return true; // Allow if the player is holding a Pickaxe
+                    }
+                }
+
+                return false; // Stop if the player is not holding a Sword
             }
             
-
         }
-        return true; 
+    
+        return true;
     }
 
     public static function removePlayerEffects(Player $player, array $effects): void {
