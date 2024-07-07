@@ -577,22 +577,26 @@ class Utils {
             $bookConfig['name']
         );
 
-        $description = "";
+        $descriptionLines = [];
         $appliesTo = "";
         if ($enchantment instanceof CustomEnchantment) {
-            $description = $enchantment->getDescription();
             $enchantConfig = self::getConfiguration("enchantments.yml");
             $enchantData = $enchantConfig->get($enchantment->getName(), []);
+            $descriptionLines = $enchantData['description'] ?? [];
             $appliesTo = $enchantData['applies-to'] ?? "Unknown";
         }
-
-        $lore = array_map(function ($line) use ($color, $enchantment, $successChance, $destroyChance, $level, $groupName, $description, $appliesTo) {
-            return TextFormat::colorize(str_replace(
-                ['{group-color}', '{enchant-no-color}', '{description}', '{level}', '{success}', '{destroy}', '{applies-to}', '{max-level}'],
-                [$color, ucfirst($enchantment->getName()), $description, self::getRomanNumeral($level), $successChance, $destroyChance, $appliesTo, $enchantment->getMaxLevel()],
+    
+        $descriptionText = implode("\n", $descriptionLines);  
+    
+        $loreLines = [];
+        foreach ($bookConfig['lore'] as $line) {
+            $line = str_replace(
+                ['{group-color}', '{enchant-no-color}', '{level}', '{success}', '{destroy}', '{applies-to}', '{max-level}', '{description}'],
+                [$color, ucfirst($enchantment->getName()), self::getRomanNumeral($level), $successChance, $destroyChance, $appliesTo, $enchantment->getMaxLevel(), $descriptionText],
                 $line
-            ));
-        }, $bookConfig['lore']);
+            );
+            $loreLines[] = TextFormat::colorize($line);
+        }
 
         $item->setCustomName(TextFormat::colorize($name));
         $item->setLore($lore);
