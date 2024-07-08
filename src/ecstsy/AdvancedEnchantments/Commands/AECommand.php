@@ -4,7 +4,11 @@ namespace ecstsy\AdvancedEnchantments\Commands;
 
 use CortexPE\Commando\args\IntegerArgument;
 use CortexPE\Commando\BaseCommand;
+use ecstsy\AdvancedEnchantments\Commands\SubCommands\AboutSubcommnand;
+use ecstsy\AdvancedEnchantments\Commands\SubCommands\EnchantSubCommand;
 use ecstsy\AdvancedEnchantments\Commands\SubCommands\GiveItemSubcommand;
+use ecstsy\AdvancedEnchantments\Commands\SubCommands\ListSubCommand;
+use ecstsy\AdvancedEnchantments\Commands\SubCommands\UnenchantSubCommand;
 use ecstsy\AdvancedEnchantments\Loader;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
@@ -19,6 +23,10 @@ class AECommand extends BaseCommand {
         $this->registerArgument(0, new IntegerArgument('page', true));
 
         $this->registerSubCommand(new GiveItemSubcommand(Loader::getInstance(), "giveitem", "Give Plugin Items"));
+        $this->registerSubCommand(new AboutSubcommnand(Loader::getInstance(), "about", "Information about plugin"));
+        $this->registerSubCommand(new EnchantSubCommand(Loader::getInstance(), "enchant", "Enchant held item"));
+        $this->registerSubCommand(new UnenchantSubCommand(Loader::getInstance(), "unenchant", "Unenchant held item"));
+        $this->registerSubCommand(new ListSubCommand(Loader::getInstance(), "list", "List all enchantments"));
     }
 
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void {
