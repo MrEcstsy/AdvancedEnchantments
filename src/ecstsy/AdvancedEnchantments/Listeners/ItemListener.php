@@ -11,6 +11,7 @@ use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
+use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\inventory\transaction\action\SlotChangeAction;
 use pocketmine\inventory\transaction\InventoryTransaction;
 use pocketmine\item\enchantment\EnchantmentInstance;
@@ -62,18 +63,110 @@ class ItemListener implements Listener {
     }
 
     private function initializeValidItems(): void {
-        $this->validItems = [
-            VanillaItems::DIAMOND_HELMET()->getTypeId(),
-            VanillaItems::DIAMOND_CHESTPLATE()->getTypeId(),
-            VanillaItems::DIAMOND_LEGGINGS()->getTypeId(),
-            VanillaItems::DIAMOND_BOOTS()->getTypeId(),
-            VanillaItems::DIAMOND_SWORD()->getTypeId(),
-            VanillaItems::DIAMOND_SHOVEL()->getTypeId(),
-            VanillaItems::DIAMOND_PICKAXE()->getTypeId(),
-            VanillaItems::DIAMOND_AXE()->getTypeId(),
-            VanillaItems::DIAMOND_HOE()->getTypeId(),
-        ];
+        $config = Utils::getConfiguration("config.yml")->getAll();
+        $validItems = [];
+    
+        $applicableTypes = $config["items"]["settings"]["can-apply-to"];
+    
+        foreach ($applicableTypes as $type) {
+            switch ($type) {
+                case 'ALL_SWORD':
+                    $validItems = array_merge($validItems, [
+                        ItemTypeIds::DIAMOND_SWORD,
+                        ItemTypeIds::NETHERITE_SWORD,
+                        ItemTypeIds::GOLDEN_SWORD,
+                        ItemTypeIds::IRON_SWORD,
+                        ItemTypeIds::STONE_SWORD,
+                        ItemTypeIds::WOODEN_SWORD
+                    ]);
+                    break;
+                case 'ALL_ARMOR':
+                    $validItems = array_merge($validItems, [
+                        ItemTypeIds::DIAMOND_HELMET,
+                        ItemTypeIds::DIAMOND_CHESTPLATE,
+                        ItemTypeIds::DIAMOND_LEGGINGS,
+                        ItemTypeIds::DIAMOND_BOOTS,
+                        ItemTypeIds::NETHERITE_HELMET,
+                        ItemTypeIds::NETHERITE_CHESTPLATE,
+                        ItemTypeIds::NETHERITE_LEGGINGS,
+                        ItemTypeIds::NETHERITE_BOOTS,
+                        ItemTypeIds::GOLDEN_HELMET,
+                        ItemTypeIds::GOLDEN_CHESTPLATE,
+                        ItemTypeIds::GOLDEN_LEGGINGS,
+                        ItemTypeIds::GOLDEN_BOOTS,
+                        ItemTypeIds::IRON_HELMET,
+                        ItemTypeIds::IRON_CHESTPLATE,
+                        ItemTypeIds::IRON_LEGGINGS,
+                        ItemTypeIds::IRON_BOOTS,
+                        ItemTypeIds::CHAINMAIL_HELMET,
+                        ItemTypeIds::CHAINMAIL_CHESTPLATE,
+                        ItemTypeIds::CHAINMAIL_LEGGINGS,
+                        ItemTypeIds::CHAINMAIL_BOOTS,
+                        ItemTypeIds::LEATHER_CAP,
+                        ItemTypeIds::LEATHER_TUNIC,
+                        ItemTypeIds::LEATHER_PANTS,
+                        ItemTypeIds::LEATHER_BOOTS
+                    ]);
+                    break;
+                case 'ALL_PICKAXE':
+                    $validItems = array_merge($validItems, [
+                        ItemTypeIds::DIAMOND_PICKAXE,
+                        ItemTypeIds::NETHERITE_PICKAXE,
+                        ItemTypeIds::GOLDEN_PICKAXE,
+                        ItemTypeIds::IRON_PICKAXE,
+                        ItemTypeIds::STONE_PICKAXE,
+                        ItemTypeIds::WOODEN_PICKAXE
+                    ]);
+                    break;
+                case 'ALL_AXE':
+                    $validItems = array_merge($validItems, [
+                        ItemTypeIds::DIAMOND_AXE,
+                        ItemTypeIds::NETHERITE_AXE,
+                        ItemTypeIds::GOLDEN_AXE,
+                        ItemTypeIds::IRON_AXE,
+                        ItemTypeIds::STONE_AXE,
+                        ItemTypeIds::WOODEN_AXE
+                    ]);
+                    break;
+                case 'ALL_SPADE':
+                    $validItems = array_merge($validItems, [
+                        ItemTypeIds::DIAMOND_SHOVEL,
+                        ItemTypeIds::NETHERITE_SHOVEL,
+                        ItemTypeIds::GOLDEN_SHOVEL,
+                        ItemTypeIds::IRON_SHOVEL,
+                        ItemTypeIds::STONE_SHOVEL,
+                        ItemTypeIds::WOODEN_SHOVEL
 
+                    ]);
+                    break;
+                case 'ALL_HOE':
+                    $validItems = array_merge($validItems, [
+                        ItemTypeIds::DIAMOND_HOE,
+                        ItemTypeIds::NETHERITE_HOE,
+                        ItemTypeIds::GOLDEN_HOE,
+                        ItemTypeIds::IRON_HOE,
+                        ItemTypeIds::STONE_HOE,
+                        ItemTypeIds::WOODEN_HOE
+                    ]);
+                    break;
+                case 'BOOK':
+                    $validItems[] = VanillaItems::ENCHANTED_BOOK()->getTypeId();
+                    break;
+                case 'BOW':
+                    $validItems[] = ItemTypeIds::BOW;
+                    break;
+                case 'ELYTRA':
+                    //$validItems[] = ItemTypeIds::ELYTRA;
+                    break;
+                case 'TRIDENT':
+                    $validItems[] = 20458; // is this safe?
+                    break;
+                default:
+                    break;
+            }
+        }
+    
+        $this->validItems = $validItems;
     }
 
     public function onDropScroll(InventoryTransactionEvent $event): void {
@@ -121,14 +214,18 @@ class ItemListener implements Listener {
 
     private function applyWhiteScroll(SlotChangeAction $action, SlotChangeAction $otherAction, Item $itemClicked): void {
         $cfg = Utils::getConfiguration("config.yml");
-        $itemClicked->getNamedTag()->setString("protected", "true");
-        $lore = $itemClicked->getLore();
-        $lore[] = C::colorize($cfg->getNested("items.white-scroll.lore-display"));
-        $itemClicked->setLore($lore);
+        
+        if ($itemClicked->getNamedTag()->getTag("protected") === null) {   
+            $itemClicked->getNamedTag()->setString("protected", "true");
+            $lore = $itemClicked->getLore();
+            $lore[] = C::colorize($cfg->getNested("items.white-scroll.lore-display"));
+            $itemClicked->setLore($lore);
 
-        $action->getInventory()->setItem($action->getSlot(), $itemClicked);
-        $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
+            $action->getInventory()->setItem($action->getSlot(), $itemClicked);
+            $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
+        }
     }
+    
     private function isScrollItem(Item $item): bool {
         $typeId = $item->getTypeId();
         $isScroll = in_array($typeId, $this->scrollItems, true);
@@ -215,95 +312,111 @@ class ItemListener implements Listener {
     {
         $transaction = $event->getTransaction();
         $actions = array_values($transaction->getActions());
+        $config = Utils::getConfiguration("config.yml");
+        $enchantmentsConfig = Utils::getConfiguration("enchantments.yml");
+        $lang = Loader::getInstance()->getLang();
         if (count($actions) === 2) {
             foreach ($actions as $i => $action) {
-                $items = [
-                    ItemTypeIds::DIAMOND_HELMET,
-                    ItemTypeIds::DIAMOND_CHESTPLATE,
-                    ItemTypeIds::DIAMOND_LEGGINGS,
-                    ItemTypeIds::DIAMOND_BOOTS,
-                    ItemTypeIds::DIAMOND_SWORD,
-                    ItemTypeIds::DIAMOND_SHOVEL,
-                    ItemTypeIds::DIAMOND_PICKAXE,
-                    ItemTypeIds::DIAMOND_AXE,
-                    ItemTypeIds::DIAMOND_HOE
-                ];
                 if ($action instanceof SlotChangeAction
                     && ($otherAction = $actions[($i + 1) % 2]) instanceof SlotChangeAction
                     && ($itemClickedWith = $action->getTargetItem())->getTypeId() === VanillaItems::ENCHANTED_BOOK()->getTypeId()
                     && ($itemClicked = $action->getSourceItem())->getTypeId() !== VanillaItems::AIR()->getTypeId()
-                    && in_array($itemClicked->getTypeId(), $items)
                     && $itemClickedWith->getCount() === 1
                     && $itemClickedWith->getNamedTag()->getTag("enchant_book")
                 ) {
-                    $scrollType = $itemClickedWith->getNamedTag()->getString("enchant_book");
                     $event->cancel();
+                    $scrollType = $itemClickedWith->getNamedTag()->getString("enchant_book");
                     $enchantment = StringToEnchantmentParser::getInstance()->parse($scrollType);
-
-                        if ($enchantment instanceof CustomEnchantment) {
-                            $customEnchantmentsCount = 0;
-                            foreach ($itemClicked->getEnchantments() as $enchantmentInstance) {
-                                if ($enchantmentInstance->getType() instanceof CustomEnchantment) {
-                                    $customEnchantmentsCount++;
+    
+                    if ($enchantment instanceof CustomEnchantment) {
+                        $customEnchantmentsCount = 0;
+                        foreach ($itemClicked->getEnchantments() as $enchantmentInstance) {
+                            if ($enchantmentInstance->getType() instanceof CustomEnchantment) {
+                                $customEnchantmentsCount++;
+                            }
+                        }
+    
+                        if ($customEnchantmentsCount >= 7) {
+                            $transaction->getSource()->sendMessage(C::colorize("&r&l&c(!) &r&cThis item already has 7 custom enchantments!"));
+                            return;
+                        }
+    
+                        if ($scrollType === strtolower($enchantment->getName())) {
+                            $applicable = CustomEnchantment::getApplicable($enchantment);
+                            if ($applicable && CustomEnchantment::matchesApplicable($itemClicked, $applicable)) {
+                                $requiredEnchants = $enchantmentsConfig->getNested(strtolower($enchantment->getName()) . ".required-enchants", []);
+                                $notApplicableWith = $enchantmentsConfig->getNested(strtolower($enchantment->getName()) . ".not-applyable-with", []);
+    
+                                // Check for required enchantments
+                                foreach ($requiredEnchants as $requiredEnchant) {
+                                    if (!$itemClicked->hasEnchantment(StringToEnchantmentParser::getInstance()->parse($requiredEnchant))) {
+                                        $transaction->getSource()->sendMessage(C::colorize(str_replace(["{enchant1}", "{enchant2}"], [ucfirst($enchantment->getName()), ucfirst($requiredEnchant)], $lang->getNested("applying.requires-enchant"))));
+                                        return;
+                                    }
                                 }
-                            }
-            
-                            if ($customEnchantmentsCount >= 7) {
-                                $transaction->getSource()->sendMessage(C::colorize("&r&l&c(!) &r&cThis item already has 7 custom enchantments!"));
-                                $event->cancel();
-                                return;
-                            }
-
-                            if ($scrollType === strtolower($enchantment->getName())) {
-                                $applicable = CustomEnchantment::getApplicable($enchantment);
-                                if ($applicable) {
-                                    if (CustomEnchantment::matchesApplicable($itemClicked, $applicable)) {
-                                        if (($successRate = $itemClickedWith->getNamedTag()->getInt("successrate")) !== 0 &&
-                                            ($destroyRate = $itemClickedWith->getNamedTag()->getInt("destroyrate")) !== 0 &&
-                                            ($level = $itemClickedWith->getNamedTag()->getInt("level")) !== 0) {
-                                            $existingEnchantment = $itemClicked->getEnchantment($enchantment);
-                                            if (!$existingEnchantment || $existingEnchantment->getLevel() < $level) {
-                                                if (mt_rand(1, 100) <= $successRate) {
-                                                    $itemClicked->addEnchantment(new EnchantmentInstance($enchantment, $level));
-                                                    $action->getInventory()->setItem($action->getSlot(), $itemClicked);
-
-                                                    $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
-                                                    $transaction->getSource()->getWorld()->addSound($transaction->getSource()->getLocation(), new XpLevelUpSound(100));
-                                                    return;
-                                                    
-                                                } else {
-                                                    $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
-                                            
-                                                    if (mt_rand(1, 100) <= $destroyRate) {
-                                                        if (Utils::hasTag($itemClicked, "protected", "true")) {
-                                                            $transaction->getSource()->sendToastNotification(C::colorize("&r&l&e(!) &r&eYour Item was protected by the Whitescroll"), C::colorize("&r&7The Whitescroll protected your item from being destroyed by the enchantment book"));
-                                                        
-                                                            $itemClicked->getNamedTag()->removeTag("protected");
-                                                            $lore = $itemClicked->getLore();
-                                                            if (isset($lore[array_search("§r§l§fPROTECTED", $lore)])) {
-                                                            unset($lore[array_search("§r§l§fPROTECTED", $lore)]);
-                                                        }
-                                                        $itemClicked->setLore($lore);
-                                                        $transaction->getSource()->getInventory()->setItem($action->getSlot(), $itemClicked);
-                                                    } else {
-
-                                                        $action->getInventory()->setItem($action->getSlot(), VanillaItems::AIR());
-                                                        return;
-                                                    }
-                                                }
-                                            }
+    
+                                // Check for non-applicable enchantments
+                                foreach ($notApplicableWith as $notApplicableEnchant) {
+                                    if ($itemClicked->hasEnchantment(StringToEnchantmentParser::getInstance()->parse($notApplicableEnchant))) {
+                                        $transaction->getSource()->sendMessage(C::colorize(str_replace(["{enchant1}", "{enchant2}"], [ucfirst($enchantment->getName()), ucfirst($notApplicableEnchant)], $lang->getNested("applying.not-applicable-with"))));
+                                        return;
+                                    }
+                                }
+    
+                                $successRate = $itemClickedWith->getNamedTag()->getInt("successrate");
+                                $destroyRate = $itemClickedWith->getNamedTag()->getInt("destroyrate");
+                                $level = $itemClickedWith->getNamedTag()->getInt("level");
+    
+                                if ($successRate !== 0 && $destroyRate !== 0 && $level !== 0) {
+                                    $existingEnchantment = $itemClicked->getEnchantment($enchantment);
+                                    if (!$existingEnchantment || $existingEnchantment->getLevel() < $level) {
+                                        if (mt_rand(1, 100) <= $successRate) {
+                                            $itemClicked->addEnchantment(new EnchantmentInstance($enchantment, $level));
+                                            $action->getInventory()->setItem($action->getSlot(), $itemClicked);
+                                            $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
+                                            $transaction->getSource()->getWorld()->addSound($transaction->getSource()->getLocation(), new XpLevelUpSound(100));
+                                            $transaction->getSource()->sendMessage(C::colorize($lang->getNested("applying.applied")));
+                                            return;
                                         } else {
-                                            $transaction->getSource()->sendToastNotification(C::colorize("&r&l&c(!) &r&cThis item already has " . ucfirst($enchantment->getName()) . "!"), C::colorize("&r&7The enchantment already exists on the item at the same level or higher."));
+                                            $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
+                                            if (mt_rand(1, 100) <= $destroyRate) {
+                                                if (Utils::hasTag($itemClicked, "protected", "true")) {
+                                                    $transaction->getSource()->sendMessage(C::colorize($lang->getNested("items.white-scroll.item-saved")));
+    
+                                                    $itemClicked->getNamedTag()->removeTag("protected");
+                                                    $lore = $itemClicked->getLore();
+                                                    $loreLineIndex = array_search(C::colorize($config->getNested("items.white-scroll.lore-display")), $lore);
+                                                    if ($loreLineIndex !== false) {
+                                                        unset($lore[$loreLineIndex]);
+                                                    }
+                                                    $itemClicked->setLore(array_values($lore));
+                                                    $transaction->getSource()->getInventory()->setItem($action->getSlot(), $itemClicked);
+                                                } else {
+                                                    $action->getInventory()->setItem($action->getSlot(), VanillaItems::AIR());
+                                                    $transaction->getSource()->sendMessage(C::colorize($lang->getNested("applying.destroyed")));
+                                                    return;
+                                                }
+                                            } else {
+                                                $transaction->getSource()->sendMessage(C::colorize($lang->getNested("applying.failed")));
+                                            }
                                         }
-                                    }  
+                                    } else {
+                                        if ($existingEnchantment && $existingEnchantment->getLevel() >= $level) {
+                                            return;
+                                        } else {
+                                            $transaction->getSource()->sendMessage(C::colorize($lang->getNested("applying.max-level")));
+                                        }
+                                    }
                                 }
+                            } else {
+                                $transaction->getSource()->sendMessage(C::colorize($lang->getNested("applying.wrong-material")));
                             }
                         }
                     }
-                }  
-            }   
+                }
+            }
         }
-    }
+    }    
 
     /**             ITEM RENAME          */
     public function onItemRename(PlayerChatEvent $event): void
