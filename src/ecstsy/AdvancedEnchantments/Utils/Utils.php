@@ -1104,30 +1104,20 @@ class Utils {
                         return true; // Allow if the player is not holding any item
                     }
                 }            
-            } elseif ($type === 'IS_MOB_TYPE') {
+            } elseif ($type === 'IS_MOB_TYPE' && $victim !== null) {
                 $mobs = $condition['mobs'] ?? [];
-                $conditionMode = $condition['condition_mode'] ?? 'allow';
+                $mobType = $victim->getNetworkTypeId();    
+                $networkMobTypes = array_map([Utils::class, 'stringToNetworkId'], $mobs);
     
-                $victimNetworkId = $victim->getNetworkTypeId();
-                $isMatching = false;
-                foreach ($mobs as $mobType) {
-                    $mobNetworkId = self::stringToNetworkId($mobType);
-                    if ($mobNetworkId !== null && $victimNetworkId === $mobNetworkId) {
-                        $isMatching = true;
-                        break;
-                    }
-                }
-    
-                if ($conditionMode === 'allow' && $isMatching) {
-                    return true; // Allow if victim matches any of the specified mob types
-                } elseif ($conditionMode === 'stop' && !$isMatching) {
-                    return false; // Stop if victim does not match any of the specified mob types
+                if ($conditionMode === 'allow' && in_array($mobType, $networkMobTypes)) {
+                    return true;
+                } elseif ($conditionMode === 'stop' && !in_array($mobType, $networkMobTypes)) {
+                    return false;
                 }
             }
             
         }
-    
-        return true;
+        return false; // Default to false if no conditions are met
     }
 
     public static function stringToNetworkId(string $networkId): ?int {
