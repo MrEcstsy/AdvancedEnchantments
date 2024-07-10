@@ -102,23 +102,141 @@ class EnchantmentListener implements Listener {
     public function onEntityDamageEntity(EntityDamageByEntityEvent $event) {
         $attacker = $event->getDamager();
         $victim = $event->getEntity();
-
-        if ($attacker instanceof Player && $victim instanceof Player) {
-            // Attacker armor inv
+    
+        if ($attacker instanceof Player) {
+            $targetType = ($victim instanceof Player) ? 'PLAYERS' : 'MOBS';
+            $context = ($victim instanceof Player) ? 'ATTACK' : 'ATTACK_MOBS';
+    
+            // Apply damage modifications and effects for attacker
             foreach ($attacker->getArmorInventory()->getContents() as $item) {
-                $this->applyEnchantmentEffects($attacker, $victim, $item, 'ATTACK');
+                foreach ($item->getEnchantments() as $enchantmentInstance) {
+                    $enchantment = $enchantmentInstance->getType();
+                    if ($enchantment instanceof CustomEnchantment) {
+                        $enchantmentName = $enchantment->getName();
+                        $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
+                        
+                        if ($enchantmentConfig !== null && isset($enchantmentConfig[$enchantmentName])) {
+                            $enchantmentData = $enchantmentConfig[$enchantmentName];
+                            $level = $enchantmentInstance->getLevel();
+    
+                            if ($enchantmentData['type'] === $context && isset($enchantmentData['levels']["$level"]['effects'])) {
+                                $chance = $enchantmentData['levels']["$level"]['chance'] ?? 100;
+    
+                                if (mt_rand(1, 100) <= $chance) {
+                                    $effects = $enchantmentData['levels']["$level"]['effects'];
+                                    if (isset($effects['INCREASE_DAMAGE'])) {
+                                        $event->setBaseDamage($event->getBaseDamage() + $effects['INCREASE_DAMAGE']);
+                                    }
+                                    if (isset($effects['DECREASE_DAMAGE'])) {
+                                        $event->setBaseDamage($event->getBaseDamage() - $effects['DECREASE_DAMAGE']);
+                                    }
+                                    Utils::applyPlayerEffects($attacker, $victim, $effects);
+                                }
+                            }
+                        }
+                    }
+                }
             }
-
+    
             // Attacker item in hand
             $itemInHand = $attacker->getInventory()->getItemInHand();
-            $this->applyEnchantmentEffects($attacker, $victim, $itemInHand, 'ATTACK');
-
-            // Victim armor inventory
-            foreach ($victim->getArmorInventory()->getContents() as $item) {
-                $this->applyEnchantmentEffects($victim, $attacker, $item, 'DEFENSE');
+            foreach ($itemInHand->getEnchantments() as $enchantmentInstance) {
+                $enchantment = $enchantmentInstance->getType();
+                if ($enchantment instanceof CustomEnchantment) {
+                    $enchantmentName = $enchantment->getName();
+                    $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
+    
+                    if ($enchantmentConfig !== null && isset($enchantmentConfig[$enchantmentName])) {
+                        $enchantmentData = $enchantmentConfig[$enchantmentName];
+                        $level = $enchantmentInstance->getLevel();
+    
+                        if ($enchantmentData['type'] === $context && isset($enchantmentData['levels']["$level"]['effects'])) {
+                            $chance = $enchantmentData['levels']["$level"]['chance'] ?? 100;
+    
+                            if (mt_rand(1, 100) <= $chance) {
+                                $effects = $enchantmentData['levels']["$level"]['effects'];
+                                if (isset($effects['INCREASE_DAMAGE'])) {
+                                    $event->setBaseDamage($event->getBaseDamage() + $effects['INCREASE_DAMAGE']);
+                                }
+                                if (isset($effects['DECREASE_DAMAGE'])) {
+                                    $event->setBaseDamage($event->getBaseDamage() - $effects['DECREASE_DAMAGE']);
+                                }
+                                Utils::applyPlayerEffects($attacker, $victim, $effects);
+                            }
+                        }
+                    }
+                }
+            }
+    
+            // Apply effects for victim if victim is a player
+            if ($victim instanceof Player) {
+                $attackerType = ($attacker instanceof Player) ? 'PLAYERS' : 'MOBS';
+                $defenseContext = 'DEFENSE_' . $attackerType;
+            
+                foreach ($victim->getArmorInventory()->getContents() as $item) {
+                    foreach ($item->getEnchantments() as $enchantmentInstance) {
+                        $enchantment = $enchantmentInstance->getType();
+                        if ($enchantment instanceof CustomEnchantment) {
+                            $enchantmentName = $enchantment->getName();
+                            $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
+                            
+                            if ($enchantmentConfig !== null && isset($enchantmentConfig[$enchantmentName])) {
+                                $enchantmentData = $enchantmentConfig[$enchantmentName];
+                                $level = $enchantmentInstance->getLevel();
+                                
+                                if ($enchantmentData['type'] === "DEFENSE" && isset($enchantmentData['levels']["$level"]['effects'])) {
+                                    $chance = $enchantmentData['levels']["$level"]['chance'] ?? 100;    
+                                    
+                                    if (mt_rand(1, 100) <= $chance) {
+                                        $effects = $enchantmentData['levels']["$level"]['effects'];
+                                        $initialDamage = $event->getBaseDamage();
+            
+                                        if ($initialDamage > 0) {
+                                            foreach ($effects as $effect) {
+                                                if ($effect['type'] === "INCREASE_DAMAGE") {
+                                                    $newDamage = $initialDamage + $effect['amount'];
+                                                    $event->setBaseDamage($newDamage);
+                                                }
+                                                if ($effect['type'] === "DECREASE_DAMAGE") {
+                                                    $newDamage = $initialDamage - $effect['amount'];
+                                                    $event->setBaseDamage($newDamage);
+                                                }
+                                                Utils::applyPlayerEffects($attacker, $victim, $effect);
+                                            }
+                                        } 
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }            
+    
+                // Victim item in hand
+                $itemInHand = $victim->getInventory()->getItemInHand();
+                foreach ($itemInHand->getEnchantments() as $enchantmentInstance) {
+                    $enchantment = $enchantmentInstance->getType();
+                    if ($enchantment instanceof CustomEnchantment) {
+                        $enchantmentName = $enchantment->getName();
+                        $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
+    
+                        if ($enchantmentConfig !== null && isset($enchantmentConfig[$enchantmentName])) {
+                            $enchantmentData = $enchantmentConfig[$enchantmentName];
+                            $level = $enchantmentInstance->getLevel();
+    
+                            if ($enchantmentData['type'] === $defenseContext && isset($enchantmentData['levels']["$level"]['effects'])) {
+                                $chance = $enchantmentData['levels']["$level"]['chance'] ?? 100;
+    
+                                if (mt_rand(1, 100) <= $chance) {
+                                    $effects = $enchantmentData['levels']["$level"]['effects'];
+                                    Utils::applyPlayerEffects($victim, $attacker, $effects);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
-    }
+    }    
     
     public function onEntityDeath(EntityDeathEvent $event) {
         $entity = $event->getEntity();
