@@ -9,7 +9,7 @@
 - [ ] enchantment cooldowns
 - [ ] finish the effect types
 - [ ] make the
-- [ ] automate the enchantment id's (set an id to each one on start incrementing +1 starting at 1000 foreach one)
+- [x] automate the enchantment id's (set an id to each one on start incrementing +1 starting at 1000 foreach one)
 - [ ] add entities for guard effect type
 - [ ] implement armor orbs
 - [ ] implement tool orbs
