@@ -190,27 +190,32 @@ class EnchantmentListener implements Listener {
                                     if (mt_rand(1, 100) <= $chance) {
                                         $effects = $enchantmentData['levels']["$level"]['effects'];
                                         $initialDamage = $event->getBaseDamage();
+                                        
+                                        $conditions = $enchantmentData['levels']["$level"]['conditions'] ?? [];
+                                        $conditionsMet = empty($conditions) || Utils::checkConditions($conditions, $attacker, $victim);
             
-                                        if ($initialDamage > 0) {
-                                            foreach ($effects as $effect) {
-                                                if ($effect['type'] === "INCREASE_DAMAGE") {
-                                                    $newDamage = $initialDamage + $effect['amount'];
-                                                    $event->setBaseDamage($newDamage);
+                                        if ($conditionsMet) {
+                                            if ($initialDamage > 0) {
+                                                foreach ($effects as $effect) {
+                                                    if ($effect['type'] === "INCREASE_DAMAGE") {
+                                                        $newDamage = $initialDamage + $effect['amount'];
+                                                        $event->setBaseDamage($newDamage);
+                                                    }
+                                                    if ($effect['type'] === "DECREASE_DAMAGE") {
+                                                        $newDamage = max(0, $initialDamage - $effect['amount']);
+                                                        $event->setBaseDamage($newDamage);
+                                                    }
+                                                    Utils::applyPlayerEffects($attacker, $victim, $effect);
                                                 }
-                                                if ($effect['type'] === "DECREASE_DAMAGE") {
-                                                    $newDamage = $initialDamage - $effect['amount'];
-                                                    $event->setBaseDamage($newDamage);
-                                                }
-                                                Utils::applyPlayerEffects($attacker, $victim, $effect);
                                             }
-                                        } 
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }            
-    
+                }
+                
                 // Victim item in hand
                 $itemInHand = $victim->getInventory()->getItemInHand();
                 foreach ($itemInHand->getEnchantments() as $enchantmentInstance) {
