@@ -146,13 +146,15 @@ final class CustomEnchantments {
 
     protected static function registerEnchantments(): void {
         $config = new Config(Loader::getInstance()->getDataFolder() . "enchantments.yml", Config::YAML);
-
-        foreach ($config->getAll() as $enchantmentName => $enchantmentData) {
-            if (!isset($enchantmentData['display'], $enchantmentData['id'], $enchantmentData['description'], $enchantmentData['group'])) {
+    
+        $enchantments = $config->getAll();
+    
+        foreach ($enchantments as $enchantmentName => $enchantmentData) {
+            if (!isset($enchantmentData['display'], $enchantmentData['description'], $enchantmentData['group'])) {
                 continue;
             }
-
-            $id = (int) $enchantmentData['id'];
+    
+            $id = CustomEnchantmentIds::getNextId();
             $name = strval($enchantmentName);
             $descriptionArray = (array) $enchantmentData['description'];
             $description = implode("\n", $descriptionArray);
@@ -160,7 +162,7 @@ final class CustomEnchantments {
             $maxLevel = self::getMaxLevel($enchantmentData);
             $flags = self::parseFlags($enchantmentData['applies-to']);
             $enchantment = new CustomEnchantment($name, $id, $rarity, $description, $maxLevel, $flags);
-
+    
             self::register($name, $id, $enchantment);
         }
     }
