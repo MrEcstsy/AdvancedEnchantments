@@ -1035,40 +1035,156 @@ class Utils {
                 } elseif ($conditionMode === 'stop' && $isSneaking !== $value) {
                     return false; // Stop if the target's sneaking status does not match the value
                 }
-            } elseif ($type === 'IS_HOLDING') {
+            }elseif ($type === 'IS_HOLDING') {
                 $target = $condition['target'] ?? 'self';
-                $value = $condition['value'] ?? null;
-                
+                $value = strtolower($condition['value'] ?? '');
+                error_log("Target: $target, Value: $value");
+            
+                $handItem = null;
+            
                 if ($target === 'self') {
                     $handItem = $player->getInventory()->getItemInHand();
+                } elseif ($target === 'victim') {
+                    if ($victim instanceof Player) {
+                        $handItem = $victim->getInventory()->getItemInHand();
+                    }
+                } elseif ($target === 'attacker') {
+                    $handItem = $player->getInventory()->getItemInHand();
+                }
+            
+                if ($handItem !== null) {
+            
+                    if ($value === 'sword') {
+                        if ($handItem instanceof Sword) {
+                            if ($conditionMode === 'allow') {
+                                return true; // Allow if the player is holding a Sword
+                            } elseif ($conditionMode === 'stop') {
+                                return false; // Stop if the player is holding a Sword
+                            }
+                        } else {
+                            if ($conditionMode === 'allow') {
+                                return false; // Stop if the player is not holding a Sword
+                            } elseif ($conditionMode === 'stop') {
+                                return true; // Allow if the player is not holding a Sword
+                            }
+                        }
+                    } elseif ($value === 'axe') {
+                        if ($handItem instanceof Axe) {
+                            if ($conditionMode === 'allow') {
+                                return true; // Allow if the player is holding an Axe
+                            } elseif ($conditionMode === 'stop') {
+                                return false; // Stop if the player is holding an Axe
+                            }
+                        } else {
+                            if ($conditionMode === 'allow') {
+                                return false; // Stop if the player is not holding an Axe
+                            } elseif ($conditionMode === 'stop') {
+                                return true; // Allow if the player is not holding an Axe
+                            }
+                        }
+                    } elseif ($value === 'bow') {
+                        if ($handItem instanceof Bow) {
+                            if ($conditionMode === 'allow') {
+                                return true; // Allow if the player is holding a Bow
+                            } elseif ($conditionMode === 'stop') {
+                                return false; // Stop if the player is holding a Bow
+                            }
+                        } else {
+                            if ($conditionMode === 'allow') {
+                                return false; // Stop if the player is not holding a Bow
+                            } elseif ($conditionMode === 'stop') {
+                                return true; // Allow if the player is not holding a Bow
+                            }
+                        }
+                    }
                 } else {
-                    $handItem = $victim instanceof Player ? $victim->getInventory()->getItemInHand() : null;
-                }
-
-                if ($handItem !== null && (strtolower($value) === 'sword' || strtolower($value) === 'SWORD')) {
-                    if ($handItem instanceof Sword) {
-                        return true; // Allow if the player is holding a Sword
+                    if ($conditionMode === 'stop') {
+                        return false; // Stop if the player is not holding any item
+                    } else {
+                        return true; // Allow if the player is not holding any item
+                    }
+                }            
+            } elseif ($type === 'IS_MOB_TYPE') {
+                $mobs = $condition['mobs'] ?? [];
+                $conditionMode = $condition['condition_mode'] ?? 'allow';
+    
+                $victimNetworkId = $victim->getNetworkTypeId();
+                $isMatching = false;
+                foreach ($mobs as $mobType) {
+                    $mobNetworkId = self::stringToNetworkId($mobType);
+                    if ($mobNetworkId !== null && $victimNetworkId === $mobNetworkId) {
+                        $isMatching = true;
+                        break;
                     }
                 }
-                
-                if ($handItem !== null && (strtolower($value) === 'axe' || strtolower($value) === 'AXE')) {
-                    if ($handItem instanceof Axe) {
-                        return true; // Allow if the player is holding an Axe
-                    }
+    
+                if ($conditionMode === 'allow' && $isMatching) {
+                    return true; // Allow if victim matches any of the specified mob types
+                } elseif ($conditionMode === 'stop' && !$isMatching) {
+                    return false; // Stop if victim does not match any of the specified mob types
                 }
-
-                if ($handItem !== null && (strtolower($value) === 'bow' || strtolower($value) === 'BOW')) {
-                    if ($handItem instanceof Bow) {
-                        return true; // Allow if the player is holding a Pickaxe
-                    }
-                }
-
-                return false; // Stop if the player is not holding a Sword
             }
             
         }
     
         return true;
+    }
+
+    public static function stringToNetworkId(string $networkId): ?int {
+        switch ($networkId) {
+            case 'SKELETON':
+                return EntityIds::SKELETON;
+                break;
+            case 'CREEPER':
+                return EntityIds::CREEPER;
+                break;
+            case 'SPIDER':
+                return EntityIds::SPIDER;
+                break;
+            case 'ZOMBIE':
+                return EntityIds::ZOMBIE;
+                break;
+            case 'ENDERMAN':
+                return EntityIds::ENDERMAN;
+                break;
+            case 'SLIME':
+                return EntityIds::SLIME;
+                break;
+            case 'WITCH':
+                return EntityIds::WITCH;
+                break;
+            case 'BLAZE':
+                return EntityIds::BLAZE;
+                break;
+            case 'PIG_ZOMBIE':
+                return EntityIds::ZOMBIE_PIGMAN;
+                break;
+            case 'ZOMBIE_PIGMAN':
+                return EntityIds::ZOMBIE_PIGMAN;
+                break;
+            case 'ENDER_DRAGON':
+                return EntityIds::ENDER_DRAGON;
+                break;
+            case 'VINDICATOR':
+                return EntityIds::VINDICATOR;
+                break;
+            case 'WITHER_SKELETON':
+                return EntityIds::WITHER_SKELETON;
+                break;
+            case 'GUARDIAN':
+                return EntityIds::GUARDIAN;
+                break;
+            case 'SHULKER':
+                return EntityIds::SHULKER;
+                break;
+            case 'BAT':
+                return EntityIds::BAT;
+                break;
+
+            default:
+                return null;
+                break;
+        }
     }
 
     public static function removePlayerEffects(Player $player, array $effects): void {
