@@ -145,23 +145,34 @@ class EnchantmentListener implements Listener {
                 if ($enchantment instanceof CustomEnchantment) {
                     $enchantmentName = $enchantment->getName();
                     $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
-    
+
                     if ($enchantmentConfig !== null && isset($enchantmentConfig[$enchantmentName])) {
                         $enchantmentData = $enchantmentConfig[$enchantmentName];
                         $level = $enchantmentInstance->getLevel();
-    
-                        if ($enchantmentData['type'] === $context && isset($enchantmentData['levels']["$level"]['effects'])) {
+
+                        if (($enchantmentData['type'] === "ATTACK" || $enchantmentData['type'] === "ATTACK_MOB") && isset($enchantmentData['levels']["$level"]['effects'])) {
                             $chance = $enchantmentData['levels']["$level"]['chance'] ?? 100;
-    
+
                             if (mt_rand(1, 100) <= $chance) {
                                 $effects = $enchantmentData['levels']["$level"]['effects'];
-                                if (isset($effects['INCREASE_DAMAGE'])) {
-                                    $event->setBaseDamage($event->getBaseDamage() + $effects['INCREASE_DAMAGE']);
+                                $conditions = $enchantmentData['levels']["$level"]['conditions'] ?? [];
+                                $conditionsMet = empty($conditions) || Utils::checkConditions($conditions, $attacker, $victim);
+
+                                if ($conditionsMet) {
+                                    foreach ($effects as $effect) {
+
+                                        if ($effect['type'] === "INCREASE_DAMAGE") {
+                                            $amount = Utils::parseLevel($effect['amount'], $level);
+                                            $event->setBaseDamage($event->getBaseDamage() + $amount);
+                                        }
+
+                                        if ($effect['type'] === "DECREASE_DAMAGE") {
+                                            $amount = Utils::parseLevel($effect['amount'], $level);
+                                            $event->setBaseDamage($event->getBaseDamage() - $amount);
+                                        }
+                                        Utils::applyPlayerEffects($attacker, $victim, $effects);
+                                    }
                                 }
-                                if (isset($effects['DECREASE_DAMAGE'])) {
-                                    $event->setBaseDamage($event->getBaseDamage() - $effects['DECREASE_DAMAGE']);
-                                }
-                                Utils::applyPlayerEffects($attacker, $victim, $effects);
                             }
                         }
                     }
