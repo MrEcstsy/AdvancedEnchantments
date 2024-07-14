@@ -34,12 +34,16 @@ class LanguageManager {
         return $this->config->get($key, "Translation not found: " . $key);
     }
 
-    public function getNested(string $key): string {
+    public function getNested(string $key): mixed {
         return $this->config->getNested($key, "Translation not found: " . $key);
     }
     
     public function reload(): void {
         $this->config->reload();
+    }
+
+    public function getAll(): void {
+        $this->config->getAll();
     }
     
     public function getFilepath(): string {
