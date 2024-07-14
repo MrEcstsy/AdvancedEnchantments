@@ -6,10 +6,9 @@
 * [Issue tracker](https://github.com/MrEcstsy/AdvancedEnchantments/issues)
 
 # TODO
+- [ ] stop custom enchantments from being registered as vanilla enchs (sometimes will have a vanilla ench when adding a CEnch to an item)
 - [ ] enchantment cooldowns
 - [ ] finish the effect types
-- [ ] make the
-- [x] automate the enchantment id's (set an id to each one on start incrementing +1 starting at 1000 foreach one)
 - [ ] add entities for guard effect type
 - [ ] implement armor orbs
 - [ ] implement tool orbs
