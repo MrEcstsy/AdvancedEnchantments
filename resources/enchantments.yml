@@ -2998,7 +2998,7 @@ iceaspect:
       chance: 23
       cooldown: 2
       effects:
-         - type: ADD_POTION
+        - type: ADD_POTION
           potion: "slowness"
           amplifier: 1
           duration: 100
