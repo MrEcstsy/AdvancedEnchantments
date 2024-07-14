@@ -4,10 +4,13 @@ namespace ecstsy\AdvancedEnchantments\Commands;
 
 use CortexPE\Commando\args\IntegerArgument;
 use CortexPE\Commando\BaseCommand;
-use ecstsy\AdvancedEnchantments\Commands\SubCommands\AboutSubcommnand;
+use ecstsy\AdvancedEnchantments\Commands\SubCommands\AboutSubCommand;
 use ecstsy\AdvancedEnchantments\Commands\SubCommands\EnchantSubCommand;
-use ecstsy\AdvancedEnchantments\Commands\SubCommands\GiveItemSubcommand;
+use ecstsy\AdvancedEnchantments\Commands\SubCommands\GiveItemSubCommand;
+use ecstsy\AdvancedEnchantments\Commands\SubCommands\GiveSubCommand;
+use ecstsy\AdvancedEnchantments\Commands\SubCommands\InfoSubCommand;
 use ecstsy\AdvancedEnchantments\Commands\SubCommands\ListSubCommand;
+use ecstsy\AdvancedEnchantments\Commands\SubCommands\ReloadSubCommand;
 use ecstsy\AdvancedEnchantments\Commands\SubCommands\UnenchantSubCommand;
 use ecstsy\AdvancedEnchantments\Loader;
 use pocketmine\command\CommandSender;
@@ -22,11 +25,14 @@ class AECommand extends BaseCommand {
         $this->setPermission($this->getPermission());
         $this->registerArgument(0, new IntegerArgument('page', true));
 
-        $this->registerSubCommand(new GiveItemSubcommand(Loader::getInstance(), "giveitem", "Give Plugin Items"));
-        $this->registerSubCommand(new AboutSubcommnand(Loader::getInstance(), "about", "Information about plugin"));
+        $this->registerSubCommand(new GiveItemSubCommand(Loader::getInstance(), "giveitem", "Give Plugin Items"));
+        $this->registerSubCommand(new AboutSubCommand(Loader::getInstance(), "about", "Information about plugin"));
         $this->registerSubCommand(new EnchantSubCommand(Loader::getInstance(), "enchant", "Enchant held item"));
         $this->registerSubCommand(new UnenchantSubCommand(Loader::getInstance(), "unenchant", "Unenchant held item"));
         $this->registerSubCommand(new ListSubCommand(Loader::getInstance(), "list", "List all enchantments"));
+        $this->registerSubCommand(new GiveSubCommand(Loader::getInstance(), "give", "Give enchantment book"));
+        $this->registerSubCommand(new InfoSubCommand(Loader::getInstance(), "info", "Info about enchantment"));
+        $this->registerSubCommand(new ReloadSubCommand(Loader::getInstance(), "reload", "Reload plugin configuration"));
     }
 
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void {
