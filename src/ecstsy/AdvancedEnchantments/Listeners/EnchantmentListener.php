@@ -18,6 +18,7 @@ use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemHeldEvent;
 use pocketmine\event\player\PlayerJoinEvent;
+use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\inventory\ArmorInventory;
 use pocketmine\inventory\CallbackInventoryListener;
 use pocketmine\inventory\Inventory;
@@ -36,25 +37,43 @@ class EnchantmentListener implements Listener {
     {
         $player = $event->getPlayer();
         $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
-
+    
         foreach ($player->getInventory()->getContents() as $slot => $content) {
             foreach ($content->getEnchantments() as $enchantmentInstance) {
-                $enchantmentData = $enchantmentConfig[$enchantmentInstance->getType()->getName()];
-                foreach ($enchantmentData['type'] as $type) {
-                    $this->applyEnchantmentEffects($player, null, $content, $type);
+                $enchantment = $enchantmentInstance->getType();
+                if ($enchantment instanceof CustomEnchantment) {
+                    $enchantmentName = $enchantment->getName();
+                    if (isset($enchantmentConfig[$enchantmentName])) {
+                        $enchantmentData = $enchantmentConfig[$enchantmentName];
+                        $level = $enchantmentInstance->getLevel();
+                        foreach ($enchantmentData['type'] as $type) {
+                            if ($type === 'HELD' && isset($enchantmentData['levels']["$level"]['effects'])) {
+                                Utils::applyPlayerEffects($player, null, $enchantmentData['levels']["$level"]['effects']);
+                            }
+                        }
+                    }
                 }
             }
         }
-
+    
         foreach ($player->getArmorInventory()->getContents() as $slot => $content) {
             foreach ($content->getEnchantments() as $enchantmentInstance) {
-                $enchantmentData = $enchantmentConfig[$enchantmentInstance->getType()->getName()];
-                foreach ($enchantmentData['type'] as $type) {
-                    $this->applyEnchantmentEffects($player, null, $content, $type);
+                $enchantment = $enchantmentInstance->getType();
+                if ($enchantment instanceof CustomEnchantment) {
+                    $enchantmentName = $enchantment->getName();
+                    if (isset($enchantmentConfig[$enchantmentName])) {
+                        $enchantmentData = $enchantmentConfig[$enchantmentName];
+                        $level = $enchantmentInstance->getLevel();
+                        foreach ($enchantmentData['type'] as $type) {
+                            if ($type === 'HELD' && isset($enchantmentData['levels']["$level"]['effects'])) {
+                                Utils::applyPlayerEffects($player, null, $enchantmentData['levels']["$level"]['effects']);
+                            }
+                        }
+                    }
                 }
             }
         }
-
+    
         $onSlot = function (Inventory $inventory, int $slot, Item $oldItem) use ($enchantmentConfig): void {
             if ($inventory instanceof PlayerInventory || $inventory instanceof ArmorInventory) {
                 $holder = $inventory->getHolder();
@@ -62,27 +81,35 @@ class EnchantmentListener implements Listener {
                     $newItem = $inventory->getItem($slot);
                     if (!$oldItem->equals($newItem, false)) {
                         foreach ($oldItem->getEnchantments() as $oldEnchantment) {
-                            $enchantmentData = $enchantmentConfig[$oldEnchantment->getType()->getName()];
-                            foreach ($enchantmentData['type'] as $type) {
+                            $enchantmentName = $oldEnchantment->getType()->getName();
+                            if (isset($enchantmentConfig[$enchantmentName])) {
+                                $enchantmentData = $enchantmentConfig[$enchantmentName];
                                 $level = $oldEnchantment->getLevel();
-                                Utils::removePlayerEffects($holder, $enchantmentData['levels']["$level"]['effects']);
+                                foreach ($enchantmentData['type'] as $type) {
+                                    if ($type === 'HELD' && isset($enchantmentData['levels']["$level"]['effects'])) {
+                                        Utils::removePlayerEffects($holder, $enchantmentData['levels']["$level"]['effects']);
+                                    }
+                                }
                             }
                         }
-
+    
                         foreach ($newItem->getEnchantments() as $newEnchantment) {
-                            $enchantmentData = $enchantmentConfig[$newEnchantment->getType()->getName()];
-                            foreach ($enchantmentData['type'] as $type) {
-                                $this->applyEnchantmentEffects($holder, null, $newItem, $type);
+                            $enchantmentName = $newEnchantment->getType()->getName();
+                            if (isset($enchantmentConfig[$enchantmentName])) {
+                                $enchantmentData = $enchantmentConfig[$enchantmentName];
+                                $level = $newEnchantment->getLevel();
+                                foreach ($enchantmentData['type'] as $type) {
+                                    if ($type === 'HELD' && isset($enchantmentData['levels']["$level"]['effects'])) {
+                                        Utils::applyPlayerEffects($holder, null, $enchantmentData['levels']["$level"]['effects']);
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
         };
-
-        /**
-         * @param Item[] $oldContents
-         */
+    
         $onContent = function (Inventory $inventory, array $oldContents) use ($onSlot): void {
             foreach ($oldContents as $slot => $oldItem) {
                 if (!($oldItem ?? VanillaItems::AIR())->equals($inventory->getItem($slot), !$inventory instanceof ArmorInventory)) {
@@ -90,10 +117,98 @@ class EnchantmentListener implements Listener {
                 }
             }
         };
-
+    
         $player->getInventory()->getListeners()->add(new CallbackInventoryListener($onSlot, $onContent));
         $player->getArmorInventory()->getListeners()->add(new CallbackInventoryListener($onSlot, $onContent));
     }
+    
+
+     /**
+     * @priority MONITOR
+     */
+    public function onQuit(PlayerQuitEvent $event): void
+    {
+        $player = $event->getPlayer();
+        $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
+    
+        if (!$player->isClosed()) {
+            foreach ($player->getInventory()->getContents() as $slot => $content) {
+                foreach ($content->getEnchantments() as $enchantmentInstance) {
+                    $enchantment = $enchantmentInstance->getType();
+                    if ($enchantment instanceof CustomEnchantment) {
+                        $enchantmentName = $enchantment->getName();
+                        if (isset($enchantmentConfig[$enchantmentName])) {
+                            $enchantmentData = $enchantmentConfig[$enchantmentName];
+                            $level = $enchantmentInstance->getLevel();
+                            $effects = $enchantmentData['levels']["$level"]['effects'];
+    
+                            $typeMatched = false;
+                            if (is_array($enchantmentData['type'])) {
+                                foreach ($enchantmentData['type'] as $type) {
+                                    if ($type === 'EFFECT_STATIC') {
+                                        $typeMatched = true;
+                                        break;
+                                    }
+                                }
+                            } else {
+                                if ($enchantmentData['type'] === 'EFFECT_STATIC') {
+                                    $typeMatched = true;
+                                }
+                            }
+    
+                            if (!$typeMatched) {
+                                continue;
+                            }
+    
+                            foreach ($effects as $effect) {
+                                if ($effect['type'] === 'EFFECT_STATIC' && isset($enchantmentData['levels']["$level"]['effects'])) {
+                                    Utils::removePlayerEffects($player, $enchantmentData['levels']["$level"]['effects']);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+    
+            foreach ($player->getArmorInventory()->getContents() as $slot => $content) {
+                foreach ($content->getEnchantments() as $enchantmentInstance) {
+                    $enchantment = $enchantmentInstance->getType();
+                    if ($enchantment instanceof CustomEnchantment) {
+                        $enchantmentName = $enchantment->getName();
+                        if (isset($enchantmentConfig[$enchantmentName])) {
+                            $enchantmentData = $enchantmentConfig[$enchantmentName];
+                            $level = $enchantmentInstance->getLevel();
+                            $effects = $enchantmentData['levels']["$level"]['effects'];
+    
+                            $typeMatched = false;
+                            if (is_array($enchantmentData['type'])) {
+                                foreach ($enchantmentData['type'] as $type) {
+                                    if ($type === 'EFFECT_STATIC') {
+                                        $typeMatched = true;
+                                        break;
+                                    }
+                                }
+                            } else {
+                                if ($enchantmentData['type'] === 'EFFECT_STATIC') {
+                                    $typeMatched = true;
+                                }
+                            }
+    
+                            if (!$typeMatched) {
+                                continue;
+                            }
+    
+                            foreach ($effects as $effect) {
+                                if ($effect['type'] === 'EFFECT_STATIC' && isset($enchantmentData['levels']["$level"]['effects'])) {
+                                    Utils::removePlayerEffects($player, $enchantmentData['levels']["$level"]['effects']);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }    
 
     public function onPlayerInteract(PlayerInteractEvent $event): void {
         $player = $event->getPlayer();
@@ -772,36 +887,35 @@ class EnchantmentListener implements Listener {
         $player = $event->getPlayer();
         $item = $event->getItem();
         $previousItem = $player->getInventory()->getItemInHand();
-
+        $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
+    
         foreach ($item->getEnchantments() as $enchantmentInstance) {
             $enchantment = $enchantmentInstance->getType();
             if ($enchantment instanceof CustomEnchantment) {
                 $enchantmentName = $enchantment->getName();
-                $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
-
-                if ($enchantmentConfig !== null && isset($enchantmentConfig[$enchantmentName])) {
+                if (isset($enchantmentConfig[$enchantmentName])) {
                     $enchantmentData = $enchantmentConfig[$enchantmentName];
                     $level = $enchantmentInstance->getLevel();
-
-                    if ($enchantmentData['type'] === 'HELD' && isset($enchantmentData['levels']["$level"]['effects'])) {
-                        Utils::applyPlayerEffects($player, null, $enchantmentData['levels']["$level"]['effects']);
+                    foreach ($enchantmentData['type'] as $type) {
+                        if ($type === 'HELD' && isset($enchantmentData['levels']["$level"]['effects'])) {
+                            Utils::applyPlayerEffects($player, null, $enchantmentData['levels']["$level"]['effects']);
+                        }
                     }
                 }
-            } 
+            }
         }
-
+    
         foreach ($previousItem->getEnchantments() as $enchantmentInstance) {
             $enchantment = $enchantmentInstance->getType();
             if ($enchantment instanceof CustomEnchantment) {
                 $enchantmentName = $enchantment->getName();
-                $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
-    
-                if ($enchantmentConfig !== null && isset($enchantmentConfig[$enchantmentName])) {
+                if (isset($enchantmentConfig[$enchantmentName])) {
                     $enchantmentData = $enchantmentConfig[$enchantmentName];
                     $level = $enchantmentInstance->getLevel();
-    
-                    if ($enchantmentData['type'] === 'HELD' && isset($enchantmentData['levels']["$level"]['effects'])) {
-                        Utils::removePlayerEffects($player, $enchantmentData['levels']["$level"]['effects']);
+                    foreach ($enchantmentData['type'] as $type) {
+                        if ($type === 'HELD' && isset($enchantmentData['levels']["$level"]['effects'])) {
+                            Utils::removePlayerEffects($player, $enchantmentData['levels']["$level"]['effects']);
+                        }
                     }
                 }
             }
