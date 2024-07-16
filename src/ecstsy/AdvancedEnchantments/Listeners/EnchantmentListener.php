@@ -8,26 +8,92 @@ use ecstsy\AdvancedEnchantments\Loader;
 use ecstsy\AdvancedEnchantments\Utils\Utils;
 use pocketmine\block\Farmland;
 use pocketmine\entity\Entity;
-use pocketmine\entity\Living;
 use pocketmine\entity\projectile\Projectile;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityDeathEvent;
-use pocketmine\event\Event;
 use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemHeldEvent;
+use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\inventory\ArmorInventory;
+use pocketmine\inventory\CallbackInventoryListener;
+use pocketmine\inventory\Inventory;
+use pocketmine\inventory\PlayerInventory;
 use pocketmine\inventory\transaction\action\SlotChangeAction;
 use pocketmine\item\Item;
+use pocketmine\item\VanillaItems;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as C;
 
 class EnchantmentListener implements Listener {
 
     private array $cooldowns = [];
+
+    public function onJoin(PlayerJoinEvent $event): void
+    {
+        $player = $event->getPlayer();
+        $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
+
+        foreach ($player->getInventory()->getContents() as $slot => $content) {
+            foreach ($content->getEnchantments() as $enchantmentInstance) {
+                $enchantmentData = $enchantmentConfig[$enchantmentInstance->getType()->getName()];
+                foreach ($enchantmentData['type'] as $type) {
+                    $this->applyEnchantmentEffects($player, null, $content, $type);
+                }
+            }
+        }
+
+        foreach ($player->getArmorInventory()->getContents() as $slot => $content) {
+            foreach ($content->getEnchantments() as $enchantmentInstance) {
+                $enchantmentData = $enchantmentConfig[$enchantmentInstance->getType()->getName()];
+                foreach ($enchantmentData['type'] as $type) {
+                    $this->applyEnchantmentEffects($player, null, $content, $type);
+                }
+            }
+        }
+
+        $onSlot = function (Inventory $inventory, int $slot, Item $oldItem) use ($enchantmentConfig): void {
+            if ($inventory instanceof PlayerInventory || $inventory instanceof ArmorInventory) {
+                $holder = $inventory->getHolder();
+                if ($holder instanceof Player) {
+                    $newItem = $inventory->getItem($slot);
+                    if (!$oldItem->equals($newItem, false)) {
+                        foreach ($oldItem->getEnchantments() as $oldEnchantment) {
+                            $enchantmentData = $enchantmentConfig[$oldEnchantment->getType()->getName()];
+                            foreach ($enchantmentData['type'] as $type) {
+                                $level = $oldEnchantment->getLevel();
+                                Utils::removePlayerEffects($holder, $enchantmentData['levels']["$level"]['effects']);
+                            }
+                        }
+
+                        foreach ($newItem->getEnchantments() as $newEnchantment) {
+                            $enchantmentData = $enchantmentConfig[$newEnchantment->getType()->getName()];
+                            foreach ($enchantmentData['type'] as $type) {
+                                $this->applyEnchantmentEffects($holder, null, $newItem, $type);
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        /**
+         * @param Item[] $oldContents
+         */
+        $onContent = function (Inventory $inventory, array $oldContents) use ($onSlot): void {
+            foreach ($oldContents as $slot => $oldItem) {
+                if (!($oldItem ?? VanillaItems::AIR())->equals($inventory->getItem($slot), !$inventory instanceof ArmorInventory)) {
+                    $onSlot($inventory, $slot, $oldItem);
+                }
+            }
+        };
+
+        $player->getInventory()->getListeners()->add(new CallbackInventoryListener($onSlot, $onContent));
+        $player->getArmorInventory()->getListeners()->add(new CallbackInventoryListener($onSlot, $onContent));
+    }
 
     public function onPlayerInteract(PlayerInteractEvent $event): void {
         $player = $event->getPlayer();
@@ -741,6 +807,7 @@ class EnchantmentListener implements Listener {
             }
         }
     }
+    
     private function applyEnchantmentEffects(Entity $source, ?Entity $target, Item $item, string $context): void {
         foreach ($item->getEnchantments() as $enchantmentInstance) {
             $enchantment = $enchantmentInstance->getType();
