@@ -20,7 +20,6 @@ use pocketmine\network\mcpe\protocol\InventorySlotPacket;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
 use pocketmine\network\mcpe\protocol\types\inventory\ItemStack;
 use pocketmine\network\mcpe\protocol\types\inventory\ItemStackWrapper;
-use pocketmine\utils\Config;
 use pocketmine\utils\RegistryTrait;
 use pocketmine\utils\TextFormat;
 
@@ -30,6 +29,9 @@ final class CustomEnchantments {
     public static array $ids = [];
 
     public static array $rarities = [];
+
+    /** @var CustomEnchant[] */
+    public static array $enchants = [];
 
     protected static function setup() : void {
         SimplePacketHandler::createInterceptor(Loader::getInstance(), EventPriority::HIGH)
@@ -83,7 +85,7 @@ final class CustomEnchantments {
 
     public static function display(ItemStack $itemStack): ItemStack {
         $item = TypeConverter::getInstance()->netItemStackToCore($itemStack);
-    
+
         if (count($item->getEnchantments()) > 0) {
             $additionalInformation = TextFormat::RESET . TextFormat::AQUA . $item->getName();
             foreach ($item->getEnchantments() as $enchantmentInstance) {
@@ -91,30 +93,30 @@ final class CustomEnchantments {
                 if ($enchantment instanceof CustomEnchantment) {
                     $groupId = $enchantment->getRarity();
                     $color = CEGroups::translateGroupToColor($groupId);
-                    
                     $enchantmentName = $enchantment->getName();
+                    $displayName = $enchantmentName; 
     
                     $config = Utils::getConfiguration("enchantments.yml");
-    
+
                     if ($config->exists($enchantmentName)) {
                         $displayName = $config->getNested($enchantmentName . '.display');
                         $displayName = str_replace('{group-color}', $color, $displayName);
                     } else {
                         $displayName = $enchantmentName;
                     }
-    
+
                     $additionalInformation .= "\n" . TextFormat::RESET . $displayName . " " . Utils::getRomanNumeral($enchantmentInstance->getLevel());
                 }
             }
-            
+
             if ($item->getNamedTag()->getTag(Item::TAG_DISPLAY)) {
                 $item->getNamedTag()->setTag("OriginalDisplayTag", $item->getNamedTag()->getTag(Item::TAG_DISPLAY)->safeClone());
             }
             $item = $item->setCustomName($additionalInformation);
         }
-        
+
         return TypeConverter::getInstance()->coreItemStackToNet($item);
-    }    
+    }
 
     public static function filter(ItemStack $itemStack): ItemStack {
         $item = TypeConverter::getInstance()->netItemStackToCore($itemStack);
@@ -145,16 +147,27 @@ final class CustomEnchantments {
     }
 
     protected static function registerEnchantments(): void {
-        $config = new Config(Loader::getInstance()->getDataFolder() . "enchantments.yml", Config::YAML);
-    
+        $config = Utils::getConfiguration("enchantments.yml");
         $enchantments = $config->getAll();
-    
+        $registeredIds = [];
+
         foreach ($enchantments as $enchantmentName => $enchantmentData) {
             if (!isset($enchantmentData['display'], $enchantmentData['description'], $enchantmentData['group'])) {
                 continue;
             }
+
+            if (!isset($enchantmentData['id']) || !is_int($enchantmentData['id'])) {
+                Loader::getInstance()->getLogger()->warning("Skipping registration for '$enchantmentName': 'id' is missing or invalid.");
+                continue;
+            }
+
+            $id = (int) $enchantmentData['id'];
+            
+            if (isset($registeredIds[$id])) {
+                Loader::getInstance()->getLogger()->warning("Duplicate ID $id found for enchantments: '{$registeredIds[$id]}' and '$enchantmentName'. Skipping registration for '$enchantmentName'.");
+                continue;
+            }
     
-            $id = CustomEnchantmentIds::getNextId();
             $name = strval($enchantmentName);
             $descriptionArray = (array) $enchantmentData['description'];
             $description = implode("\n", $descriptionArray);
@@ -162,8 +175,9 @@ final class CustomEnchantments {
             $maxLevel = self::getMaxLevel($enchantmentData);
             $flags = self::parseFlags($enchantmentData['applies-to']);
             $enchantment = new CustomEnchantment($name, $id, $rarity, $description, $maxLevel, $flags);
-    
+
             self::register($name, $id, $enchantment);
+            $registeredIds[$id] = $enchantmentName;
         }
     }
 
@@ -211,4 +225,3 @@ final class CustomEnchantments {
     }
 
 }
-
