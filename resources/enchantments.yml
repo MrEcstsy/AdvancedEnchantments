@@ -1,10 +1,12 @@
 # << Example configuration >>
 # lastchance:    <-- Enchantment name
 #  display: "{group-color}Last Chance"    <-- Display in item lore
-#  id: 1000 <-- Enchantment ID, using anythingb below 1000 is NOT recommended
-#  description: "Has a chance to heal when on low hearts"    <-- Enchantment Description
+#  id: 1000 <-- Enchantment ID, using anything below 1000 is NOT recommended, if enchantment is applied alongside a vanilla enchantment, change the to a different number
+#  description: 
+#    - "Has a chance to heal when on low hearts"    <-- Enchantment Description
 #  applies-to: "Chestplate"    <-- What applies to (display purposes)
-#  type: "DEFENSE"    <-- Enchantment type (controls when enchantment activates)
+#  type: 
+#    - "DEFENSE"    <-- Enchantment type (controls when enchantment activates)
 #  group: "COMMON"    <-- Enchantment group (For enchanter and right-click random books)
 #  settings:
 #    required-enchants:
@@ -20,7 +22,9 @@
 #      conditions: "%victim health% > 5 : %stop%"    <-- Condition (read more about it at Conditions)
 #      description: "Has the lowest chance to heal when on low hearts"    <-- Per level description (different description for each level - optional)
 #      effects:    <-- All enchantment effects
-#        - "ADD_HEALTH:2 %victim%"    <-- Effect(s) list
+#        - type: ADD_HEALTH     <-- Effect(s) list
+#          amount: 2  
+#          target: victim
 
 #  Display (String) (No spaces or enchantment will break)
 #    Determines how will enchantment look in item lore
@@ -54,19 +58,6 @@
 #    Effects for each level, use as display in examples.
 
 #  Enchantment Effect List: https://ae.advancedplugins.net/enchantments/creating-enchantments/effect-list
-
-#        # You can use tags <random word>word1,word2,word3</random word>, it will get a random word from listed words.
-#        # You can use tags <random number>x-y</random number> while x < y, it will generate a random number between two given integers.
-#        # e.g.: "STEAL_MONEY:<random number>10000-50000</random number>"
-#        # Use <chance>x</chance> to set per-effect chance, x being a chance percentage.
-#        # e.g.: "POTION:SPEED:1:100 {attacker} <chance>25</chance>"
-
-#        # You also may use {victim} or {attacker} flag to give effects to different players (in ATTACK, BOW, DEATH, KILL_PLAYER and DEFENSE types).
-#        # Example usage: - "POTION:POISON:1:50 attacker}', this will give Level 2 POISON potion effect to the player who attacked.
-#        # If none is provided, effects will be given to the player who had custom enchanted item.
-#        # You can add {combo} instead of numbers, to use number of combo's player has (eg. to limit combo number: "{combo} > 0 && {combo} < 5 : {continue}')
-#        # You can add {damage} instead of numbers, to use number of damage has been done (for ATTACK and DEFENSE)
-
 #  Area of effect: https://ae.advancedplugins.net/enchantments/radius-of-effect-enchantments
 #  Conditions:  https://ae.advancedplugins.net/enchantments/enchantment-conditions
 
@@ -81,6 +72,7 @@
 #    disable-in-enchanter: true # Players can no longer obtain enchantment from Enchanter
 gemify:
   display: '{group-color}Gemify'
+  id: 1000
   description: 
     - "Chance for an ore block to turn into it's block"
   applies-to: Pickaxe
@@ -127,6 +119,7 @@ gemify:
           to: DIAMOND_BLOCK
 planter:
   display: '{group-color}Planter'
+  id: 1001
   description: 
     - "Plant seeds in a 3x3 area"
     - "by shift+right-clicking."
@@ -170,6 +163,7 @@ planter:
           radius: 1
 twinge:
   display: '{group-color}Twinge'
+  id: 1002
   description: 
     - "Make your enemy bleed, if"
     - "hit using melee attack."
@@ -283,6 +277,7 @@ twinge:
           value: "{1-3}"
 jellylegs:
   display: '{group-color}Jelly Legs'
+  id: 1003
   description: 
     - "Chance to negate fall damage.:"
   applies-to: Boots
@@ -307,6 +302,7 @@ jellylegs:
         - type: CANCEL_EVENT
 aquatic:
   display: '{group-color}Aquatic'
+  id: 1004
   description: 
     - "Breathe underwater."
   applies-to: Helmets
@@ -323,6 +319,7 @@ aquatic:
           amplifier: 0
 haste:
   display: '{group-color}Haste'
+  id: 1005
   description: 
     - "Allows you to swing your tools faster."
   applies-to: Tools
@@ -351,6 +348,7 @@ haste:
           amplifier: 2       
 hasten:
   display: '{group-color}Hasten'
+  id: 1006
   description: 
     - "Chance to gain Haste after breaking blocks."
   applies-to: Tools
@@ -391,6 +389,7 @@ hasten:
           target: self
 glowing:
   display: '{group-color}Glowing'
+  id: 1007
   description: 
     - "Gives permanent night vision."
   applies-to: Helmet
@@ -407,12 +406,14 @@ glowing:
           amplifier: 0
 inquisitive:
   display: '{group-color}Inquisitive'
+  id: 1008
   description: 
     - "Chance to increase EXP drops from mobs."
   applies-to: Swords
   settings:
     showActionBar: true
-  type: KILL_MOB
+  type: 
+    - KILL_MOB
   group: LEGENDARY
   applies:
     - ALL_SWORD
@@ -443,6 +444,7 @@ inquisitive:
           formula: '{exp} * (1.0 + 0.25 * {level})'
 lifesteal:
   display: '{group-color}Lifesteal'
+  id: 1009
   description: 
     - "A chance to steal health"
     - "when attacking."
@@ -490,6 +492,7 @@ lifesteal:
           target: attacker      
 overload:
   display: '{group-color}Overload'
+  id: 1010
   description: 
     - "Unlocks additional hearts."
   applies-to: Armor
@@ -516,6 +519,7 @@ overload:
           amplifier: 2
 armored:
   display: '{group-color}Armored'
+  id: 1011
   description: 
     - "Decreases damage from enemy"
     - "swords by 2% per level."
@@ -576,6 +580,7 @@ armored:
           target: attacker         
 berserk:
   display: '{group-color}Berserk'
+  id: 1012
   description: 
     - "Chance of strength"
     - "and mining fatigue."
@@ -659,6 +664,7 @@ berserk:
           target: attacker   
 featherweight:
   display: '{group-color}Featherweight'
+  id: 1013
   description: Chance to get a burst of haste.
   applies-to: Swords, Axes
   type: 
@@ -698,6 +704,7 @@ featherweight:
           target: attacker
 molten:
   display: '{group-color}Molten'
+  id: 1014
   description: 
     - "Chance of setting your attacker ablaze."
   applies-to: Armor
@@ -737,6 +744,7 @@ molten:
           target: attacker        
 ravenous:
   display: '{group-color}Ravenous'
+  id: 1015
   description: 
     - Chance to regain hunger
     - while fighting.
@@ -778,6 +786,7 @@ ravenous:
           target: attacker
 enderslayer:
   display: '{group-color}Ender Slayer'
+  id: 1016
   description: 
     - "Increases damage dealt to Enderman and Ender dragons."
   applies-to: Weapons
@@ -855,6 +864,7 @@ enderslayer:
           target: attacker             
 deathpunch:
   display: '{group-color}Death Punch'
+  id: 1017
   description: 
      - Increases damage dealt to Zombies.
   applies-to: Swords, Axes
@@ -926,6 +936,7 @@ deathpunch:
           target: attacker     
 bonecrusher:
   display: '{group-color}Bone Crusher'
+  id: 1018
   description: 
     - "Increases damage dealt to Skeletons."
   applies-to: Swords, Axes
@@ -974,6 +985,7 @@ bonecrusher:
           target: attacker      
 immolate:
   display: '{group-color}Immolate'
+  id: 1019
   description: 
     - Increases damage dealt to Spiders.
   applies-to: Swords, Axes
@@ -1021,6 +1033,7 @@ immolate:
           target: attacker
 slayer:
   display: '{group-color}Slayer'
+  id: 1020
   description: 
     - Increases damage dealt to Passive Mobs.
   applies-to: Swords, Axes
@@ -1074,6 +1087,7 @@ slayer:
           target: attacker
 hunter:
   display: '{group-color}Hunter'
+  id: 1021
   description: 
     - Increases damage dealt to Passive Mobs.
   applies-to: Bow, Crossbow, Trident
@@ -1128,6 +1142,7 @@ hunter:
           target: attacker
 beastslayer:
   display: '{group-color}Beastslayer'
+  id: 1022
   description: 
     - Increases damage dealt to Hostile Mobs.
   applies-to: Swords, Axes
@@ -1181,6 +1196,7 @@ beastslayer:
           target: attacker
 permafrost:
   display: '{group-color}Permafrost'
+  id: 1023
   description: 
     - Chance slow and bleed opponents.
   applies-to: Swords
@@ -1333,6 +1349,7 @@ permafrost:
           target: victim                    
 soulless:
   display: '{group-color}Soulless'
+  id: 1065
   description: Increases damage dealt to Hostile Mobs.
   applies-to: Bow, Crossbow, Trident
   type: 
@@ -1386,6 +1403,7 @@ soulless:
           target: attacker
 reaper:
   display: '{group-color}Reaper'
+  id: 1066
   description: 
     - A chance to give your opponent the
     - Wither and Blindness effects
@@ -1457,6 +1475,7 @@ reaper:
           target: victim
 netherslayer:
   display: '{group-color}Nether Slayer'
+  id: 1072
   description: 
     - Increases damage dealt to nether mobs.
   applies-to: Weapons
@@ -1544,6 +1563,7 @@ netherslayer:
           target: attacker
 blind:
   display: '{group-color}Blind'
+  id: 1073
   description: 
     - A chance of causing blindness
     - when attacking.
@@ -1583,6 +1603,7 @@ blind:
           target: victim             
 allure:
   display: '{group-color}Allure'
+  id: 1074
   description: 
     - Your attack pulls mobs towards you.
   applies-to: Swords
@@ -1611,6 +1632,7 @@ allure:
           target: victim
 frozen:
   display: '{group-color}Frozen'
+  id: 1075
   description: 
     - Can cause slowness to attacker
     - when defending.
@@ -1651,6 +1673,7 @@ frozen:
           target: attacker    
 poison:
   display: '{group-color}Poison'
+  id: 1077
   description: 
     - A chance of giving poison effect.
   applies-to: Swords, Axes
@@ -1691,6 +1714,7 @@ poison:
           target: victim       
 virus:
   display: '{group-color}Virus'
+  id: 1071
   description: 
     - A chance of giving poison effect.
   applies-to: Bow, Crossbow, Trident
@@ -1734,6 +1758,7 @@ virus:
           target: victim  
 poisoned:
   display: '{group-color}Poisoned'
+  id: 1076
   description: 
     - Chance to give poison to your attacker.
   applies-to: Armor
@@ -1783,6 +1808,7 @@ poisoned:
           target: attacker     
 reforged:
   display: '{group-color}Reforged'
+  id: 1078
   description: 
     - Protects weapons and tools durability, items will be take
     - longer to break.
@@ -1848,6 +1874,7 @@ reforged:
           amount: 1   
 snare:
   display: '{group-color}Snare'
+  id: 1079
   description: 
     - Chance to slow and fatigue
     - enemies with projectiles.
@@ -1920,6 +1947,7 @@ snare:
           target: victim
 springs:
   display: '{group-color}Springs'
+  id: 1080
   description: 
     - Gives jump boost.
   applies-to: Boots
@@ -1946,6 +1974,7 @@ springs:
           amplifier: 3
 voodoo:
   display: '{group-color}Voodoo'
+  id: 1082
   description: 
     - Gives a chance to deal weakness.
   applies-to: Armor
@@ -2012,6 +2041,7 @@ voodoo:
           target: attacker
 wither:
   display: '{group-color}Wither'
+  id: 1081
   description: 
     - A chance to give the wither effect.
   applies-to: Armor
@@ -2069,6 +2099,7 @@ wither:
           target: attacker
 perish:
   display: '{group-color}Perish'
+  id: 1068
   description: 
     - A chance to give the wither effect.
   applies-to: Bow, Crossbow, Trident
@@ -2130,6 +2161,7 @@ perish:
           target: victim    
 extinguish:
   display: '{group-color}Extinguish'
+  id: 1083
   description: 
     - Chance to extinguish yourself
     - when on fire.
@@ -2165,6 +2197,7 @@ extinguish:
           target: victim     
 vampire:
   display: '{group-color}Vampire'
+  id: 1084
   description: 
     - A chance to heal you for up to
     - 3hp a few seconds after you strike.
@@ -2208,6 +2241,7 @@ vampire:
           target: self
 greatsword:
   display: '{group-color}Greatsword'
+  id: 1085
   description: 
     - Multiplies damage against players who are
     - wielding a Bow at the time they are hit.
@@ -2283,6 +2317,7 @@ greatsword:
           target: attacker
 hardened:
   display: '{group-color}Hardened'
+  id: 1101
   description: 
     - Chance to recover durability when damaged by players.
   applies-to: Armor
@@ -2315,6 +2350,7 @@ hardened:
           target: victim          
 ward:
   display: '{group-color}Ward'
+  id: 1069
   description: 
     - A chance to absorb enemy damage
   applies-to: Armor
@@ -2349,6 +2385,7 @@ ward:
         - type: CANCEL_EVENT
 patch:
   display: '{group-color}Patch'
+  id: 1102
   description: 
     - Chance to recover durability when damaged by mobs.
   applies-to: Armor
@@ -2381,6 +2418,7 @@ patch:
           target: victim
 trickster:
   display: '{group-color}Trickster'
+  id: 1087
   description: 
     - When hit you have a
     - chance to teleport directly
@@ -2445,6 +2483,7 @@ trickster:
           target: victim         
 cleave:
   display: '{group-color}Cleave'
+  id: 1088
   description: 
     - Damages players within a radius
     - that increases with the level of enchant.
@@ -2522,6 +2561,7 @@ cleave:
             target: damageable  
 angelic:
   display: '{group-color}Angelic'
+  id: 1089
   description: 
     -  Heals when damaged.
   applies-to: Armor
@@ -2569,6 +2609,7 @@ angelic:
           target: victim 
 curse:
   display: '{group-color}Curse'
+  id: 1086
   description: 
     - Chance to give your enemy mining fatigue.
   applies-to: Armor
@@ -2598,6 +2639,7 @@ curse:
           target: attacker
 diminish:
   display: '{group-color}Diminish'
+  id: 1090
   description: 
     - Chance to give your enemy mining fatigue.
   applies-to: Axes
@@ -2618,6 +2660,7 @@ diminish:
           target: victim     
 interrupt:
   display: '{group-color}Interrupt'
+  id: 1091
   description: 
     - Chance to give your enemy mining fatigue.
   applies-to: Swords
@@ -2647,11 +2690,13 @@ interrupt:
           target: victim    
 exalted:
   display: '{group-color}Exalted'
+  id: 1092
   description: 
     - A chance of removing
     - bad potion effects.
   applies-to: Swords
-  type: ATTACK
+  type: 
+    - ATTACK
   group: ULTIMATE
   applies:
     - ALL_SWORD
@@ -2770,6 +2815,7 @@ exalted:
           target: attacker     
 ragdoll:
   display: '{group-color}Ragdoll'
+  id: 1093
   description: 
     - Chance to be pushed
     - back when getting hit.
@@ -2811,6 +2857,7 @@ ragdoll:
           target: victim        
 trench:
   display: '{group-color}Trench'
+  id: 1094
   description: 
     - Chance to break in 3x3 area.
   applies-to: Pickaxes, Shovels
@@ -2877,6 +2924,7 @@ trench:
           effect: Trench        
 dodge:
   display: '{group-color}Dodge'
+  id: 1095
   description: 
     - Chance to dodge physical enemy,
     - chance increases when sneaking.
@@ -2974,6 +3022,7 @@ dodge:
           volume: 0.7     
 iceaspect:
   display: '{group-color}Ice Aspect'
+  id: 1096
   description: 
     - A chance of causing the slowness
     - effect on your enemy.
@@ -3014,6 +3063,7 @@ iceaspect:
           target: victim
 implants:
   display: '{group-color}Implants'
+  id: 1097
   description: 
     - Chance to restore food every few seconds.
   applies-to: Helmets
@@ -3046,6 +3096,7 @@ implants:
           target: self
 obsidianshield:
   display: '{group-color}Obsidianshield'
+  id: 1098
   description: 
     - Gives permanent fire resistance.
   applies-to: Armor
@@ -3062,6 +3113,7 @@ obsidianshield:
           amplifier: 0
 safeguard:
   display: '{group-color}Safeguard'
+  id: 1099
   description: 
     - Chance to gain Damage Resistance
     - when defending.
@@ -3093,6 +3145,7 @@ safeguard:
           target: victim
 devour:
   display: '{group-color}Devour'
+  id: 10
   description: 
     - Chance to restore food while killing mobs.
   applies-to: Weapons
@@ -3123,6 +3176,7 @@ devour:
           target: attacker
 tank:
   display: '{group-color}Tank'
+  id: 1100
   description: 
     - Chance to decreases damage from enemy
     - axes by 2% per level.
