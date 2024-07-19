@@ -3,6 +3,7 @@
 namespace ecstsy\AdvancedEnchantments\Enchantments;
 
 use ecstsy\AdvancedEnchantments\utils\Utils;
+use pocketmine\item\enchantment\StringToEnchantmentParser;
 use pocketmine\utils\TextFormat as C;
 
 final class CEGroups {
@@ -10,8 +11,6 @@ final class CEGroups {
     private static array $groups = [];
 
     private static ?string $fallbackGroup = null;
-
-    private static array $enchantments = [];
 
     public static function init(): void {
         $config = Utils::getConfiguration("groups.yml");
@@ -79,12 +78,34 @@ final class CEGroups {
 
     public static function getAllForRarity(string $groupName): array {
         $enchantments = [];
-        foreach (self::$enchantments as $enchantment) {
-            if (isset($enchantment['group']) && strtoupper($enchantment['group']) === strtoupper($groupName)) {
-                $enchantments[] = $enchantment;
+        $enchantmentsConfig = Utils::getConfiguration("enchantments.yml")->getAll();
+        
+        $upperGroupName = strtoupper($groupName);
+    
+        foreach ($enchantmentsConfig as $enchantmentName => $enchantmentData) {
+            if (isset($enchantmentData['group']) && strtoupper($enchantmentData['group']) === $upperGroupName) {
+                $enchantment = StringToEnchantmentParser::getInstance()->parse($enchantmentName);
+                if ($enchantment !== null) {
+                    $enchantments[] = $enchantment;
+                }
             }
         }
-
+    
         return $enchantments;
     }
+    
+
+    public static function getRarityForEnchantment(string $enchantmentName): ?string {
+        $enchantmentsConfig = Utils::getConfiguration("enchantments.yml");
+        $enchantments = $enchantmentsConfig->getAll();
+    
+        $enchantmentData = $enchantments[$enchantmentName] ?? null;
+        if ($enchantmentData !== null && isset($enchantmentData['group'])) {
+            return $enchantmentData['group'];
+        }
+    
+        return null; // Return null if enchantment name not found
+    }
+    
+
 }

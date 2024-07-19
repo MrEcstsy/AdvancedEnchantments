@@ -51,7 +51,7 @@ class Loader extends PluginBase {
         foreach ($listeners as $listener) {
             $this->getServer()->getPluginManager()->registerEvents($listener, $this);
         }
-        
+
         CEGroups::init();
 
         if (!InvMenuHandler::isRegistered()) {

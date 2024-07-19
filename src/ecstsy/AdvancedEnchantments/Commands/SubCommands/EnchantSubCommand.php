@@ -10,7 +10,6 @@ use ecstsy\AdvancedEnchantments\Loader;
 use pocketmine\command\CommandSender;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\enchantment\StringToEnchantmentParser;
-use pocketmine\item\ItemTypeIds;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as C;
@@ -21,14 +20,19 @@ class EnchantSubCommand extends BaseSubCommand {
         $this->setPermission($this->getPermission());
 
         $this->setPermissionMessage(Loader::getInstance()->getLang()->getNested("commands.no-permission"));
-        $this->registerArgument(0, new RawStringArgument("enchantment", false));
-        $this->registerArgument(1, new IntegerArgument("level", false));
+        $this->registerArgument(0, new RawStringArgument("enchantment", true));
+        $this->registerArgument(1, new IntegerArgument("level", true));
     }
 
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         if (!$sender instanceof Player) {
             $sender->sendMessage(C::colorize("&r&7In-game only!"));
+            return;
+        }
+
+        if (!isset($args["enchantment"]) || !isset($args["level"])) {
+            $sender->sendMessage(C::colorize(str_replace("{usage}", $this->getUsage(), Loader::getInstance()->getLang()->getNested("commands.invalid-usage"))));
             return;
         }
 
@@ -85,7 +89,14 @@ class EnchantSubCommand extends BaseSubCommand {
                     $sender->sendMessage(C::colorize(Loader::getInstance()->getLang()->getNested("commands.not-holding-item")));
                 }
             }
-        }    
+        } else {
+            $sender->sendMessage(C::colorize(str_replace("{enchant}", $args["enchantment"], Loader::getInstance()->getLang()->getNested("commands.invalid-enchant"))));
+
+        }
+    }
+
+    public function getUsage(): string {
+        return "/ae enchant <enchantment> <level>";
     }
 
     public function getPermission(): ?string

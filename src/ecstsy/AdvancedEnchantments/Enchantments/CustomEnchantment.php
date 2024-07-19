@@ -5,6 +5,7 @@ namespace ecstsy\AdvancedEnchantments\Enchantments;
 use ecstsy\AdvancedEnchantments\Utils\Utils;
 use pocketmine\item\Armor;
 use pocketmine\item\Axe;
+use pocketmine\item\Bow;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\ItemFlags;
 use pocketmine\item\Item;
@@ -34,7 +35,6 @@ class CustomEnchantment extends Enchantment {
         return $color . $groupName . " " . Utils::getRomanNumeral($level);
     }
     
-
     public static function getApplicable(Enchantment $enchantment): string {
         $config = Utils::getConfiguration("enchantments.yml")->getAll();
         $enchantmentData = $config[$enchantment->getName()];
@@ -160,8 +160,12 @@ class CustomEnchantment extends Enchantment {
                 case 'trident':
                     if ($item->getTypeId() === 20458) return true;   // Is this safe??
                     break;
+                case "bow":
+                    if ($item instanceof Bow) return true;
+                    break;    
             }
         }
         return false;
     }
+
 }

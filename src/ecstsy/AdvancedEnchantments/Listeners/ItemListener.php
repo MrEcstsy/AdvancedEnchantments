@@ -7,10 +7,12 @@ use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantment;
 use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantments;
 use ecstsy\AdvancedEnchantments\Loader;
 use ecstsy\AdvancedEnchantments\Utils\Utils;
+use pocketmine\data\bedrock\EnchantmentIdMap;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
+use pocketmine\event\player\PlayerItemUseEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\inventory\transaction\action\SlotChangeAction;
 use pocketmine\inventory\transaction\InventoryTransaction;
@@ -29,7 +31,20 @@ use pocketmine\utils\TextFormat as C;
 class ItemListener implements Listener {
 
     private array $scrollItems = [];
+
     private array $validItems = [];
+
+    /** @var array $itemRenamer */
+	public array $itemRenamer = [];
+
+	/** @var array $lorerenamer */
+	public array $lorerenamer = [];
+
+    /** @var array $loremessages */
+	public array $loremessages = [];
+
+    /** @var array $itemmessages */
+    public array $itemmessages = [];
 
     public function __construct(Config $config) {
         $this->loadConfigItems($config);
@@ -40,7 +55,7 @@ class ItemListener implements Listener {
         $item = $event->getItem();
         $tag = $item->getNamedTag();
 
-        if ($tag->getTag("advancedscrolls")) {
+        if ($tag->getTag("advancedscrolls" || 'random_book')) {
             $event->cancel();
         }
     }
@@ -150,16 +165,16 @@ class ItemListener implements Listener {
                     ]);
                     break;
                 case 'BOOK':
-                    $validItems[] = VanillaItems::ENCHANTED_BOOK()->getTypeId();
+                    $validItems = array_merge($validItems, [ItemTypeIds::ENCHANTED_BOOK]);
                     break;
                 case 'BOW':
-                    $validItems[] = ItemTypeIds::BOW;
+                    $validItems = array_merge($validItems, [ItemTypeIds::BOW]);
                     break;
                 case 'ELYTRA':
                     //$validItems[] = ItemTypeIds::ELYTRA;
                     break;
                 case 'TRIDENT':
-                    $validItems[] = 20458; // is this safe?
+                    $validItems = array_merge($validItems, [20458]);
                     break;
                 default:
                     break;
@@ -167,6 +182,84 @@ class ItemListener implements Listener {
         }
     
         $this->validItems = $validItems;
+    }
+
+    public function onPlayerItemUse(PlayerItemUseEvent $event): void {
+        $player = $event->getPlayer();
+        $item = $event->getItem();
+        $tag = $item->getNamedTag();
+
+        if (($rcBook = $tag->getTag('random_book')) !== null) {
+            $event->cancel();
+            $group = $rcBook->getValue();
+            $groupId = CEGroups::getGroupId($group);
+            $color = CEGroups::translateGroupToColor($groupId);
+            $enchantments = CEGroups::getAllForRarity($group);
+            
+            if (!empty($enchantments)) {
+                $randomEnchant = $enchantments[array_rand($enchantments)];
+
+                if ($randomEnchant instanceof CustomEnchantment) {
+                    $level = mt_rand(1, $randomEnchant->getMaxLevel());
+                    
+                    $successRate = mt_rand(1, 100);
+                    $destroyRate = mt_rand(1, 100); 
+                    $enchantmentBook = Utils::createEnchantmentBook($randomEnchant, $level, $successRate, $destroyRate);
+                
+                    if ($player->getInventory()->canAddItem($enchantmentBook)) {
+                        $player->getInventory()->addItem($enchantmentBook);
+                    } else {
+                        $player->getWorld()->dropItem($player->getPosition(), $enchantmentBook);
+                    }
+                    
+                    $item->pop();
+                    $player->getInventory()->setItemInHand($item);
+                    $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
+                    $enchantmentData = $enchantmentConfig[strtolower($randomEnchant->getName())];
+
+                    Utils::playSound($player, "random.levelup");
+                    $messages = Utils::getConfiguration("config.yml")->getNested("enchanter-books.message");
+                    if (is_array($messages)) {
+                        foreach ($messages as $message) {
+                            $player->sendMessage(C::colorize(str_replace([
+                                "{group-color}", "{group-name}", "{enchant-color}", "{level}"
+                            ],
+                            [
+                                $color, $group, str_replace("{group-color}", $color, $enchantmentData["display"]), Utils::getRomanNumeral($level)
+                            ],
+                            $message)));
+                        }
+                    }
+                }
+            } else {
+                $player->sendMessage(C::colorize("&r&4Failed to examine '&fRC Book&r&4'"));
+                $player->sendMessage(C::colorize("&r&cThere are no enchantments in the group '&f" . $group . "&r&4'"));
+            }
+        }
+
+        if (($enchantBook = $tag->getTag("enchant_book")) !== null) {
+            $event->cancel();
+            $enchant = $enchantBook->getValue();
+            $enchantment = isset($enchant) ? StringToEnchantmentParser::getInstance()->parse($enchant) : null;
+
+            if ($enchantment !== null) {
+                $level = $tag->getTag("level")->getValue() ?: null;
+                if ($level !== null) {
+                    if ($enchantment instanceof CustomEnchantment) {
+                        $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
+                        $enchantmentData = $enchantmentConfig[strtolower($enchantment->getName())];
+                        $descriptionLines = $enchantmentData['description'] ?? [];
+                        $descriptionText = implode("\n", $descriptionLines);  
+
+                        $color = CEGroups::translateGroupToColor($enchantment->getRarity());
+                        $player->sendMessage(C::colorize("&r&7 * &eEnchantment &7| " . str_replace("{group-color}", $color, $enchantmentData["display"])));
+                        $player->sendMessage(C::colorize("&r&7 * &eApplies to &7| &f" . $enchantmentData['applies-to']));
+                        $player->sendMessage(C::colorize("&r&7 * &eMax Level &7| &f" . Utils::getRomanNumeral($enchantment->getMaxLevel())));
+                        $player->sendMessage(C::colorize("&r&7 * &eDescription &7| &f" . $descriptionText));
+                    }
+                }
+            }
+        }
     }
 
     public function onDropScroll(InventoryTransactionEvent $event): void {
@@ -225,7 +318,7 @@ class ItemListener implements Listener {
             $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
         }
     }
-    
+
     private function isScrollItem(Item $item): bool {
         $typeId = $item->getTypeId();
         $isScroll = in_array($typeId, $this->scrollItems, true);
@@ -260,7 +353,7 @@ class ItemListener implements Listener {
         $action->getInventory()->setItem($action->getSlot(), $itemClicked);
         $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
         $transaction->getSource()->getWorld()->addSound($transaction->getSource()->getLocation(), new XpLevelUpSound(100));
-    }   
+    }    
 
     private function handleTransmogScroll($action, $otherAction, $itemClicked, $transaction): void {
         $cfg = Utils::getConfiguration("config.yml");
@@ -336,8 +429,8 @@ class ItemListener implements Listener {
                             }
                         }
     
-                        if ($customEnchantmentsCount >= 7) {
-                            $transaction->getSource()->sendMessage(C::colorize("&r&l&c(!) &r&cThis item already has 7 custom enchantments!"));
+                        if ($customEnchantmentsCount >= $config->getNested("slots.max")) {
+                            $transaction->getSource()->sendMessage(C::colorize(Loader::getInstance()->getLang()->getNested("slots.limit-reached")));
                             return;
                         }
     
@@ -393,11 +486,13 @@ class ItemListener implements Listener {
                                                     $transaction->getSource()->getInventory()->setItem($action->getSlot(), $itemClicked);
                                                 } else {
                                                     $action->getInventory()->setItem($action->getSlot(), VanillaItems::AIR());
-                                                    $transaction->getSource()->sendMessage(C::colorize($lang->getNested("applying.destroyed")));
+                                                    $transaction->getSource()->sendMessage(C::colorize($lang->getNested("destroy.book-failed")));
+                                                    Utils::playSound($transaction->getSource(), "random.anvil_break", 2);
                                                     return;
                                                 }
                                             } else {
-                                                $transaction->getSource()->sendMessage(C::colorize($lang->getNested("applying.failed")));
+                                                $transaction->getSource()->sendMessage(C::colorize($lang->getNested("chances.book-failed")));
+                                                Utils::playSound($transaction->getSource(), "random.anvil_land", 2);
                                             }
                                         }
                                     } else {
@@ -450,20 +545,20 @@ class ItemListener implements Listener {
         Utils::playSound($player, "mob.enderdragon.flap", 2);
         $player->getInventory()->addItem(Utils::createScroll("itemrename", 1));
         unset($this->itemRenamer[$player->getName()]);
-        unset($this->message[$player->getName()]);
+        unset($this->itemmessages[$player->getName()]);
     }
 
     private function handleConfirm(Player $player, Item $hand): void
     {
-        if (!isset($this->message[$player->getName()])) {
+        if (!isset($this->itemmessages[$player->getName()])) {
             return;
         }
 
-        $this->sendMessageAndSound($player, "§r§e§l(!) §r§eYour ITEM has been renamed to: '{$this->message[$player->getName()]}§e'");
-        $hand->setCustomName($this->message[$player->getName()]);
+        $this->sendMessageAndSound($player, "§r§e§l(!) §r§eYour ITEM has been renamed to: '{$this->itemmessages[$player->getName()]}§e'");
+        $hand->setCustomName($this->itemmessages[$player->getName()]);
         $player->getInventory()->setItemInHand($hand);
         unset($this->itemRenamer[$player->getName()]);
-        unset($this->message[$player->getName()]);
+        unset($this->itemmessages[$player->getName()]);
     }   
 
     private function handleNaming(Player $player, string $message): void
@@ -476,7 +571,7 @@ class ItemListener implements Listener {
         $formatted = C::colorize($message);
         $this->sendMessageAndSound($player, "§r§e§l(!) §r§eItem Name Preview: $formatted");
         $player->sendMessage("§r§7Type '§r§aconfirm§7' if this looks correct, otherwise type '§ccancel§7' to start over.");
-        $this->message[$player->getName()] = $formatted;
+        $this->itemmessages[$player->getName()] = $formatted;
     }
 
     private function sendMessageAndSound(Player $player, string $message): void
@@ -517,22 +612,22 @@ class ItemListener implements Listener {
         Utils::playSound($player, "mob.enderdragon.flap", 2);
         $player->getInventory()->addItem(Utils::createSCroll("lorecrystal", 1));
         unset($this->lorerenamer[$player->getName()]);
-        unset($this->messages[$player->getName()]);
+        unset($this->loremessages[$player->getName()]);
     }
     
     private function handleLoreConfirm(Player $player, Item $hand): void
     {
-        if (!isset($this->messages[$player->getName()])) {
+        if (!isset($this->loremessages[$player->getName()])) {
             return;
         }
     
-        $this->sendMessageAndSound($player, "§r§e§l(!) §r§eYour ITEM's lore has been set to: '{$this->messages[$player->getName()]}§e'");
+        $this->sendMessageAndSound($player, "§r§e§l(!) §r§eYour ITEM's lore has been set to: '{$this->loremessages[$player->getName()]}§e'");
         $lore = $hand->getLore();
-        $lore[] = $this->messages[$player->getName()];
+        $lore[] = $this->loremessages[$player->getName()];
         $hand->setLore($lore);
         $player->getInventory()->setItemInHand($hand);
         unset($this->lorerenamer[$player->getName()]);
-        unset($this->messages[$player->getName()]);
+        unset($this->loremessages[$player->getName()]);
     }
     
     private function handleLoreNaming(Player $player, string $message): void
@@ -545,6 +640,6 @@ class ItemListener implements Listener {
         $formatted = C::colorize($message);
         $this->sendMessageAndSound($player, "§r§e§l(!) §r§eItem Name Preview: $formatted");
         $player->sendMessage("§r§7Type '§r§aconfirm§7' if this looks correct, otherwise type '§ccancel§7' to start over.");
-        $this->messages[$player->getName()] = $formatted;
+        $this->loremessages[$player->getName()] = $formatted;
     }
 }

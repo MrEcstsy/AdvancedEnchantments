@@ -604,7 +604,7 @@ class Utils {
                 // make the item have the fake ench
             }
                 
-            $item->getNamedTag()->setString("random_book", $group); 
+            $item->getNamedTag()->setString("random_book", strtoupper($group)); 
             
             return $item;
 
@@ -649,21 +649,22 @@ class Utils {
         return $item;
     }
 
-    public static function createEnchantmentBook(Enchantment $enchantment, int $level = 1): ?Item {
+    public static function createEnchantmentBook(Enchantment $enchantment, int $level = 1, ?int $forcedSuccessChance = null, ?int $forcedDestroyChance = null): ?Item {
         $config = self::getConfiguration("config.yml");
         $bookConfig = $config->getNested("enchantment-book", []);
         $bookItemType = $bookConfig['item']['type'] ?? 'enchanted_book';
         $chancesConfig = $config->getNested("chances", []);
-
+        $enchantmentConfig = self::getConfiguration("enchantments.yml")->getAll();
         $item = StringToItemParser::getInstance()->parse($bookItemType)->setCount(1);
     
         $rarity = $enchantment->getRarity();
         $color = CEGroups::translateGroupToColor($rarity);
         $groupName = CEGroups::getGroupName($rarity);
     
+        $enchantmentData = $enchantmentConfig[$enchantment->getName()];
         $name = str_replace(
             ['{group-color}', '{enchant-no-color}', '{level}'],
-            [$color, ucfirst($enchantment->getName()), self::getRomanNumeral($level)],
+            [$color, str_replace("{group-color}", $color, $enchantmentData['display']), self::getRomanNumeral($level)],
             $bookConfig['name']
         );
     
@@ -692,21 +693,24 @@ class Utils {
         $item->setLore($loreLines);
         $item->getNamedTag()->setString("enchant_book", strtolower($enchantment->getName()));
         $item->getNamedTag()->setInt("level", $level);
-
-        if ($chancesConfig['random'] ?? false) {
+    
+        if ($forcedSuccessChance !== null && $forcedDestroyChance !== null) {
+            $successChance = $forcedSuccessChance;
+            $destroyChance = $forcedDestroyChance;
+        } elseif ($chancesConfig['random'] ?? false) {
             $successChance = mt_rand(0, 100);
             $destroyChance = mt_rand(0, 100);
         } else {
             $successRange = explode("-", $chancesConfig['success'] ?? "100");
             $destroyRange = explode("-", $chancesConfig['destroy'] ?? "0");
-            
+    
             $successChance = isset($successRange[1]) ? mt_rand((int)$successRange[0], (int)$successRange[1]) : (int)$successRange[0];
             $destroyChance = isset($destroyRange[1]) ? mt_rand((int)$destroyRange[0], (int)$destroyRange[1]) : (int)$destroyRange[0];
         }
-
+    
         $item->getNamedTag()->setInt("successrate", $successChance);
         $item->getNamedTag()->setInt("destroyrate", $destroyChance);
-
+    
         foreach ($loreLines as &$line) {
             $line = str_replace(
                 ['{success}', '{destroy}'],
@@ -717,7 +721,7 @@ class Utils {
         $item->setLore($loreLines);
     
         return $item;
-    }
+    }    
 
     public static function getSeedItem(?string $seedType): ?Item {
         $seedTypeLower = $seedType !== null ? strtolower($seedType) : null;
@@ -984,17 +988,18 @@ class Utils {
                     break;
                 case 'ADD_FOOD':
                     if (isset($effect['amount']) && isset($effect['target'])) {
+                        $parse = self::parseLevel($effect['amount']);
                         if ($effect['target'] === 'victim') {
                             if ($target instanceof Player) {
-                                $target->getHungerManager()->addFood($effect['amount']);
+                                $target->getHungerManager()->addFood($parse);
                             }
                         } elseif ($effect['target'] === 'attacker') {
                             if ($source instanceof Player) {
-                                $source->getHungerManager()->addFood($effect['amount']);
+                                $source->getHungerManager()->addFood($parse);
                             }
                         } elseif ($effect['target'] === 'self') {
                             if ($source instanceof Player) {
-                                $source->getHungerManager()->addFood($effect['amount']);
+                                $source->getHungerManager()->addFood($parse);
                             }
                         }
                     }
@@ -1496,7 +1501,8 @@ class Utils {
         }
     }
     
-    public static function removePlayerEffects(Player $player, array $effects): void {
+    public static function removePlayerEffects(Player $player, array $effects): void
+    {
         foreach ($effects as $effect) {
             if (!isset($effect['type'])) {
                 continue;
@@ -1513,7 +1519,6 @@ class Utils {
                         $player->getEffects()->remove($potion);
                     }
                     break;
-
             }
         }
     }

@@ -7,7 +7,8 @@ use CortexPE\Commando\BaseCommand;
 use ecstsy\AdvancedEnchantments\Commands\SubCommands\AboutSubCommand;
 use ecstsy\AdvancedEnchantments\Commands\SubCommands\EnchantSubCommand;
 use ecstsy\AdvancedEnchantments\Commands\SubCommands\GiveItemSubCommand;
-use ecstsy\AdvancedEnchantments\Commands\SubCommands\GiveSubCommand;
+use ecstsy\AdvancedEnchantments\Commands\SubCommands\GiveBookSubCommand;
+use ecstsy\AdvancedEnchantments\Commands\SubCommands\GiveRCBookSubCommand;
 use ecstsy\AdvancedEnchantments\Commands\SubCommands\InfoSubCommand;
 use ecstsy\AdvancedEnchantments\Commands\SubCommands\ListSubCommand;
 use ecstsy\AdvancedEnchantments\Commands\SubCommands\ReloadSubCommand;
@@ -30,9 +31,10 @@ class AECommand extends BaseCommand {
         $this->registerSubCommand(new EnchantSubCommand(Loader::getInstance(), "enchant", "Enchant held item"));
         $this->registerSubCommand(new UnenchantSubCommand(Loader::getInstance(), "unenchant", "Unenchant held item"));
         $this->registerSubCommand(new ListSubCommand(Loader::getInstance(), "list", "List all enchantments"));
-        $this->registerSubCommand(new GiveSubCommand(Loader::getInstance(), "give", "Give enchantment book"));
+        $this->registerSubCommand(new GiveBookSubCommand(Loader::getInstance(), "givebook", "Give enchantment book"));
         $this->registerSubCommand(new InfoSubCommand(Loader::getInstance(), "info", "Info about enchantment"));
         $this->registerSubCommand(new ReloadSubCommand(Loader::getInstance(), "reload", "Reload plugin configuration"));
+        $this->registerSubCommand(new GiveRCBookSubCommand(Loader::getInstance(), "givercbook", "Give RC enchantment book"));
     }
 
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void {
@@ -105,6 +107,9 @@ class AECommand extends BaseCommand {
         $sender->sendMessage($footer);
     }
 
+    public function getUsage(): string {
+        return Loader::getInstance()->getLang()->getNested("commands.main.unknown-command");
+    }
     public function getPermission(): string {
         return 'advancedenchantments.default';
     }
