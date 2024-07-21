@@ -13,4 +13,18 @@ permissions:
     default: op
   advancedenchantments.giveitem:
     default: op
+  advancedenchantments.unenchant:
+    default: op 
+  advancedenchantments.list: 
+    default: true 
+  advancedenchantments.give:
+    default: op
+  advancedenchantments.info:
+    default: true
+  advancedenchantments.reload:
+    default: op   
+  advancedenchantments.give-rcbook:
+    default: op
+  advancedenchantments.enchanter:
+    default: true
     
