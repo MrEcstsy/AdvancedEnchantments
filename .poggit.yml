@@ -18,6 +18,6 @@ projects:
         version: "3.0.4"
       - src: "jojoe77777/FormAPI/libFormAPI"
         version: "^2.1.1"
-      - src: "jasonw4331/libCustomPack/libCustomPack"
-        version: "^1.0.1"
+      - src: taylordevs/libCustomPack/libCustomPack
+        version: ^1.0.1
 ...
