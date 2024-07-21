@@ -17,5 +17,5 @@ projects:
       - src: "MrEcstsy/libPiggyEconomy/libPiggyEconomy"
         version: "3.0.4"
       - src: "jojoe77777/FormAPI/FormAPI"
-        version: "2.1.1"
+        version: "^2.1.1"
 ...
