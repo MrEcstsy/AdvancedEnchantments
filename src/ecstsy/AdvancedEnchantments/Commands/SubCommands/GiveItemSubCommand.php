@@ -14,7 +14,7 @@ use pocketmine\utils\TextFormat as C;
 class GiveItemSubcommand extends BaseSubCommand {
 
     private $availableItems = [
-        'sslotincreaser', 'whitescroll', 'mystery', 'secret', 'magic',
+        'slotincreaser', 'whitescroll', 'mystery', 'secret', 'magic',
         'blackscroll', 'randomizer', 'renametag', 'blocktrak', 'fishtrak',
         'stattrak', 'soultracker', 'mobtrak', 'soulgem', 'transmog',
         'holywhitescroll', 'orb'
@@ -27,14 +27,17 @@ class GiveItemSubcommand extends BaseSubCommand {
         $this->registerArgument(0, new RawStringArgument("name", false));
         $this->registerArgument(1, new RawStringArgument("item", false));
         $this->registerArgument(2, new IntegerArgument("amount", false));
-        
+
+        $this->registerArgument(3, new RawStringArgument("extra1", true)); 
+        $this->registerArgument(4, new IntegerArgument("extra2", true)); 
+        $this->registerArgument(5, new IntegerArgument("extra3", true));
     }   
 
     public function onRun(CommandSender $sender, string $aliasUsed, array $args): void
     {
         if (!$sender instanceof Player) {
             if (empty($args)) {
-                $sender->sendMessage("Usage: /$aliasUsed <player> <item> [amount]");
+                $sender->sendMessage("Usage: /$aliasUsed <player> <item> [amount] [extra1] [extra2] [extra3]");
                 $sender->sendMessage("&r&fCurrently Available: &7" . implode(", ", $this->availableItems));
                 return;
             }           
@@ -47,24 +50,60 @@ class GiveItemSubcommand extends BaseSubCommand {
         }
 
         $player = isset($args["name"]) ? Utils::getPlayerByPrefix($args["name"]) : null;
-        $amount = isset($args["amount"]) ? $args["amount"] : null;
+        $amount = isset($args["amount"]) ? $args["amount"] : 1;
         $item = isset($args["item"]) ? strtolower($args["item"]) : null;
 
         if ($player !== null) {
             if ($player->isOnline()) {
                 if (!in_array($item, $this->availableItems)) {
                     $sender->sendMessage($this->getUsage());
-                } elseif (in_array($item, $this->availableItems)) {
-                    $player->sendMessage(C::colorize(str_replace(["{player}", "{item}", "{amount}"], [$player->getName(), C::colorize(Utils::createScroll($item)->getCustomName()), $amount], Loader::getInstance()->getLang()->getNested("commands.main.giveitem.success"))));
-                    if ($amount !== null) {
-                        if ($player->getInventory()->canAddItem(Utils::createScroll($item))) {
-                            $player->getInventory()->addItem(Utils::createScroll($item, $amount));
+                } else {
+                    switch ($item) {
+                        case 'orb':
+                            if (isset($args["extra1"]) && isset($args["extra2"]) && isset($args["extra3"])) {
+                                $orbType = $args["extra1"];
+                                $max = $args["extra2"];
+                                $success = $args["extra3"];
+                                $orbItem = Utils::createOrb($orbType, $max, $success, $amount);
+
+                                if ($player->getInventory()->canAddItem($orbItem)) {
+                                    $player->getInventory()->addItem($orbItem);
+                                } else {
+                                    $player->getWorld()->dropItem($player->getLocation()->asVector3(), $orbItem);
+                                }
+                                $sender->sendMessage(C::colorize(str_replace(["{player}", "{item}", "{amount}"], [$player->getName(), C::colorize($orbItem->getCustomName()), $amount], Loader::getInstance()->getLang()->getNested("commands.main.giveitem.success"))));
+                                Utils::playSound($sender, "random.orb");
+                            } else {
+                                $sender->sendMessage(C::colorize("Usage: /$aliasUsed <player> orb <amount> <orbType> <max> <success>"));
+                            }
+                            break;
+                        case 'randomizer':
+                        case 'secret':
+                            if (isset($args["extra1"])) {
+                                $group = $args["extra1"];
+                                $scrollItem = Utils::createScroll($item, $amount, $group);
+
+                                if ($player->getInventory()->canAddItem($scrollItem)) {
+                                    $player->getInventory()->addItem($scrollItem);
+                                } else {
+                                    $player->getWorld()->dropItem($player->getLocation()->asVector3(), $scrollItem);
+                                }
+                                $sender->sendMessage(C::colorize(str_replace(["{player}", "{item}", "{amount}"], [$player->getName(), C::colorize(Utils::createScroll($item)->getCustomName()), $amount], Loader::getInstance()->getLang()->getNested("commands.main.giveitem.success"))));
+                                Utils::playSound($sender, "random.orb");
+                            } else {
+                                $sender->sendMessage(C::colorize("Usage: /$aliasUsed <player> {$item} <amount> <group>"));
+                            }
+                            break;
+                        default:
+                            $scrollItem = Utils::createScroll($item, $amount);
+                            if ($player->getInventory()->canAddItem($scrollItem)) {
+                                $player->getInventory()->addItem($scrollItem);
+                            } else {
+                                $player->getWorld()->dropItem($player->getLocation()->asVector3(), $scrollItem);
+                            }
+                            $sender->sendMessage(C::colorize(str_replace(["{player}", "{item}", "{amount}"], [$player->getName(), C::colorize(Utils::createScroll($item)->getCustomName()), $amount], Loader::getInstance()->getLang()->getNested("commands.main.giveitem.success"))));
                             Utils::playSound($sender, "random.orb");
-                        } else {
-                            $player->getWorld()->dropItem($player->getLocation()->asVector3(), Utils::createScroll($item, $amount));
-                        }
-                    } else {
-                        $sender->sendMessage($this->getUsage());
+                            break;
                     }
                 }
             }

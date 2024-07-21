@@ -6,6 +6,7 @@ use ecstsy\AdvancedEnchantments\Enchantments\CEGroups;
 use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantment;
 use ecstsy\AdvancedEnchantments\Loader;
 use ecstsy\AdvancedEnchantments\Tasks\ApplyBlockBreakEffectTask;
+use ecstsy\AdvancedEnchantments\Utils\EffectHandler;
 use ecstsy\AdvancedEnchantments\Utils\Utils;
 use pocketmine\block\Farmland;
 use pocketmine\entity\Entity;
@@ -99,7 +100,7 @@ class EnchantmentListener implements Listener {
                                     $level = $newEnchantment->getLevel();
                                     foreach ($enchantmentData['type'] as $type) {
                                         if ($type === 'HELD' && isset($enchantmentData['levels']["$level"]['effects'])) {
-                                            Utils::applyPlayerEffects($holder, null, $enchantmentData['levels']["$level"]['effects']);
+                                            EffectHandler::applyPlayerEffects($holder, null, $enchantmentData['levels']["$level"]['effects']);
                                         }
                                     }
                                 }
@@ -315,7 +316,7 @@ class EnchantmentListener implements Listener {
                                 if ($typeMatches && isset($enchantmentData['levels']["$level"]['effects'])) {
                                     $effects = $enchantmentData['levels']["$level"]['effects'];
 
-                                    Utils::applyPlayerEffects($attacker, $entity, $effects, function ($formula, $level) use ($event) {
+                                    EffectHandler::applyPlayerEffects($attacker, $entity, $effects, function ($formula, $level) use ($event) {
                                         $exp = $event->getXpDropAmount();
                                         $newFormula = str_replace(['{exp}', '{level}'], [$exp, $level], $formula);
                                         try {
@@ -387,7 +388,7 @@ class EnchantmentListener implements Listener {
                                     if (isset($effects['DECREASE_DAMAGE'])) {
                                         $event->setBaseDamage($event->getBaseDamage() - $effects['DECREASE_DAMAGE']);
                                     }
-                                    Utils::applyPlayerEffects($attacker, $victim, $effects);
+                                    EffectHandler::applyPlayerEffects($attacker, $victim, $effects);
                                 }
                             }
                         }
@@ -454,7 +455,7 @@ class EnchantmentListener implements Listener {
                                                 $event->setBaseDamage($event->getBaseDamage() - $amount);
                                             }
     
-                                            Utils::applyPlayerEffects($attacker, $victim, $effects);
+                                            EffectHandler::applyPlayerEffects($attacker, $victim, $effects);
                                         }
                                     }
                                 }
@@ -514,7 +515,7 @@ class EnchantmentListener implements Listener {
                                                     $event->setBaseDamage($event->getBaseDamage() - $amount);
                                                 }
     
-                                                Utils::applyPlayerEffects($shooter, $victim, $effects);
+                                                EffectHandler::applyPlayerEffects($shooter, $victim, $effects);
                                             }
                                         }
                                     }
@@ -582,7 +583,6 @@ class EnchantmentListener implements Listener {
                                     foreach ($enchantmentData['levels']["$level"]['effects'] as $effect) {
                                         if ($effect['type'] === 'BOOST_CHANCE') {
                                             $chance += $effect['value'];
-                                            var_dump("boost: " . $effect['value'] . " new chance: " . $chance);
                                         }
                                     }
                                 }
@@ -607,7 +607,7 @@ class EnchantmentListener implements Listener {
                                                 var_dump("event cancelled");
                                             }
                                             
-                                            Utils::applyPlayerEffects($attacker, $victim, $effects);
+                                            EffectHandler::applyPlayerEffects($attacker, $victim, $effects);
                                         }
                                     }
                                 }
@@ -633,7 +633,7 @@ class EnchantmentListener implements Listener {
     
                                 if (mt_rand(1, 100) <= $chance) {
                                     $effects = $enchantmentData['levels']["$level"]['effects'];
-                                    Utils::applyPlayerEffects($victim, $attacker, $effects);
+                                    EffectHandler::applyPlayerEffects($victim, $attacker, $effects);
                                 }
                             }
                         }
@@ -757,7 +757,7 @@ class EnchantmentListener implements Listener {
     
                                     foreach ($effects as $effect) {
                                         if ($effect['type'] === 'EFFECT_STATIC') {
-                                            Utils::applyPlayerEffects($player, null, $enchantmentData['levels']["$level"]['effects']);
+                                            EffectHandler::applyPlayerEffects($player, null, $enchantmentData['levels']["$level"]['effects']);
                                         }
                                     }
                                 }
@@ -822,7 +822,7 @@ class EnchantmentListener implements Listener {
                     $level = $enchantmentInstance->getLevel();
                     foreach ($enchantmentData['type'] as $type) {
                         if ($type === 'HELD' && isset($enchantmentData['levels']["$level"]['effects'])) {
-                            Utils::applyPlayerEffects($player, null, $enchantmentData['levels']["$level"]['effects']);
+                            EffectHandler::applyPlayerEffects($player, null, $enchantmentData['levels']["$level"]['effects']);
                         }
                     }
                 }
@@ -872,7 +872,7 @@ class EnchantmentListener implements Listener {
                                     }
                                 }
                             }
-                            Utils::applyPlayerEffects($source, $target, $effects);
+                            EffectHandler::applyPlayerEffects($source, $target, $effects);
                         }
                     }
                 }

@@ -12,17 +12,23 @@ use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
+use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\event\player\PlayerItemUseEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\inventory\transaction\action\SlotChangeAction;
 use pocketmine\inventory\transaction\InventoryTransaction;
+use pocketmine\item\Armor;
+use pocketmine\item\Axe;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\enchantment\StringToEnchantmentParser;
 use pocketmine\item\Item;
 use pocketmine\item\ItemTypeIds;
 use pocketmine\item\StringToItemParser;
+use pocketmine\item\Sword;
+use pocketmine\item\Tool;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\Player;
+use pocketmine\scheduler\ClosureTask;
 use pocketmine\utils\Config;
 use pocketmine\world\sound\AnvilFallSound;
 use pocketmine\world\sound\XpLevelUpSound;
@@ -60,6 +66,46 @@ class ItemListener implements Listener {
         }
     }
 
+    public function onDeath(PlayerDeathEvent $event): void {
+        $player = $event->getPlayer();
+        $config = Utils::getConfiguration("config.yml");
+        $keepAfterDeath = $config->getNested("items.holywhitescroll.settings.keep-after-death", false);
+        $loreDisplay = C::colorize($config->getNested("items.holywhitescroll.settings.lore-display"));
+        $protectedItems = [];
+
+        $drops = $event->getDrops();
+        foreach ($drops as $key => $item) {
+            if ($item->getNamedTag()->getTag("protected-holy") !== null) {
+                $protectedItems[] = $item;
+                unset($drops[$key]);
+            }
+        }
+        
+        $event->setDrops($drops);
+
+        if (!empty($protectedItems)) {
+            Loader::getInstance()->getScheduler()->scheduleDelayedTask(new ClosureTask(function() use ($player, $protectedItems, $keepAfterDeath, $loreDisplay): void {
+                foreach ($protectedItems as $item) {
+                    if (!$keepAfterDeath) {
+                        $item->getNamedTag()->removeTag("protected-holy");
+                        $lore = $item->getLore();
+                        $loreLineIndex = array_search($loreDisplay, $lore);
+                        if ($loreLineIndex !== false) {
+                            unset($lore[$loreLineIndex]);
+                        }
+                        $item->setLore(array_values($lore));
+                    }
+    
+                    if ($player->getInventory()->canAddItem($item)) {
+                        $player->getInventory()->addItem($item);
+                    } else {
+                        $player->getWorld()->dropItem($player->getPosition(), $item);
+                    }
+                }
+            }), 20); 
+        }
+    }
+
     private function loadConfigItems(): void {
         $config = Loader::getInstance()->getConfig();
         $this->scrollItems = [];
@@ -70,6 +116,18 @@ class ItemListener implements Listener {
                 $parsedItem = StringToItemParser::getInstance()->parse($itemType);
                 if ($parsedItem !== null) {
                     $this->scrollItems[$key] = $parsedItem->getTypeId();
+                } else {
+                    Loader::getInstance()->getLogger()->warning("Failed to parse item type for $key: $itemType");
+                }
+            }
+        }
+
+        foreach ($config->get("items.orb", []) as $orbType  => $data) {
+            if (in_array($orbType, ["weapon", "armor", "tool"])) {
+                $itemType = strtolower($data['material']);
+                $parsedItem = StringToItemParser::getInstance()->parse($itemType);
+                if ($parsedItem !== null) {
+                    $this->scrollItems["orb." . $orbType] = $parsedItem->getTypeId();
                 } else {
                     Loader::getInstance()->getLogger()->warning("Failed to parse item type for $key: $itemType");
                 }
@@ -265,6 +323,7 @@ class ItemListener implements Listener {
     public function onDropScroll(InventoryTransactionEvent $event): void {
         $transaction = $event->getTransaction();
         $actions = array_values($transaction->getActions());
+        $config = Utils::getConfiguration("config.yml");
 
         if (count($actions) === 2) {
             foreach ($actions as $i => $action) {
@@ -292,6 +351,16 @@ class ItemListener implements Listener {
                                                     $this->handleTransmogScroll($action, $otherAction, $itemClicked, $transaction);
                                                 } elseif ($scrollType === "killcounter") {
                                                     $this->handleKillCounterScroll($action, $otherAction, $itemClicked, $transaction);
+                                                } elseif ($scrollType === "holywhitescroll") {
+                                                    $this->handleHolyWhitescroll($action, $otherAction, $itemClicked, $transaction);
+                                                }
+
+                                                if ($scrollType === "armor") {
+                                                    $this->handleEnchantmentOrbs($action, $otherAction, $itemClicked, $itemClickedWith, $transaction, "armor");
+                                                } elseif ($scrollType === "weapon") {
+                                                    $this->handleEnchantmentOrbs($action, $otherAction, $itemClicked, $itemClickedWith, $transaction, "weapon");
+                                                } elseif ($scrollType === "tool") {
+                                                    $this->handleEnchantmentOrbs($action, $otherAction, $itemClicked, $itemClickedWith, $transaction, "tool");
                                                 }
                                             }
                                         }
@@ -302,6 +371,107 @@ class ItemListener implements Listener {
                     }
                 }
             }
+        }
+    }
+
+    private function handleHolyWhitescroll(SlotChangeAction $action, SlotChangeAction $otherAction, Item $itemClicked, InventoryTransaction $transaction): void {
+        $config = Utils::getConfiguration("config.yml");
+
+        if ($itemClicked->getNamedTag()->getTag("protected-holy") === null) {
+            $itemClicked->getNamedTag()->setString("protected-holy", "true");
+            $lore = $itemClicked->getLore();
+            $lore[] = C::colorize($config->getNested("items.holywhitescroll.settings.lore-display"));
+            $itemClicked->setLore($lore);
+
+            $action->getInventory()->setItem($action->getSlot(), $itemClicked);
+            $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());   
+
+            $messages = $config->getNested("items.holywhitescroll.messages.applied");
+
+            foreach ($messages as $message) {
+                $transaction->getSource()->sendMessage(C::colorize($message));
+            }
+        }
+    }
+
+    private function handleEnchantmentOrbs(SlotChangeAction $action, SlotChangeAction $otherAction, Item $itemClicked, Item $itemClickedWith, InventoryTransaction $transaction, string $type): void {
+        $config = Utils::getConfiguration("config.yml");
+        switch ($type) {
+            case "armor":
+                if ($itemClicked instanceof Armor) {
+                    $itemTag = $itemClicked->getNamedTag();
+                    $max = $itemClickedWith->getNamedTag()->getInt("max");
+                    $new = $itemClickedWith->getNamedTag()->getInt("new");
+                    $success = $itemClickedWith->getNamedTag()->getInt("success");
+                    $lore = C::colorize(str_replace(["{max}", "{increased}"], [$max, $new], $config->getNested("items.orb.lore")));
+                    $currentMax = $itemTag->getInt("max", $config->getNested("slots.max", 9));
+                    if ($max <= $currentMax) {
+                        $transaction->getSource()->sendMessage(C::colorize(Loader::getInstance()->getLang()->getNested("orbs.incompatible")));
+                        return;
+                    }
+        
+                    if (mt_rand(1, 100) <= $success) {
+                        $itemTag->setInt("max", $max);
+                        $itemClicked->setLore([$lore]);
+                        $action->getInventory()->setItem($action->getSlot(), $itemClicked);
+                        $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
+                    } else {
+                        $transaction->getSource()->sendMessage(C::colorize(Loader::getInstance()->getLang()->getNested("orbs.failed")));
+                    }
+                } else {
+                    $transaction->getSource()->sendMessage(C::colorize(Loader::getInstance()->getLang()->getNested("orbs.cannot-apply")));
+                }
+                break;
+            case "weapon":
+                if ($itemClicked instanceof Sword || $itemClicked instanceof Axe) {
+                    $itemTag = $itemClicked->getNamedTag();
+                    $max = $itemClickedWith->getNamedTag()->getInt("max");
+                    $new = $itemClickedWith->getNamedTag()->getInt("new");
+                    $success = $itemClickedWith->getNamedTag()->getInt("success");
+                    $lore = C::colorize(str_replace(["{max}", "{increased}"], [$max, $new], $config->getNested("items.orb.lore")));
+                    $currentMax = $itemTag->getInt("max", $config->getNested("slots.max", 9));
+                    if ($max <= $currentMax) {
+                        $transaction->getSource()->sendMessage(C::colorize(Loader::getInstance()->getLang()->getNested("orbs.incompatible")));
+                        return;
+                    }
+        
+                    if (mt_rand(1, 100) <= $success) {
+                        $itemTag->setInt("max", $max);
+                        $itemClicked->setLore([$lore]);
+                        $action->getInventory()->setItem($action->getSlot(), $itemClicked);
+                        $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
+                    } else {
+                        $transaction->getSource()->sendMessage(C::colorize(Loader::getInstance()->getLang()->getNested("orbs.failed")));
+                    }
+                } else {
+                    $transaction->getSource()->sendMessage(C::colorize(Loader::getInstance()->getLang()->getNested("orbs.cannot-apply")));
+                }
+                break;
+            case "tool":
+                if ($itemClicked instanceof Tool) {
+                    $itemTag = $itemClicked->getNamedTag();
+                    $max = $itemClickedWith->getNamedTag()->getInt("max");
+                    $new = $itemClickedWith->getNamedTag()->getInt("new");
+                    $success = $itemClickedWith->getNamedTag()->getInt("success");
+                    $lore = C::colorize(str_replace(["{max}", "{increased}"], [$max, $new], $config->getNested("items.orb.lore")));
+                    $currentMax = $itemTag->getInt("max", $config->getNested("slots.max", 9));
+                    if ($max <= $currentMax) {
+                        $transaction->getSource()->sendMessage(C::colorize(Loader::getInstance()->getLang()->getNested("orbs.incompatible")));
+                        return;
+                    }
+        
+                    if (mt_rand(1, 100) <= $success) {
+                        $itemTag->setInt("max", $max);
+                        $itemClicked->setLore([$lore]);
+                        $action->getInventory()->setItem($action->getSlot(), $itemClicked);
+                        $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
+                    } else {
+                        $transaction->getSource()->sendMessage(C::colorize(Loader::getInstance()->getLang()->getNested("orbs.failed")));
+                    }
+                } else {
+                    $transaction->getSource()->sendMessage(C::colorize(Loader::getInstance()->getLang()->getNested("orbs.cannot-apply")));
+                }
+                break;
         }
     }
 
@@ -400,7 +570,7 @@ class ItemListener implements Listener {
         $otherAction->getInventory()->setItem($otherAction->getSlot(), VanillaItems::AIR());
         $transaction->getSource()->getWorld()->addSound($transaction->getSource()->getLocation(), new XpLevelUpSound(100));
     }
-
+    
     public function onDropEnchantBook(InventoryTransactionEvent $event): void
     {
         $transaction = $event->getTransaction();
@@ -412,7 +582,7 @@ class ItemListener implements Listener {
             foreach ($actions as $i => $action) {
                 if ($action instanceof SlotChangeAction
                     && ($otherAction = $actions[($i + 1) % 2]) instanceof SlotChangeAction
-                    && ($itemClickedWith = $action->getTargetItem())->getTypeId() === VanillaItems::ENCHANTED_BOOK()->getTypeId()
+                    && ($itemClickedWith = $action->getTargetItem())->getTypeId() === StringToItemParser::getInstance()->parse($config->getNested("enchantment-book.item.type"))->getTypeId()
                     && ($itemClicked = $action->getSourceItem())->getTypeId() !== VanillaItems::AIR()->getTypeId()
                     && $itemClickedWith->getCount() === 1
                     && $itemClickedWith->getNamedTag()->getTag("enchant_book")
@@ -429,7 +599,10 @@ class ItemListener implements Listener {
                             }
                         }
     
-                        if ($customEnchantmentsCount >= $config->getNested("slots.max")) {
+                        $itemTag = $itemClicked->getNamedTag();
+                        $currentMax = $itemTag->getInt("max", $config->getNested("slots.max", 9));
+    
+                        if ($customEnchantmentsCount >= $currentMax) {
                             $transaction->getSource()->sendMessage(C::colorize(Loader::getInstance()->getLang()->getNested("slots.limit-reached")));
                             return;
                         }

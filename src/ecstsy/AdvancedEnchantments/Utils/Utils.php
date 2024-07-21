@@ -19,6 +19,7 @@ use pocketmine\entity\Living;
 use pocketmine\entity\Zombie;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\inventory\Inventory;
+use pocketmine\item\Armor;
 use pocketmine\item\Axe;
 use pocketmine\item\Bow;
 use pocketmine\item\Durable;
@@ -28,6 +29,7 @@ use pocketmine\item\enchantment\StringToEnchantmentParser;
 use pocketmine\item\Item;
 use pocketmine\item\StringToItemParser;
 use pocketmine\item\Sword;
+use pocketmine\item\Tool;
 use pocketmine\item\VanillaItems;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\nbt\tag\CompoundTag;
@@ -366,10 +368,166 @@ class Utils {
 
                 $item->getNamedTag()->setString("advancedscrolls", "transmog");
                 break;
+            case "soulgem":
+                $item = StringToItemParser::getInstance()->parse($cfg->getNested("items.soulgem.type"))->setCount($amount);
 
+                $item->setCustomName(TextFormat::colorize($cfg->getNested("items.soulgem.name")));
+
+                $lore = $cfg->getNested("items.soulgem.lore");
+                $item->setLore(array_map(function ($line) {
+                    return TextFormat::colorize($line);
+                }, $lore));
+
+                $item->getNamedTag()->setString("advancedscrolls", "soulgem");
+                $item->getNamedTag()->setInt("souls", $rate);
+                break;
+            case "itemnametag":
+                $item = StringToItemParser::getInstance()->parse($cfg->getNested("items.itemnametag.type"))->setCount($amount);
+                
+                $item->setCustomName(TextFormat::colorize($cfg->getNested("items.itemnametag.name")));
+
+                $lore = $cfg->getNested("items.itemnametag.lore");
+                $item->setLore(array_map(function ($line) {
+                    return TextFormat::colorize($line);
+                }, $lore));
+
+                $item->getNamedTag()->setString("advancedscrolls", "itemnametag");
+                break;
+            case "blocktrak":
+                $item = StringToItemParser::getInstance()->parse($cfg->getNested("items.blocktrak.type"))->setCount($amount);
+
+                $item->setCustomName(TextFormat::colorize($cfg->getNested("items.blocktrak.name")));
+
+                $lore = $cfg->getNested("items.blocktrak.lore");
+                $item->setLore(array_map(function ($line) {
+                    return TextFormat::colorize($line);
+                }, $lore));
+
+                $item->getNamedTag()->setString("advancedscrolls", "blocktrak");
+                break;
+            case "stattrak":
+                $item = StringToItemParser::getInstance()->parse($cfg->getNested("items.stattrak.type"))->setCount($amount);
+                
+                $item->setCustomName(TextFormat::colorize($cfg->getNested("items.stattrak.name")));
+
+                $lore = $cfg->getNested("items.stattrak.lore");
+                $item->setLore(array_map(function ($line) {
+                    return TextFormat::colorize($line);
+                }, $lore));
+
+                $item->getNamedTag()->setString("advancedscrolls", "stattrak");
+                break;
+            case "mobtrak":
+                $item = StringToItemParser::getInstance()->parse($cfg->getNested("items.mobtrak.type"))->setCount($amount);
+                
+                $item->setCustomName(TextFormat::colorize($cfg->getNested("items.mobtrak.name")));
+
+                $lore = $cfg->getNested("items.mobtrak.lore");
+                $item->setLore(array_map(function ($line) {
+                    return TextFormat::colorize($line);
+                }, $lore));
+
+                $item->getNamedTag()->setString("advancedscrolls", "mobtrak");
+                break;
+            case "holywhitescroll":
+                $item = StringToItemParser::getInstance()->parse($cfg->getNested("items.holywhitescroll.type"))->setCount($amount);
+
+                $item->setCustomName(TextFormat::colorize($cfg->getNested("items.holywhitescroll.name")));
+
+                $lore = $cfg->getNested("items.holywhitescroll.lore");
+                $item->setLore(array_map(function ($line) {
+                    return TextFormat::colorize($line);
+                }, $lore));
+
+                $item->getNamedTag()->setString("advancedscrolls", "holywhitescroll");
+                break;
+            case "mystery":
+                $item = StringToItemParser::getInstance()->parse($cfg->getNested("items.mystery-dust.type"))->setCount($amount);  
+                
+                
         }
 
         return $item;
+    }
+
+    public static function createOrb(string $type, int $max, int $success = 100, int $amount = 1): ?Item {
+        $item = VanillaItems::AIR()->setCount($amount);
+        $cfg = self::getConfiguration("config.yml");
+        $defaultMax = $cfg->getNested("slots.max"); 
+        $new = max(0, $max - $defaultMax);
+    
+        switch (strtolower($type)) {
+            case "weapon":
+                $item = StringToItemParser::getInstance()->parse($cfg->getNested("items.orb.weapon.material"))->setCount($amount);
+    
+                $item->setCustomName(TextFormat::colorize(str_replace('{max}', $max, $cfg->getNested("items.orb.weapon.name"))));
+    
+                $lore = $cfg->getNested("items.orb.weapon.lore");
+                $item->setLore(array_map(function ($line) use ($max, $new, $success) {
+                    return TextFormat::colorize(str_replace(["{max}", "{new}", "{success}"], [$max, $new, $success], $line));
+                }, $lore));
+    
+                $item->getNamedTag()->setString("advancedscrolls", "weapon");
+                $item->getNamedTag()->setInt("max", $max);
+                $item->getNamedTag()->setInt("new", $new);
+                $item->getNamedTag()->setInt("success", $success);
+                break;
+            case "armor":
+                $item = StringToItemParser::getInstance()->parse($cfg->getNested("items.orb.armor.material"))->setCount($amount);
+                
+                $item->setCustomName(TextFormat::colorize(str_replace('{max}', $max, $cfg->getNested("items.orb.armor.name"))));
+    
+                $lore = $cfg->getNested("items.orb.armor.lore");
+                $item->setLore(array_map(function ($line) use ($max, $new, $success) {
+                    return TextFormat::colorize(str_replace(["{max}", "{new}", "{success}"], [$max, $new, $success], $line));
+                }, $lore));
+                
+                $item->getNamedTag()->setString("advancedscrolls", "armor");
+                $item->getNamedTag()->setInt("max", $max);
+                $item->getNamedTag()->setInt("new", $new);
+                $item->getNamedTag()->setInt("success", $success);
+                break;
+            case "tool":
+                $item = StringToItemParser::getInstance()->parse($cfg->getNested("items.orb.tool.material"))->setCount($amount);
+
+                $item->setCustomName(TextFormat::colorize(str_replace('{max}', $max, $cfg->getNested("items.orb.tool.name"))));
+
+                $lore = $cfg->getNested("items.orb.tool.lore");
+                $item->setLore(array_map(function ($line) use ($max, $new, $success) {
+                    return TextFormat::colorize(str_replace(["{max}", "{new}", "{success}"], [$max, $new, $success], $line));
+                }, $lore));
+
+                $item->getNamedTag()->setString("advancedscrolls", "tool");
+                $item->getNamedTag()->setInt("max", $max);
+                $item->getNamedTag()->setInt("new", $new);
+                $item->getNamedTag()->setInt("success", $success);
+                break;
+            default:
+        }
+    
+        return $item;
+    }
+    
+    public static function orbTypeChecker(string $orbType, Item $item): bool {
+        if ($orbType === "weapon") {
+            if ($item instanceof Sword && $item instanceof Axe) {
+                return true;
+            } else {
+                return false;
+            }
+        } elseif ($orbType === "armor") {
+            if ($item instanceof Armor) {
+                return true;
+            } else {
+                return false;
+            }
+        } elseif ($orbType === "tool") {
+            if ($item instanceof Tool) {
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
     public static function createArmorSet(string $setType, string $piece, int $amount = 1): ?Item {
@@ -802,443 +960,6 @@ class Utils {
                 }
             }
         }
-    }
-
-    /**
-     * Applies the enchantment effects
-     *
-     * @param Entity $source
-     * @param ?Entity $target
-     * @param array $effects
-     */
-    public static function applyPlayerEffects(Entity $source, ?Entity $target, array $effects, ?callable $callback = null): void {
-            if (empty($effects)) {
-                return;
-            }
-        
-            $effect = array_shift($effects);
-        
-            if (!isset($effect['type'])) {
-                self::applyPlayerEffects($source, $target, $effects, $callback);
-                return;
-            }
-
-            switch ($effect['type']) {
-                case 'PLAY_SOUND':
-                    if (isset($effect['sound']) && isset($effect['target'])) {
-                        if ($effect['target'] === 'attacker') {
-                            if ($source instanceof Living) {
-                                Utils::playSound($source, $effect['sound'], $effect['volume'] ?? 1);
-
-                            }
-                        }                   
-                    }
-                    break;
-                case "ADD_PARTICLE":
-                    if (isset($effect['particle'])) {
-                        if ($target instanceof Player) {
-                            Utils::spawnParticle($target->getPosition(), $effect['particle']);
-                        }                  
-                    }
-                case 'ADD_POTION':
-                    if (isset($effect['potion'], $effect['duration'], $effect['amplifier'], $effect['target'])) {
-                        $potion = StringToEffectParser::getInstance()->parse($effect['potion']);
-                        if ($potion === null) {
-                            throw new \RuntimeException("Invalid potion effect '" . $effect['potion'] . "'");
-                        }
-    
-                        if ($effect['target'] === 'attacker') {
-                            if ($source instanceof Living) {
-                                $source->getEffects()->add(new EffectInstance($potion, $effect['duration'], $effect['amplifier']));
-                            }
-                        } elseif ($effect['target'] === 'victim') {
-                            if ($target instanceof Living) {
-                                $target->getEffects()->add(new EffectInstance($potion, $effect['duration'], $effect['amplifier']));
-                            }
-                        }
-                    }
-                    break;
-                case "REMOVE_POTION":
-                    if (isset($effect['potion'])) {
-                        $potion = StringToEffectParser::getInstance()->parse($effect['potion']);
-                        if ($potion === null) {
-                            throw new \RuntimeException("Invalid potion effect '" . $effect['potion'] . "'");
-                        }
-
-                        if ($target instanceof Player) {
-                            $target->getEffects()->remove($potion);
-                        }
-                    }
-                    break;
-                case "DOUBLE_DAMAGE":
-                            
-                    break;
-                case "WAIT":
-                    if (isset($effect['time'])) {
-                        $task = new ClosureTask(function() use ($source, $target, $effects): void {
-                            self::applyPlayerEffects($source, $target, $effects);
-                        });
-                        Loader::getInstance()->getScheduler()->scheduleDelayedTask($task, $effect['time']);
-                        return;
-                    }
-                    break;
-                case "DO_HARM":
-                    if (isset($effect['value'])) {
-                        $damage = Utils::parseLevel($effect['value']);
-
-                        if (isset($effect['aoe'])) {
-                            $radius = $effect['aoe']['radius'] ?? 2;
-                            $aoeTarget = $effect['aoe']['target'] ?? 'damageable';
-                            $center = $effect['target'] === 'victim' ? $target : $source;
-
-                            foreach ($center->getWorld()->getNearbyEntities($center->getBoundingBox()->expandedCopy($radius, $radius, $radius)) as $entity) {
-                                if ($aoeTarget === 'damageable' && $entity instanceof Living && $entity !== $target) {
-                                    $entity->attack(new EntityDamageEvent($entity, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage));
-                                }
-                            }
-                        } else {
-                            if ($effect['target'] === 'victim') {
-                                $target->attack(new EntityDamageEvent($target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage));
-                            } elseif ($effect['target'] === 'attacker') {
-                                $source->attack(new EntityDamageEvent($source, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage));
-                            }
-                        }
-                    }
-                    break;
-                case "MESSAGE":
-                    if (isset($effect['text'])) {
-                        $message = TextFormat::colorize($effect['text']);
-                        if ($source instanceof Player) {
-                            if ($effect['target'] === 'self') {
-                                $source->sendMessage($message);
-                            } elseif ($effect['target'] === 'victim' && $target instanceof Player) {
-                                $target->sendMessage($message);
-                            } elseif ($effect['target'] === 'attacker' && $source instanceof Player && $target instanceof Player) {
-                                $source->sendMessage($message);
-                            }
-                        }
-                    }
-                    break;
-                case "EFFECT_STATIC":
-                    if (isset($effect['effect'])) {
-                        $potion = StringToEffectParser::getInstance()->parse($effect['effect']);
-                        if ($potion === null) {
-                            throw new \RuntimeException("Invalid potion effect '" . $effect['effect'] . "'");
-                        }
-
-                        if ($source instanceof Player) {
-                            $source->getEffects()->add(new EffectInstance($potion, 20 * 999999, $effect['amplifier'] ?? 0));
-                        }
-                    }    
-                    break;
-                case "EXP":
-                    if (isset($effect['formula'])) {
-                        if ($source instanceof Player) {
-                            $hand = $source->getInventory()->getItemInHand();
-            
-                            foreach ($hand->getEnchantments() as $enchantmentInstance) {
-                                $enchantment = $enchantmentInstance->getType();
-                                if ($enchantment instanceof CustomEnchantment) {
-                                    $level = $enchantmentInstance->getLevel();
-                                    if ($callback !== null) {
-                                        $callback($effect['formula'], $level);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    break;
-                case "DROP_HEAD":
-                    // use CB Heads plugin for this... or use their code?
-                    break;    
-                case 'PULL_AWAY':
-                    if (isset($effect['distance']) && isset($effect['target'])) {
-                        $distance = $effect['distance'];
-                    
-                        if ($effect['target'] === 'victim') {
-                            if ($target instanceof Living && $source instanceof Living) {
-                                $attackerPosition = $source->getPosition();
-                                $targetPosition = $target->getPosition();
-                                $direction = $targetPosition->subtract($attackerPosition->getX(), $attackerPosition->getY(), $attackerPosition->getZ())->normalize();
-                                $pushVector = $direction->multiply($distance);
-                        
-                                $target->setMotion($pushVector);
-                            }
-                        } elseif ($effect['target'] === 'attacker') {
-                            if ($source instanceof Living && $target instanceof Living) {
-                                $attackerPosition = $target->getPosition();
-                                $targetPosition = $source->getPosition();
-                                $direction = $targetPosition->subtract($attackerPosition->getX(), $attackerPosition->getY(), $attackerPosition->getZ())->normalize();
-                                $pushVector = $direction->multiply($distance);
-                        
-                                $source->setMotion($pushVector);
-                            }
-                        }
-                    }
-                    break;
-                    
-                case 'BURN':
-                    if (isset($effect['time']) && isset($effect['target'])) {
-                        if ($effect['target'] === 'victim') {
-                            $source->setOnFire($effect['time']);
-                        } elseif ($effect['target'] === 'attacker') {
-                            $target->setOnFire($effect['time']);
-                        }
-                    }
-                    break;
-                case 'ADD_FOOD':
-                    if (isset($effect['amount']) && isset($effect['target'])) {
-                        $parse = self::parseLevel($effect['amount']);
-                        if ($effect['target'] === 'victim') {
-                            if ($target instanceof Player) {
-                                $target->getHungerManager()->addFood($parse);
-                            }
-                        } elseif ($effect['target'] === 'attacker') {
-                            if ($source instanceof Player) {
-                                $source->getHungerManager()->addFood($parse);
-                            }
-                        } elseif ($effect['target'] === 'self') {
-                            if ($source instanceof Player) {
-                                $source->getHungerManager()->addFood($parse);
-                            }
-                        }
-                    }
-                    break;    
-                case 'REMOVE_FOOD':
-                    if (isset($effect['amount']) && isset($effect['target'])) {
-                        if ($effect['target'] === 'victim') {
-                            if ($target instanceof Player) {
-                                $target->getHungerManager()->setFood($target->getHungerManager()->getFood() - $effect['amount']);
-                            }
-                        } elseif ($effect['target'] === 'attacker') {
-                            if ($source instanceof Player) {
-                                $source->getHungerManager()->setFood($source->getHungerManager()->getFood() - $effect['amount']);
-                            }
-                        }
-                    }
-                    break;
-                case 'GAURD':
-                    // Summon a mob on defense
-                    break;         
-                case 'PULL_CLOSER':
-                        if (isset($effect['distance']) && isset($effect['target'])) {
-                            $distance = $effect['distance'];
-                            $targetEntity = ($effect['target'] === 'victim') ? $target : $source;
-                    
-                            if ($targetEntity instanceof Entity) {
-                                $attackerPosition = $source->getPosition();
-                                $targetPosition = $targetEntity->getPosition();
-                                $direction = $attackerPosition->subtract($targetPosition->getX(), $targetPosition->getY(), $targetPosition->getZ())->normalize();
-                                $pullVector = $direction->multiply($distance);
-                    
-                                $targetEntity->setMotion($pullVector);
-                            }
-                        }
-                    break;                    
-                case 'LIGHTNING':
-                    // Strike lighting at the entity
-                    break;
-                case 'EXTINGUISH':
-                    if (isset($effect['target'])) {
-                        if ($effect['target'] === 'victim') {
-                            $target->extinguish();
-                        } elseif ($effect['target'] === 'attacker') {
-                            $source->extinguish();
-                        }
-                    }
-                    break;
-                case 'ADD_DURABILITY':
-                    // Not sure if its possible to do this anymore?
-                    break;             
-                case 'ADD_DURABILITY_ITEM':
-                    if (isset($effect['amount']) && $source instanceof Player) {
-                        $item = $source->getInventory()->getItemInHand();
-                        if ($item instanceof Durable && $item->getDamage() > 0) {
-                            $newDurability = $item->getDamage() - $effect['amount'];
-                            $item->setDamage(max(0, $newDurability)); 
-                            $source->getInventory()->setItemInHand($item);
-                        }
-                    }
-                    break;
-                case 'BOOST':
-                    // Launch entity or player into the air e.g launching victim into air when low hp
-                    break;
-                case 'TELEPORT_BEHIND':
-                    // TODO: make teleported player face the oponent
-                    if (isset($effect['target'])) {
-                        $multiplier = 1.5; 
-
-                        if ($effect['target'] === 'victim' && $source instanceof Living && $target instanceof Living) {
-                            $direction = $source->getDirectionVector();
-                            $positionBehind = $source->getPosition()->subtract($direction->multiply($multiplier)->getX(), $direction->multiply($multiplier)->getY(), $direction->multiply($multiplier)->getZ());
-
-                            $highestY = $source->getWorld()->getHighestBlockAt((int)$positionBehind->x, (int)$positionBehind->z);
-                            $positionBehind->y = $highestY + 1;
-
-                            $target->teleport($positionBehind);
-                        } elseif ($effect['target'] === 'attacker' && $source instanceof Living && $target instanceof Living) {
-                            $direction = $target->getDirectionVector();
-                            $positionBehind = $target->getPosition()->subtract($direction->multiply($multiplier)->getX(), $direction->multiply($multiplier)->getY(), $direction->multiply($multiplier)->getZ());
-
-                            $highestY = $target->getWorld()->getHighestBlockAt((int)$positionBehind->x, (int)$positionBehind->z);
-                            $positionBehind->y = $highestY + 1;
-
-                            $source->teleport($positionBehind);
-                        }
-                    }
-                    break;
-                case 'ADD_HEALTH':
-                    if (isset($effect['amount']) && isset($effect['target'])) {
-                        $amount = self::parseLevel($effect['amount']); 
-
-                        if ($effect['target'] === 'victim') {
-                            if ($target instanceof Living) {
-                                $target->setHealth($target->getHealth() + $amount);
-                            }
-                        } elseif ($effect['target'] === 'attacker') {
-                            if ($source instanceof Living) {
-                                $source->setHealth($source->getHealth() + $amount);
-                            }
-                        } elseif ($effect['target'] === 'self') {
-                            if ($source instanceof Living) {
-                                $source->setHealth($source->getHealth() + $amount);
-                            }
-                        }
-                    }
-                    break;
-                case 'CURE':
-                    if (isset($effect['potion']) && isset($effect['target'])) {
-                        $potion = StringToEffectParser::getInstance()->parse($effect['potion']);
-                        if ($potion === null) {
-                            throw new \RuntimeException("Invalid potion effect '" . $effect['potion'] . "'");
-                        }
-
-                        if ($potion->isBad()) {
-                            if ($effect['target'] === 'victim') {
-                                if ($target instanceof Living) {
-                                    $target->getEffects()->remove($potion);
-                                }
-                            } elseif ($effect['target'] === 'attacker') {
-                                if ($source instanceof Living) {
-                                    $source->getEffects()->remove($potion);
-                                }
-                            }
-                        }
-                    }
-                    break;
-                case 'NEGATE_DAMAGE':
-                    // Negate damage
-                    break;    
-                case 'DISABLE_ACTIVATION':
-                    // Prevents an enchantment from activating
-                    break;
-                case 'ADD_DURABILITY_CURRENT_ITEM':
-                    if (isset($effect['amount']) && isset($effect['target'])) {
-
-                        if ($effect['target'] === 'victim') {
-                            if ($target instanceof Player) {
-                                $item = $target->getInventory()->getItemInHand();
-                                if ($item instanceof Durable) {
-                                    $newDurability = $item->getDamage() - $effect['amount'];
-                                    $item->setDamage(max(0, $newDurability)); 
-                                    $target->getInventory()->setItemInHand($item); 
-                                }
-                            }
-                        } elseif ($effect['target'] === 'attacker') {
-                            if ($source instanceof Player) {
-                                $item = $source->getInventory()->getItemInHand();
-                                if ($item instanceof Durable) {
-                                    $newDurability = $item->getDamage() - $effect['amount'];
-                                    $item->setDamage(max(0, $newDurability)); 
-                                    $source->getInventory()->setItemInHand($item); 
-                                }
-                            }
-                        }
-                    }
-                    break;            
-                case 'REMOVE_ENCHANT':
-                    // Removes an enchantment from an item
-                    // used for the example above and for any other reason ppl can be creative...
-                    break;   
-                case 'FIREBALL':
-                    // Arrows turn into fireballs 
-                    break;
-                case 'RESET_COMBO':
-                    // Resets combo
-                    break;
-                case 'KILL':
-                    // Not sure how this would work, but would kill x amount of entities in a mob stack
-                    break;
-                case 'STEAL_HEALTH':
-                    if (isset($effect['amount']) && isset($effect['target'])) {
-                        $amount = self::parseLevel($effect['amount']); 
-                    
-                        if ($effect['target'] === 'attacker') {
-                            $currentHealth = $source->getHealth();
-                            $newHealth = max(0, min($currentHealth + $amount, $source->getMaxHealth()));
-                            $source->setHealth($newHealth);
-                    
-                            $currentVictimHealth = $target->getHealth();
-                            $newVictimHealth = max(0, $currentVictimHealth - $amount);
-                            $target->setHealth($newVictimHealth);
-                        } elseif ($effect['target'] === 'victim') {
-                            $currentHealth = $target->getHealth();
-                            $newHealth = max(0, min($currentHealth + $amount, $target->getMaxHealth()));
-                            $target->setHealth($newHealth);
-                    
-                            $currentAttackerHealth = $source->getHealth();
-                            $newAttackerHealth = max(0, $currentAttackerHealth - $amount);
-                            $source->setHealth($newAttackerHealth);
-                        }
-                    }
-                    break;
-                case 'HALF_DAMAGE':
-                    // Intended to make attacker do half the damage, can be paired with 'ADD_DURABILITY_CURRENT_ITEM' to make an enchant that does 'half damage' in exchange for repairing the item
-                    break;           
-                case 'REPAIR':
-                    break;
-                case 'REMOVE_RANDOM_ARMOR':
-                    break;
-                case 'SPAWN_ARROWS':
-                    // Spawn arrows over opponent
-                    break;         
-                case 'KEEP_ON_DEATH':
-                    break;
-                case 'DISARM':
-                    break;
-                case 'REVIVE':
-                    // 'Revive' the target when killed
-                    break;              
-                case 'PUMPKIN':
-                    // Show the pumpin vignette to the target
-                    break;                  
-                case "STOP_KNOCKBACK":
-
-                    break;
-                case 'REMOVE_SOULS':
-
-                    break;
-                case 'MORE_DROPS':
-
-                    break;      
-                case 'SHUFFLE_HOTBAR':
-
-                    break;           
-                case 'ADD_SOULS':
-                        
-                    break;
-                case 'BLOOD':
-                    if (isset($effect['target'])) {
-                        if ($effect['target'] === 'attacker') {
-                            $source->getWorld()->addParticle($source->getPosition()->asVector3(), new BlockBreakParticle(VanillaBlocks::REDSTONE()));
-                        } elseif ($effect['target'] === 'victim') {
-                            $target->getWorld()->addParticle($target->getPosition()->asVector3(), new BlockBreakParticle(VanillaBlocks::REDSTONE()));
-                        }
-                    }
-                    break;    
-            }
-
-            self::applyPlayerEffects($source, $target, $effects, $callback);
     }
 
     public static function applyBlockEffects(Entity $source, Block $block, array $effects): void {
