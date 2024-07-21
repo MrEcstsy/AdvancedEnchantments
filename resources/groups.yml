@@ -16,12 +16,6 @@ groups:
   SIMPLE:
     global-color: "&7"
     group-name: "Simple"
-    # Use this to change the type of item per group
-    item:
-      type: 'fire_charge'
-      # Use this to set firework charge's color only! Uses RGB
-      # Find colors here: https://htmlcolorcodes.com/color-picker/
-      # rgb-color: 200;200;200
     slot-increaser:
       # How many slots should slot increaser add when using this type increaser
       slots: 1
@@ -34,28 +28,18 @@ groups:
   UNIQUE:
     global-color: "&a"
     group-name: "Unique"
-    item:
-      type: FIREWORK_CHARGE
-      # Use this to set firework charge's color only! Uses RGB
-      # Find colors here: https://htmlcolorcodes.com/color-picker/
-      rgb-color: 122;255;80
     slot-increaser:
       # How many slots should slot increaser add when using this type increaser
       slots: 1
     magic-dust:
       # when right-clicked, it gives magic with success chance
-      # How much success should the dust have? (e.g.: 5 would mean always 5, 5-10 would mean random number from 5 to 10)
+      # How much success should the dust have? (e.g.: 5 would mean alwaygroups 5, 5-10 would mean random number from 5 to 10)
       success: "{1-15}"
       # Chance to give Magic dust instead of Mystery dust
       chance: 22
   ELITE:
     global-color: "&b"
     group-name: "Elite"
-    item:
-      type: FIREWORK_CHARGE
-      # Use this to set firework charge's color only! Uses RGB
-      # Find colors here: https://htmlcolorcodes.com/color-picker/
-      rgb-color: 20;250;255
     slot-increaser:
       # How many slots should slot increaser add when using this type increaser
       slots: 1
@@ -68,11 +52,6 @@ groups:
   ULTIMATE:
     global-color: "&e"
     group-name: "Ultimate"
-    item:
-      type: FIREWORK_CHARGE
-      # Use this to set firework charge's color only! Uses RGB
-      # Find colors here: https://htmlcolorcodes.com/color-picker/
-      rgb-color: 250;255;0
     slot-increaser:
       # How many slots should slot increaser add when using this type increaser
       slots: 1
@@ -85,11 +64,6 @@ groups:
   LEGENDARY:
     global-color: "&6"
     group-name: "Legendary"
-    item:
-      type: FIREWORK_CHARGE
-      # Use this to set firework charge's color only! Uses RGB
-      # Find colors here: https://htmlcolorcodes.com/color-picker/
-      rgb-color: 133;50;168
     slot-increaser:
       # How many slots should slot increaser add when using this type increaser
       slots: 1
@@ -102,11 +76,6 @@ groups:
   FABLED:
     global-color: "&d"
     group-name: "Fabled"
-    item:
-      type: FIREWORK_CHARGE
-      # Use this to set firework charge's color only! Uses RGB
-      # Find colors here: https://htmlcolorcodes.com/color-picker/
-      rgb-color: 133;50;168
     slot-increaser:
       # How many slots should slot increaser add when using this type increaser
       slots: 1

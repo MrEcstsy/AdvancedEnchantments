@@ -82,7 +82,7 @@ commands:
       downgraded: "&2Downgraded {enchant} from level {previous-level} to {level}."
       removed: "&cRemoved the {enchant} enchant from the item."
     giveitem:
-      success: "&7Added {amount}x {item}&7 for player &b{player}"
+      success: "&7Added {amount}x {item}&r&7 for player &b{player}"
     givercbook:
       success: "&aGave &2{player} {amount}x {group} &aright click books!"
     give:
@@ -164,11 +164,11 @@ sets:
       header: "&eList of all available Weapons &7[{size}]"
       weapon: " &8>> &f{weapon}"
     give:
-      success: "&eGave &f {set} &eSet to &f {player}"
+      success: "&eGave &f {set} &r&eSet to &f {player}"
     givepiece:
-      success: "&eGave &f{piece} &efrom &f{set} &eto &f {player}"
+      success: "&eGave &f{piece} &r&efrom &f{set} &eto &f {player}"
     weapon:
-      success: "&eGave &f {weapon} &eSet to &f {player}"
+      success: "&eGave &f {weapon} &r&eSet to &f {player}"
 
 items:
   randomization-scroll:

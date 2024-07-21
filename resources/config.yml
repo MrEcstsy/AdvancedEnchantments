@@ -32,7 +32,11 @@ Version: 1.0.0
 # 
 # Change default messages language. You can modify all messages in AdvancedEnchantments `locale` folder.
 # See all default languages & other info here: https://ae.advancedplugins.net/general-information/languages
+economy:
+  provider: essentialsx
+
 language: en-us
+
 commands:
   enchanter:
     enabled: true
@@ -40,99 +44,153 @@ commands:
     aliases:
     - e
     - ce
-    permission: ae.enchanter
   tinkerer:
     enabled: true
     command: /tinkerer
     aliases:
     - tinker
-    permission: ae.tinkerer
   alchemist:
     enabled: true
     command: /alchemist
     aliases:
     - alchem
-    permission: ae.alchemist
   withdrawsouls:
     enabled: true
     command: /withdrawsouls
     aliases:
     - wsouls
-    permission: ae.withdrawsouls
-  apply:
+  apply: # Reapplies current worn armor's effects, repeating effects as well
     enabled: true
     command: /apply
     aliases:
     - reapply
-    permission: ae.apply
+
 disable-enchants:
-  test_world:
-  - test_enchant
+  # Disable enchants in specific world
+  test_world: # world name
+    - test_enchant
+
+# Only disables armorsets events
+disable-armorsets:
+  # Disable armorsets in specific world
+  test_world: # world name
+    - test_armorset
+
+souls:
+  enabled: true
+  lore: '&cSouls Collected: %souls%'
+  item:
+    type: PAPER
+    name: '&f&lSoul Tracker'
+    lore:
+      - '&7Apply to weapons to start tracking'
+      - '&7souls collected from kills.'
+
+# Enchantments limitation
+# If an item contains the specified lore, or the specified NBT tag, custom enchants
+# will not be able to be applied.
+enchantLimitation:
+  enabled: true
+  lore: '&r&c&lUnmodifiable'
+  NBT-tag: unmodifiable
+
+# Enchantment combining (leveling up) on items.
+# Example: https://media.giphy.com/media/26n6QDunj6iC3Z6Zq/giphy.gif
+combining:
+  enabled: true
+  chances:
+    # If true, Success and Destroy chances will effect combining
+    use-chances: true
+    # If true, item will break (if Protection is added, protection will be removed).
+    break-item: false
+    # If higher level of enchantment already on item is applied, should the enchantment upgrade?
+    upgrade: true
+
+# Limit number of enchantments item can have
+slots:
+  enabled: true
+  # Max number of enchantments
+  max: 9
+  # Max slots increasement with slot increase
+  # This is a total slot number that can be with upgrades
+  max-increase-of-slots: 13
+  # Should it be displayed in lore?
+  display-in-lore: false
+  display: '&eItem Slots&7: {left}'
+
+# Applying enchantment book section
+# Miscellaneous settings for applying
+# enchantment books to items (dragging book to item).
 applying:
   cosmetics:
     applied:
-      particle: HAPPY_VILLAGER
-      sound: LEVEL_UP
+      particle: "minecraft:villager_happy"
+      sound: random.levelup
     failed:
       particle: LAVA_POP
-      sound: ANVIL_BREAK
+      sound: random.anvil_berak
+
 enchanter-books:
   firework-on-open: true
   cosmetics:
-    particle: HAPPY_VILLAGER
-    sound: LEVEL_UP
+    particle: "minecraft:villager_happy"
+    sound: random.levelup
   display-right-click-message: true
-  type: BOOK
-  id: 0
-  custom-model-data: 0
+  # Variables: {enchant} - enchantment name
+  # {enchant-color} - enchantment name with color
+  # {level} - level number in roman
+  message:
+    - '&r&7You examined {group-color}{group-name}&r&7 book and found {enchant-color} {level}'
+  type: 'book'
   force-glow: false
-  name: '{group-color}{group-name}&l Enchantment Book &r&7(Right Click)'
+  name: '&r{group-color}{group-name}&l Enchantment Book &r&7(Right Click)'
   lore:
-  - '&r&7Right Click while holding to receive a random'
-  - '{group-color}{group-name} &r&7enchantment book.'
+    - '&r&7Right Click while holding to receive a random'
+    - '&r{group-color}{group-name} &r&7enchantment book.'
+
 items:
   settings:
     can-apply-to:
-    - ALL_SWORD
-    - ALL_ARMOR
-    - ALL_PICKAXE
-    - ALL_AXE
-    - ALL_SPADE
-    - ALL_HOE
-    - ALL_EDIBLE
-    - BOOK
-    - BOW
-    - CROSSBOW
-    - ELYTRA
-    - TRIDENT
+      - ALL_SWORD
+      - ALL_ARMOR
+      - ALL_PICKAXE
+      - ALL_AXE
+      - ALL_SPADE
+      - ALL_HOE
+      - ALL_EDIBLE
+      - BOOK
+      - BOW
+      - CROSSBOW
+      - ELYTRA
+      - TRIDENT
   transmogscroll:
     type: 'paper'
     name: '&r&c&lTransmog Scroll'
     lore:
-    - '&r&7Organizes enchants by &erarity&7 on item'
-    - '&r&7and adds the &dlore &bcount&7 to name.'
-    - ''
-    - '&r&e&oPlace scroll on item to apply.'
+      - '&r&7Organizes enchants by &erarity&7 on item'
+      - '&r&7and adds the &dlore &bcount&7 to name.'
+      - ''
+      - '&r&e&oPlace scroll on item to apply.'
     enchants-count-formatting: '&d[&b{count}&d]'
   soulgem:
     type: 'emerald'
     name: '&c&lSoul Gem &7[&a{count}&7]'
     lore:
-    - '&7Apply to an item to add souls.'
+      - '&7Apply to an item to add souls.'
   itemnametag:
     type: 'name_tag'
     name: '&6&lItem NameTag &7(Right Click)'
     lore:
-    - '&7Rename and customize your equipment'
+      - '&7Rename and customize your equipment'
     messages:
       success:
-      - '&a&l(!) &aYou have successfully renamed your item to &e%name%'
+        - '&a&l(!) &aYou have successfully renamed your item to &e%name%'
       activated:
-      - '&a&l(!) &aYour next message will rename your item in hand'
+        - '&a&l(!) &aYour next message will rename your item in hand'
       air:
-      - '&c&l(!) &cYou need to be holding an item to do this'
+        - '&c&l(!) &cYou need to be holding an item to do this'
       renaming-not-enchanted-item:
-      - '&c&l(!) &cYou can only rename enchanted items'
+        - '&c&l(!) &cYou can only rename enchanted items'
     settings:
       colors: true
       word-blacklist:
@@ -160,13 +218,13 @@ items:
     destroy: 5
     random: true
   secret-dust:
-    type: 'fireball'
+    type: 'fire_charge'
     name: '{group-color}{group-name}{group-color} Secret Dust &7(Right Click)'
     lore:
     - '&7Contains: &bMagic, &fMystery &7dust.'
     - '&7An unidentified satchel of dust.'
   mystery-dust:
-    type: 'sulphur'
+    type: 'gunpoweder'
     name: '&fMystery Dust'
     lore:
     - '&7A failed bi-product'
@@ -192,117 +250,107 @@ items:
     type: 'slime_ball'
     name: '&aBlockTrak Creator'
     lore:
-    - '&7Track how many blocks you break with a tool'
-    - '&7Drag ontop of another item to apply it'
+      - '&7Track how many blocks you break with a tool'
+      - '&7Drag ontop of another item to apply it'
     messages:
       success:
       - '&7You successfully applied &aBlockTrak Creator'
     settings:
-      lore-display: '&eBlockTrak Blocks Broken: &6%stats%'
+      lore-display: '&r&eBlockTrak Blocks Broken: &6{stats}'
   stattrak:
-    type: MAGMA_CREAM
-    id: 0
-    custom-model-data: 0
-    name: '&eStatTrak Creator'
+    type: 'magma_cream'
+    name: '&r&eStatTrak Creator'
     lore:
-    - '&7Track how many kills you have with a weapon'
-    - '&7Drag ontop of another item to apply it'
+      - '&r&7Track how many kills you have with a weapon'
+      - '&r&7Drag ontop of another item to apply it'
     messages:
       success:
       - '&7You successfully applied &eStatTrak Creator'
     settings:
-      lore-display: '&eStatTrak Kills: &6%stats%'
+      lore-display: '&eStatTrak Kills: &6{stats}'
   mobtrak:
-    type: SLIME_BALL
-    id: 0
-    custom-model-data: 0
-    name: '&3MobTrak Creator'
+    type: "slime_ball"
+    name: '&r&3MobTrak Creator'
     lore:
-    - '&7track how many mob kills you have with a weapon'
-    - '&7Drag ontop of another item to apply it'
+      - '&r&7track how many mob kills you have with a weapon'
+      - '&r&7Drag ontop of another item to apply it'
     messages:
       success:
-      - '&7You successfully applied &3MobTrak Creator'
+        - '&7You successfully applied &3MobTrak Creator'
     settings:
-      lore-display: '&3MobTrak Kills: &f%stats%'
+      lore-display: '&r&3MobTrak Kills: &f{stats}'
   holywhitescroll:
-    type: PAPER
-    id: 0
-    custom-model-data: 0
-    name: '&6&lHoly White Scroll'
+    type: 'paper'
+    name: '&r&6&lHoly White Scroll'
     lore:
-    - '&eA legendary reward that can'
-    - '&ebe applied to armor/weapons,'
-    - '&egives a 100% chance of not losing'
-    - '&ethe blessed item on death.'
+      - '&r&eA legendary reward that can'
+      - '&r&ebe applied to armor/weapons,'
+      - '&r&egives a 100% chance of not losing'
+      - '&r&ethe blessed item on death.'
     messages:
       applied:
-      - '&7You successfully applied &6&lHoly White Scroll'
+        - '&7You successfully applied &6&lHoly White Scroll'
     settings:
-      lore-display: '&e&l*&f&lHOLY&e&l* &f&lPROTECTED'
+      lore-display: '&r&e&l*&f&lHOLY&e&l* &f&lPROTECTED'
       keep-after-death: false
   orb:
-    lore: '&a%max% Enchantment Slots &7(Orb [&a+%increased%&7])'
+    lore: '&r&a{max} Enchantment Slots &7(Orb [&a+{increased}&7])'
     weapon:
-      material: EYE_OF_ENDER
-      custom-model-data: 0
-      name: '&6&lWeapon Enchantment Orb &6[&a&n%max%&6]'
+      material: "ender_eye"
+      name: '&r&6&lWeapon Enchantment Orb &6[&a{max}&6]'
       lore:
-      - '&a%success%% Success Rate'
-      - ''
-      - '&6+%new% Enchantment slots'
-      - '&6%max% Max Enchantment Slots'
-      - ''
-      - '&eIncreases the # of enchantment'
-      - '&eslots on a weapon by %new%,'
-      - '&eup to a maximum of %max%'
-      - '&7Drag n'' Drop onto an item to apply.'
+        - '&r&a{success}% Success Rate'
+        - ''
+        - '&r&6+{new} Enchantment slots'
+        - '&r&6{max} Max Enchantment Slots'
+        - ''
+        - '&r&eIncreases the # of enchantment'
+        - '&r&eslots on a weapon by {new},'
+        - '&r&eup to a maximum of {max}'
+        - '&r&7Drag n'' Drop onto an item to apply.'
     armor:
-      material: EYE_OF_ENDER
-      custom-model-data: 0
-      name: '&6&lArmor Enchantment Orb &6[&a&n%max%&6]'
+      material: "ender_eye"
+      name: '&r&6&lArmor Enchantment Orb &6[&r&a{max}&l&6]'
       lore:
-      - '&a%success%% Success Rate'
-      - ''
-      - '&6+%new% Enchantment slots'
-      - '&6%max% Max Enchantment Slots'
-      - ''
-      - '&eIncreases the # of enchantment'
-      - '&eslots on a piece of armor by %new%,'
-      - '&eup to a maximum of %max%'
-      - '&7Drag n'' Drop onto an item to apply.'
+        - '&r&a{success}% Success Rate'
+        - ''
+        - '&r&6+{new} Enchantment slots'
+        - '&r&6{max} Max Enchantment Slots'
+        - ''
+        - '&r&eIncreases the # of enchantment'
+        - '&r&eslots on a piece of armor by {new},'
+        - '&r&eup to a maximum of {max}'
+        - '&r&7Drag n'' Drop onto an item to apply.'
     tool:
-      material: EYE_OF_ENDER
-      custom-model-data: 0
-      name: '&6&lTool Enchantment Orb &6[&a&n%max%&6]'
+      material: "ender_eye"
+      name: '&r&6&lTool Enchantment Orb &6[&a{max}&6]'
       lore:
-      - '&a%success%% Success Rate'
-      - ''
-      - '&6+%new% Enchantment slots'
-      - '&6%max% Max Enchantment Slots'
-      - ''
-      - '&eIncreases the # of enchantment'
-      - '&eslots on a tool by %new%,'
-      - '&eup to a maximum of %max%'
-      - '&7Drag n'' Drop onto an item to apply.'
-white-scroll:
-  delete: true
-  lore-display: '&f&lPROTECTED'
-  item:
-    type: EMPTY_MAP
-    id: 0
-    custom-model-data: 0
+        - '&r&a%success%% Success Rate'
+        - ''
+        - '&r&6+%new% Enchantment slots'
+        - '&r&6{max} Max Enchantment Slots'
+        - ''
+        - '&r&eIncreases the # of enchantment'
+        - '&r&eslots on a tool by %new%,'
+        - '&r&eup to a maximum of {max}'
+        - '&r&7Drag n'' Drop onto an item to apply.'
+  white-scroll:
+    delete: true
+    lore-display: '&r&f&lPROTECTED'
+    type: 'empty_map'
     force-glow: false
-    name: '&fWhite Scroll'
+    name: "&r&fWhite Scroll"
     lore:
-    - '&fPrevents an item from being destroyed'
-    - '&fdue to a failed Enchantment Book.'
-    - '&ePlace scroll on item to apply.'
+      - '&r&fPrevents an item from being destroyed'
+      - '&r&fdue to a failed Enchantment Book.'
+      - '&r&ePlace scroll on item to apply.'
+
 destroy:
   # Should book be destroyed if it fails?
   enabled: true
   # Should Item be destroyed?
   destroy-item: false
+
 chances:
   # Should book chances be random?
   random: true
@@ -326,8 +374,8 @@ enchantment-book:
   # Variables: {enchant}, {enchant-no-color}, {description}, {level-description}, {applies}, {success}, {destroy}, {color}, {max-level}
   name: '&r{group-color}&l{enchant-no-color} {level}'
   lore:
-  - '&r&a{success}% Success Rate'
-  - '&r&c{destroy}% Destroy Rate'
-  - '&r&e{description}'
-  - '&r&7{applies-to} Enchantment'
-  - "&r&7Drag n' drop onto item to enchant"
+    - '&r&a{success}% Success Rate'
+    - '&r&c{destroy}% Destroy Rate'
+    - '&r&e{description}'
+    - '&r&7{applies-to} Enchantment'
+    - "&r&7Drag n' drop onto item to enchant"
