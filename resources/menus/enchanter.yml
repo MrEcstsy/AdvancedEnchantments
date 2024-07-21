@@ -6,12 +6,12 @@ disabled-in-worlds:
   - bad_world
 messages:
   cannot-afford:
-      - '&cYou do not have enough EXP to purchase that.'
-      - '&7Your XP: {exp}'
+      - '&r&cYou do not have enough EXP to purchase that.'
+      - '&r&7Your XP: {exp}'
   successfull-purchase:
-      - '&a&l(!) &aSuccessful purchase!'
+      - '&r&a&l(!) &r&aSuccessful purchase!'
   inventory-is-full:
-      - '&c&l(!) &cYour inventory is full!'
+      - '&r&c&l(!) &r&cYour inventory is full!'
   sound: "random.levelup"
 go-back-item:
   enabled: true
@@ -147,6 +147,4 @@ confirmation-form:
   enabled: true
   name: '&r&aConfirmation Form'
   accept:
-    text: "&r&aAccept Transaction\n&r&7Click this to pay {price} with {paymentType}"
-  cancel:
-    text: '&r&cClick to cancel'
+    text: "&r&aAccept Transaction\n&r&7Click submit to pay {price} with {paymentType}"
