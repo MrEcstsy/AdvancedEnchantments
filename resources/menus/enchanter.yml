@@ -1,0 +1,152 @@
+# Configuration for Enchanter
+#  Change commands how to access it in top of config.yml
+
+open-sound: "mob.enderdragon.flap"
+disabled-in-worlds:
+  - bad_world
+messages:
+  cannot-afford:
+      - '&cYou do not have enough EXP to purchase that.'
+      - '&7Your XP: {exp}'
+  successfull-purchase:
+      - '&a&l(!) &aSuccessful purchase!'
+  inventory-is-full:
+      - '&c&l(!) &cYour inventory is full!'
+  sound: "random.levelup"
+go-back-item:
+  enabled: true
+  item:
+    type: NETHER_STAR
+  name: '&c&lGo Back'
+  lore: []
+keep-open: true
+inventory:
+  size: 18
+  name: '&8Server Enchanter'
+  settings:
+    # Which level books should enchanter give?
+    # 'ALL' - gives all levels
+    # <number> - Gives specific level of enchant
+    enchanterBookLevel: ALL
+  items:
+    0-17:
+      item:
+        type: "gray_stained_glass_pane"
+        force-glow: false
+      name: ' '
+      lore: []
+    '2':
+      item:
+        type: "stained_glass_pane"
+        force-glow: false
+      enchant-group: SIMPLE
+      eco: exp
+      price: 200
+      sound: 'random.anvil_land'
+      name: '&r&f&lSimple Enchantment &r&7(Right Click)'
+      lore:
+        - '&r&7Examine to recieve a random'
+        - '&r&fsimple &7enchantment book.'
+        - ''
+        - '&r&b&lCOST &r&f{price} EXP &7(You need {left} more)'
+    '3':
+      item:
+        type: "lime_stained_glass_pane"
+        force-glow: false
+      enchant-group: UNIQUE
+      sound: "random.anvil_land"
+      eco: exp
+      price: 800
+      name: '&r&a&lUnique Enchantment &r&7(Right Click)'
+      lore:
+        - '&r&7Examine to recieve a random'
+        - '&r&aunique &7enchantment book.'
+        - ''
+        - '&r&b&lCOST &r&f{price} EXP &7(You need {left} more)'
+    '4':
+      item:
+        type: 'light_blue_stained_glass_pane'
+        force-glow: false
+      enchant-group: ELITE
+      sound: "random.anvil_land"
+      eco: exp
+      price: 2500
+      name: '&r&b&lElite Enchantment &r&7(Right Click)'
+      lore:
+        - '&r&7Examine to recieve a random'
+        - '&r&belite &7enchantment book.'
+        - ''
+        - '&r&b&lCOST &r&f{price} EXP &7(You need {left} more)'
+    '5':
+      item:
+        type: 'yellow_stained_glass_pane'
+        force-glow: false
+      enchant-group: ULTIMATE
+      sound: "random.anvil_land"
+      eco: exp
+      price: 5000
+      name: '&r&e&lUltimate Enchantment &r&7(Right Click)'
+      lore:
+        - '&r&7Examine to recieve a random'
+        - '&r&eultimate &7enchantment book.'
+        - ''
+        - '&r&b&lCOST &r&f{price} EXP &7(You need {left} more)'
+    '6':
+      item:
+        type: 'orange_stained_glass_pane'
+        force-glow: false
+      enchant-group: LEGENDARY
+      sound: "random.anvil_land"
+      eco: exp
+      price: 25000
+      name: '&6&lLegendary Enchantment &r&7(Right Click)'
+      lore:
+        - '&7Examine to recieve a random'
+        - '&6legendary &7enchantment book.'
+        - ''
+        - '&b&lCOST &r&f{price} EXP &7(You need {left} more)'
+    '13':
+      item:
+        type: 'red_stained_glass_pane'
+        force-glow: false
+      enchant-group: FABLED
+      sound: "random.anvil_land"
+      eco: exp
+      price: 50000
+      name: '&r&d&lFabled Enchantment &r&7(Right Click)'
+      lore:
+        - '&r&7Examine to recieve a random'
+        - '&r&dfabled &7enchantment book.'
+        - ''
+        - '&r&b&lCOST &r&f{price} EXP &7(You need {left} more)'
+    '9':
+      item:
+        type: 'anvil'
+        force-glow: false
+      sound: random.anvil_use
+      player-command:
+      - tinkerer
+      name: '&r&fOpen &b&lTinkerer &r&7(Right Click)'
+      lore:
+        - '&r&7Tinker books for Magic Dusts and EXP.'
+        - ''
+        - '&r&b&lRight Click to visit'
+    '17':
+      item:
+        type: 'end_portal_frame'
+        force-glow: false
+      sound: "random.bowhit"
+      player-command:
+        - alchemist
+      name: '&r&fOpen &b&lAlchemist &r&7(Right Click)'
+      lore:
+        - '&r&7Combine Books and Magic Dusts.'
+        - ''
+        - '&r&b&lRight Click to visit'
+confirmation-form:
+  enabled: true
+  name: '&r&aConfirmation Form'
+  accept:
+    text: "&r&aAccept Transaction\n&r&7Click this to pay {price} with {paymentType}"
+  cancel:
+    text: '&r&cClick to cancel'
