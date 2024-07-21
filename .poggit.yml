@@ -14,7 +14,7 @@ projects:
       - src: "muqsit/simplepackethandler/SimplePacketHandler"
         branch: pm5
         version: "^0.1.4"
-      - src: "MrEcstsy/libPiggyEconomy/libPiggyEconomy
+      - src: "MrEcstsy/libPiggyEconomy/libPiggyEconomy"
         version: "3.0.4"
       - src: "jojoe77777/FormAPI/FormAPI"
         version: "2.1.1"
