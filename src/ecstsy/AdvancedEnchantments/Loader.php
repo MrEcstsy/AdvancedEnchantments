@@ -13,7 +13,7 @@ use ecstsy\AdvancedEnchantments\Utils\CustomSizedInvMenuType;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
 use ecstsy\AdvancedEnchantments\Utils\LanguageManager;
-use libCustomPack\libCustomPack;
+use libCustomPack;
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\cache\StaticPacketCache;
