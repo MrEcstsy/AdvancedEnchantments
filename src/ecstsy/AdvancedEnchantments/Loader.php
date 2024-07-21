@@ -12,7 +12,7 @@ use ecstsy\AdvancedEnchantments\Listeners\ItemListener;
 use ecstsy\AdvancedEnchantments\Utils\CustomSizedInvMenuType;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
-use ecstsy\AdvancedEnchantments\utils\LanguageManager;
+use ecstsy\AdvancedEnchantments\Utils\LanguageManager;
 use libCustomPack\libCustomPack;
 use muqsit\invmenu\InvMenuHandler;
 use pocketmine\nbt\tag\CompoundTag;
