@@ -12,17 +12,13 @@ use pocketmine\block\Farmland;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\console\ConsoleCommandSender;
 use pocketmine\data\bedrock\EnchantmentIdMap;
-use pocketmine\entity\effect\EffectInstance;
 use pocketmine\entity\effect\StringToEffectParser;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Living;
-use pocketmine\entity\Zombie;
-use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\inventory\Inventory;
 use pocketmine\item\Armor;
 use pocketmine\item\Axe;
 use pocketmine\item\Bow;
-use pocketmine\item\Durable;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\enchantment\StringToEnchantmentParser;
@@ -38,11 +34,9 @@ use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\network\mcpe\protocol\SpawnParticleEffectPacket;
 use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 use pocketmine\player\Player;
-use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat;
-use pocketmine\world\particle\BlockBreakParticle;
 use pocketmine\world\Position;
 
 class Utils {
@@ -1367,6 +1361,40 @@ class Utils {
         }
 
         return null;
+    }
+
+    public static function applyItemEffects(Player $player, Item $item, array $enchantmentConfig): void
+    {
+        foreach ($item->getEnchantments() as $enchantmentInstance) {
+            $enchantment = $enchantmentInstance->getType();
+            if ($enchantment instanceof CustomEnchantment) {
+                $enchantmentName = strtolower($enchantment->getName());
+                if (isset($enchantmentConfig[$enchantmentName])) {
+                    $enchantmentData = $enchantmentConfig[$enchantmentName];
+                    $level = $enchantmentInstance->getLevel();
+                    if (isset($enchantmentData['levels']["$level"]['effects'])) {
+                        EffectHandler::applyPlayerEffects($player, null, $enchantmentData['levels']["$level"]['effects']);
+                    }
+                }
+            }
+        }
+    }
+
+    public static function removeItemEffects(Player $player, Item $item, array $enchantmentConfig): void
+    {
+        foreach ($item->getEnchantments() as $enchantmentInstance) {
+            $enchantment = $enchantmentInstance->getType();
+            if ($enchantment instanceof CustomEnchantment) {
+                $enchantmentName = strtolower($enchantment->getName());
+                if (isset($enchantmentConfig[$enchantmentName])) {
+                    $enchantmentData = $enchantmentConfig[$enchantmentName];
+                    $level = $enchantmentInstance->getLevel();
+                    if (isset($enchantmentData['levels']["$level"]['effects'])) {
+                        Utils::removePlayerEffects($player, $enchantmentData['levels']["$level"]['effects']);
+                    }
+                }
+            }
+        }
     }
 }
 
