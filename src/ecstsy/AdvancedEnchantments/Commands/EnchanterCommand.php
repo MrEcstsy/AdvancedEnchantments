@@ -2,7 +2,7 @@
 
 namespace ecstsy\AdvancedEnchantments\Commands;
 
-use CortexPE\Commando\BaseCommand;
+use ecstsy\AdvancedEnchantments\libs\CortexPE\Commando\BaseCommand;
 use ecstsy\AdvancedEnchantments\Utils\Menu\EnchanterMenu;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;

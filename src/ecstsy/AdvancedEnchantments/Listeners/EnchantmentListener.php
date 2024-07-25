@@ -32,6 +32,7 @@ use pocketmine\network\mcpe\protocol\MobEquipmentPacket;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat as C;
+
 class EnchantmentListener implements Listener {
 
     private array $cooldowns = [];
@@ -92,7 +93,6 @@ class EnchantmentListener implements Listener {
         $player->getArmorInventory()->getListeners()->add(new CallbackInventoryListener($onSlot, $onContent));
     }
     
-
     public function onInventoryTransaction(InventoryTransactionEvent $event): void
     {
         $transaction = $event->getTransaction();
@@ -121,7 +121,7 @@ class EnchantmentListener implements Listener {
             }
         }
     }
-
+    
     public function onPlayerInteract(PlayerInteractEvent $event): void {
         $player = $event->getPlayer();
         $item = $player->getInventory()->getItemInHand();
@@ -379,10 +379,10 @@ class EnchantmentListener implements Listener {
                                 if (mt_rand(1, 100) <= $chance) {
                                     $effects = $enchantmentData['levels']["$level"]['effects'];
                                     if (isset($effects['INCREASE_DAMAGE'])) {
-                                        $event->setBaseDamage($event->getBaseDamage() + $effects['INCREASE_DAMAGE']);
+                                        $event->setBaseDamage($event->getBaseDamage() * (1 + $effects['INCREASE_DAMAGE'] / 100));
                                     }
                                     if (isset($effects['DECREASE_DAMAGE'])) {
-                                        $event->setBaseDamage($event->getBaseDamage() - $effects['DECREASE_DAMAGE']);
+                                        $event->setBaseDamage($event->getBaseDamage() * (1 - $effects['DECREASE_DAMAGE'] / 100));
                                     }
                                     EffectHandler::applyPlayerEffects($attacker, $victim, $effects);
                                 }
@@ -443,12 +443,12 @@ class EnchantmentListener implements Listener {
                                         foreach ($effects as $effect) {
                                             if ($effect['type'] === "INCREASE_DAMAGE") {
                                                 $amount = Utils::parseLevel($effect['amount'], $level);
-                                                $event->setBaseDamage($event->getBaseDamage() + $amount);
+                                                $event->setBaseDamage($event->getBaseDamage() * (1 + $amount / 100));
                                             }
     
                                             if ($effect['type'] === "DECREASE_DAMAGE") {
                                                 $amount = Utils::parseLevel($effect['amount'], $level);
-                                                $event->setBaseDamage($event->getBaseDamage() - $amount);
+                                                $event->setBaseDamage($event->getBaseDamage() * (1 - $amount / 100));
                                             }
     
                                             EffectHandler::applyPlayerEffects($attacker, $victim, $effects);
@@ -503,12 +503,12 @@ class EnchantmentListener implements Listener {
                                             foreach ($effects as $effect) {
                                                 if ($effect['type'] === "INCREASE_DAMAGE") {
                                                     $amount = Utils::parseLevel($effect['amount'], $level);
-                                                    $event->setBaseDamage($event->getBaseDamage() + $amount);
+                                                    $event->setBaseDamage($event->getBaseDamage() * (1 + $amount / 100));
                                                 }
     
                                                 if ($effect['type'] === "DECREASE_DAMAGE") {
                                                     $amount = Utils::parseLevel($effect['amount'], $level);
-                                                    $event->setBaseDamage($event->getBaseDamage() - $amount);
+                                                    $event->setBaseDamage($event->getBaseDamage() * (1 - $amount / 100));
                                                 }
     
                                                 EffectHandler::applyPlayerEffects($shooter, $victim, $effects);
@@ -537,7 +537,7 @@ class EnchantmentListener implements Listener {
                             if ($enchantmentConfig !== null && isset($enchantmentConfig[$enchantmentName])) {
                                 $enchantmentData = $enchantmentConfig[$enchantmentName];
                                 $level = $enchantmentInstance->getLevel();
-            
+    
                                 $typeMatched = false;
                                 if (is_array($enchantmentData['type'])) {
                                     foreach ($enchantmentData['type'] as $type) {
@@ -551,85 +551,35 @@ class EnchantmentListener implements Listener {
                                         $typeMatched = true;
                                     }
                                 }
-            
+    
                                 if (!$typeMatched) {
                                     continue;
                                 }
-            
-                                if (isset($enchantmentData['levels']["$level"]['conditions'])) {
-                                    $conditions = $enchantmentData['levels']["$level"]['conditions'] ?? [];
-                                    $conditionsMet = empty($conditions) || Utils::checkConditions($conditions, $attacker, $victim);
-                                    
-                                    // Only apply effects if conditions are met and force is false
-                                    if ($conditionsMet) {
-                                        foreach ($conditions as $condition) {
-                                            if (isset($condition['effects'])) {
-                                                foreach ($condition['effects'] as $effect) {
-                                                    if ($effect['type'] === 'BOOST_CHANCE') {
-                                                        if ($condition['force'] === false) { 
-                                                            $chance += $effect['value'];
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                } else {
+    
+                                if (isset($enchantmentData['levels']["$level"]['effects'])) {
                                     $chance = $enchantmentData['levels']["$level"]['chance'] ?? 100;
-                                    foreach ($enchantmentData['levels']["$level"]['effects'] as $effect) {
-                                        if ($effect['type'] === 'BOOST_CHANCE') {
-                                            $chance += $effect['value'];
+    
+                                    if (mt_rand(1, 100) <= $chance) {
+                                        $effects = $enchantmentData['levels']["$level"]['effects'];
+                                        $conditions = $enchantmentData['levels']["$level"]['conditions'] ?? [];
+                                        $conditionsMet = empty($conditions) || Utils::checkConditions($conditions, $attacker, $victim);
+    
+                                        if ($conditionsMet) {
+                                            foreach ($effects as $effect) {
+                                                if ($effect['type'] === "INCREASE_DAMAGE") {
+                                                    $amount = Utils::parseLevel($effect['amount'], $level);
+                                                    $event->setBaseDamage($event->getBaseDamage() * (1 + $amount / 100));
+                                                }
+    
+                                                if ($effect['type'] === "DECREASE_DAMAGE") {
+                                                    $amount = Utils::parseLevel($effect['amount'], $level);
+                                                    $event->setBaseDamage($event->getBaseDamage() * (1 - $amount / 100));
+                                                }
+    
+                                                EffectHandler::applyPlayerEffects($victim, $attacker, $effects);
+                                            }
                                         }
                                     }
-                                }
-                                
-                                if (mt_rand(1, 100) <= $chance) {
-                                    $effects = $enchantmentData['levels']["$level"]['effects'];
-                                    $initialDamage = $event->getBaseDamage();
-            
-                                    if ($initialDamage > 0) {
-                                        foreach ($effects as $effect) {
-                                            if ($effect['type'] === "INCREASE_DAMAGE") {
-                                                $newDamage = $initialDamage + $effect['amount'];
-                                                $event->setBaseDamage($newDamage);
-                                            }
-                                            if ($effect['type'] === "DECREASE_DAMAGE") {
-                                                $newDamage = max(0, $initialDamage - $effect['amount']);
-                                                $event->setBaseDamage($newDamage);
-                                            }
-            
-                                            if ($effect['type'] === "CANCEL_EVENT") {
-                                                $event->cancel();
-                                                var_dump("event cancelled");
-                                            }
-                                            
-                                            EffectHandler::applyPlayerEffects($attacker, $victim, $effects);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                // Victim item in hand
-                $itemInHand = $victim->getInventory()->getItemInHand();
-                foreach ($itemInHand->getEnchantments() as $enchantmentInstance) {
-                    $enchantment = $enchantmentInstance->getType();
-                    if ($enchantment instanceof CustomEnchantment) {
-                        $enchantmentName = $enchantment->getName();
-                        $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
-    
-                        if ($enchantmentConfig !== null && isset($enchantmentConfig[$enchantmentName])) {
-                            $enchantmentData = $enchantmentConfig[$enchantmentName];
-                            $level = $enchantmentInstance->getLevel();
-    
-                            if ($enchantmentData['type'] === $defenseContext && isset($enchantmentData['levels']["$level"]['effects'])) {
-                                $chance = $enchantmentData['levels']["$level"]['chance'] ?? 100;
-    
-                                if (mt_rand(1, 100) <= $chance) {
-                                    $effects = $enchantmentData['levels']["$level"]['effects'];
-                                    EffectHandler::applyPlayerEffects($victim, $attacker, $effects);
                                 }
                             }
                         }
@@ -637,7 +587,7 @@ class EnchantmentListener implements Listener {
                 }
             }
         }
-    }    
+    }
     
 
     private function applyDamageModification(EntityDamageByEntityEvent $event, Player $attacker, $victim, string $context): void {

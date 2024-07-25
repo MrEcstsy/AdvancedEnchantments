@@ -2,8 +2,8 @@
 
 namespace ecstsy\AdvancedEnchantments\Commands;
 
-use CortexPE\Commando\args\IntegerArgument;
-use CortexPE\Commando\BaseCommand;
+use ecstsy\AdvancedEnchantments\libs\CortexPE\Commando\args\IntegerArgument;
+use ecstsy\AdvancedEnchantments\libs\CortexPE\Commando\BaseCommand;
 use ecstsy\AdvancedEnchantments\Commands\SubCommands\AboutSubCommand;
 use ecstsy\AdvancedEnchantments\Commands\SubCommands\EnchantSubCommand;
 use ecstsy\AdvancedEnchantments\Commands\SubCommands\GiveItemSubCommand;
