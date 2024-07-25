@@ -1,0 +1,245 @@
+# Advanced Sets
+# These sets are fully creatable, to create your own simply copy this file, rename it and edit it however you want!
+
+# ** Set Materials:
+# * LEATHER (change-able color) https://github.com/GC-spigot/AdvancedEnchantments/wiki/�-Colored-Leather-Armor
+# * IRON
+# * GOLD
+# * CHAIN
+# * DIAMOND
+
+# ** Enchantment effects are supported - view enchantments.yml to see all effects available for sets.
+
+#  ** Set Events
+#    Change upon what event should sets trigger
+#    - EFFECT_STATIC : Gives permanent potion effect (as long as armor piece is worn)
+#    - ATTACK : Set Event run only when attacking another player
+#    - DEFENSE : Set Event run only when being attacked
+#    - DEFENSE_BOW : Set Event run only when player gets shot by a bow
+#    - MINING : Gives effects when block is mined
+#    - ATTACK_MOB : Gives effects when player attacks mob
+#    - KILL_MOB : Effects given when attacked mob is killed
+#    - BOW : Effects given when player is shot by another player
+#    - KILL_PLAYER : Effects given when attacker kills a player
+#    - DEATH : Runs when player dies due to another player.
+#    - RIGHT_CLICK : Runs when player right clicks held item
+#    - BOW_MOB : Effects given when mob is shot by player
+#    - FIRE : Effects given when player is on fire
+#    - EXPLOSION : Effects given when player gets hit by explosion
+#    - SWING : Enchant runs when player swings
+#    - FALL_DAMAGE : Set Event runs when player takes fall damage
+#    - DEFENSE_MOB : Set Event runs when mob attacks a player
+#    - SHIFT : Set Event runs when player toggles crouching (shifts)
+#    - ITEM_BREAK : Set Event runs when player toggles crouching (shifts)
+#    - CATCH_FISH : Set Event runs when player catches a fish
+# Set Events & Enchant types are intercompatible together
+
+# ** Creating set effects, this explains the system
+# events:
+#  <any of the effects from the list>:
+#    chance: <chance of effects activating, 1-100> (Optional)
+#    cooldown: <cooldown period after effects activate, in seconds> (Optional)
+#    effects: <effects are available in enchantments.yml>
+#    # E.g.: - 'INCREASED_DAMAGE:10'
+
+name: '&f&lMother of Yijki Armor'
+material: DIAMOND
+settings:
+  equipped:
+    - '&r&a&l(!) &aYou have activated the Mother of Yijki set!'
+  unequipped:
+    - '&r&c&l(!) &cYou have deactivated the Mother of Yijki set!'
+items:
+  helmet:
+    name: '&r&f&lMask of Yijki the Destroyer of Worlds'
+    # Item Flags
+    # https://hub.spigotmc.org/javadocs/spigot/org/bukkit/inventory/ItemFlag.html
+    itemFlags: []
+    #  - 'HIDE_POTION_EFFECTS' # An Example Item Flag
+    lore:
+      - '&r&fThe god-mask of Yijki, imbued with'
+      - '&r&fthe power of absolute destruction.'
+      - ''
+      - '&r&f&lYIJKI SET BONUS'
+      - '&r&f* Enemies deal 30% less damage to you.'
+      - '&r&f* Revenge of Yijki Passive Ability'
+      - '&r&7&o(Requires all four yijki items)'
+    enchants: # Supports AdvancedEnchantments CE
+      - enchant: 'protection'
+        level: 4
+      - enchant: 'unbreaking'
+        level: 3
+      - enchant: 'deathbringer'
+        level: '{1-3}'
+      - enchant: 'implants'
+        level: '{1-3}'
+      - enchant: 'drunk'
+        level: '{1-4}'
+      - enchant: 'armored'
+        level: '{1-4}'
+      - enchant: 'enlighted'
+        level: '{1-3}'
+      - enchant: 'valor'
+        level: '{1-5}'
+      - enchant: 'dodge'
+        level: '{1-5}'
+      - enchant: 'guardians'
+        level: '{1-10}'
+      - enchant: 'angelic'
+        level: '{1-5}'
+      - enchant: 'tank'
+        level: '{1-4}'
+      - enchant: 'hardened'
+        level: '{1-3}'
+  chestplate:
+    name: '&r&f&lMantel of Yijki the Destroyer of Worlds'
+    # Item Flags
+    # https://hub.spigotmc.org/javadocs/spigot/org/bukkit/inventory/ItemFlag.html
+    itemFlags: []
+    #  - 'HIDE_POTION_EFFECTS' # An Example Item Flag
+    lore:
+      - '&r&fThe forbidden mantel of Yijki'
+      - '&r&fwoven from the dust of fallen stars'
+      - ''
+      - '&r&f&lYIJKI SET BONUS'
+      - '&r&F* Enemies deal 30% less damage to you.'
+      - '&r&f* Revenge of Yijki Passive Ability'
+      - '&r&7&o(Requires all four yijki items)'
+    enchants: # Supports AdvancedEnchantments CE
+      - enchant: 'protection'
+        level: 4
+      - enchant: 'unbreaking'
+        level: 3
+      - enchant: 'deathbringer'
+        level: '{1-3}'
+      - enchant: 'godlyoverload'
+        level: '{1-3}'
+      - enchant: 'armored'
+        level: '{1-4}'
+      - enchant: 'enlighted'
+        level: '{1-3}'
+      - enchant: 'arrowdeflect'
+        level: '{1-4}'
+      - enchant: 'valor'
+        level: '{1-5}'
+      - enchant: 'dodge'
+        level: '{1-5}'
+      - enchant: 'angelic'
+        level: '{1-5}'
+      - enchant: 'tank'
+        level: '{1-4}'
+  leggings:
+    name: '&r&f&lRobset of Yijki the Destroyer of Worlds'
+    # Item Flags
+    # https://hub.spigotmc.org/javadocs/spigot/org/bukkit/inventory/ItemFlag.html
+    itemFlags: []
+    #  - 'HIDE_POTION_EFFECTS' # An Example Item Flag
+    lore:
+      - '&r&fThe fabled robes of Yijki'
+      - '&r&fhalf angelic, half demonic'
+      - ''
+      - '&r&f&lYIJKI SET BONUS'
+      - '&r&F* Enemies deal 30% less damage to you.'
+      - '&r&f* Revenge of Yijki Passive Ability'
+      - '&r&7&o(Requires all four yijki items)'
+    enchants: # Supports AdvancedEnchantments CE
+      - enchant: 'protection'
+        level: 4
+      - enchant: 'unbreaking'
+        level: 3
+      - enchant: 'deathbringer'
+        level: '{1-3}'
+      - enchant: 'paladinarmored'
+        level: '{1-4}'
+      - enchant: 'armored'
+        level: '{1-4}'
+      - enchant: 'obsidianshield'
+        level: 1
+      - enchant: 'enlighted'
+        level: '{1-3}'
+      - enchant: 'valor'
+        level: '{1-5}'
+      - enchant: 'cactus'
+        level: '{1-2}'
+      - enchant: 'angelic'
+        level: '{1-5}'
+      - enchant: 'clarity'
+        level: '{1-3}'
+      - enchant: 'natureswrath'
+        level: '{1-4}'
+      - enchant: 'tank'
+        level: '{1-4}'
+      - enchant: 'deathgod'
+        level: '{1-3}'
+      - enchant: 'metaphysical'
+        level: '{1-4}'
+  boots:
+    name: '&r&f&lFootwraps of Yijki the Destroyer of Worlds'
+    # Item Flags
+    # https://hub.spigotmc.org/javadocs/spigot/org/bukkit/inventory/ItemFlag.html
+    itemFlags: []
+    #  - 'HIDE_POTION_EFFECTS' # An Example Item Flag
+    lore:
+      - '&r&fLight as a feather, heavy as'
+      - '&r&fa mountain - the footwraps of Yijki'
+      - ''
+      - '&r&f&lYIJKI SET BONUS'
+      - '&r&F* Enemies deal 30% less damage to you.'
+      - '&r&f* Revenge of Yijki Passive Ability'
+      - '&r&7&o(Requires all four yijki items)'
+    enchants: # Supports AdvancedEnchantments CE
+      - enchant: 'protection'
+        level: 4
+      - enchant: 'unbreaking'
+        level: 3
+      - enchant: 'divineenlighted'
+        level: '{1-3}'
+      - enchant: 'etherealdodge'
+        level: '{1-5}'
+      - enchant: 'gears'
+        level: '{1-3}'
+      - enchant: 'armored'
+        level: '{1-4}'
+      - enchant: 'deathbringer'
+        level: '{1-3}'
+      - enchant: 'valor'
+        level: '{1-5}'
+      - enchant: 'enderwalker'
+        level: '{1-5}'
+      - enchant: 'angelic'
+        level: '{1-5}'
+      - enchant: 'tank'
+        level: '{1-4}'
+      - enchant: 'hardened'
+        level: '{1-3}'
+      - enchant: 'springs'
+        level: '{1-3}'
+      - enchant: 'rocketescape'
+        level: '{1-3}'
+      - enchant: 'diminish'
+        level: '{1-6}'
+events:
+  DEFENSE:
+    chance: 100
+    effects:
+      - type: "NEGATE_DAMAGE"
+        amount: 30
+    cooldown: 0
+  ATTACK:
+    chance: 20
+    cooldown: 10
+    effects:
+    - type: MESSAGE
+      text: "&r&f&l*** THE WRATH OF YIJKI <&r&b&l{attacker_name}&f&l>"
+      aoe:
+        radius: 5
+        target: damageable
+    - type: LIGHTNING
+      aoe:
+        radius: 5
+        target: damageable
+    - type: ADD_HARM
+      amount: 2
+      aoe:
+        radius: 5
+        target: damageable

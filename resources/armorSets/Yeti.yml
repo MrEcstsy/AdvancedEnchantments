@@ -2,7 +2,7 @@
 # These sets are fully creatable, to create your own simply copy this file, rename it and edit it however you want!
 
 # ** Set Materials:
-# * LEATHER (change-able color)
+# * LEATHER (change-able color) https://github.com/GC-spigot/AdvancedEnchantments/wiki/�-Colored-Leather-Armor
 # * IRON
 # * GOLD
 # * CHAIN
@@ -42,72 +42,95 @@
 #    effects: <effects are available in enchantments.yml>
 #    # E.g.: - 'INCREASED_DAMAGE:10'
 
-name: '&r&b&lPhantom Armor'
+name: '&r&b&lYeti Armor'
 material: DIAMOND
 settings:
   equipped:
-    - '&r&a&l(!) &r&aYou have activated the Phantom set!'
+    - '&r&a&l(!) &r&aYou have activated the Yeti set!'
   unequipped:
-    - '&r&c&l(!) &r&cYou have deactivated the Phantom set!'
+    - '&r&c&l(!) &r&cYou have deactivated the Yeti set!'
 items:
   helmet:
-    name: '&r&c&lPhantom Hood'
+    name: '&r&b&lYeti Facemask'
+    # Item Flags
+    # https://hub.spigotmc.org/javadocs/spigot/org/bukkit/inventory/ItemFlag.html
+    itemFlags: []
+    #  - 'HIDE_POTION_EFFECTS' # An Example Item Flag
     lore:
-      - '&r&cThe fabled hood of the phantom'
+      - '&r&bThe savage mask of the Yeti.'
       - ''
-      - '&r&c&lPHANTOM SET BONUS'
-      - '&r&cDeal +25% damage to all enemies.'
-      - '&r&7&o(Requires all 4 phantom items.)'
+      - '&r&b&lYETI SET BONUS'
+      - '&r&b* Deal +10% damage to all enemies.'
+      - '&r&b* Enemies deal 10% less damage to you.'
+      - '&r&7&o(Requires all 4 yeti items.)'
     enchants: # Supports AdvancedEnchantments CE
       - enchant: "protection"
         level: 4
       - enchant: "unbreaking"
         level: 3
+      - enchant: "deathbringer"
+        level: "{1-3}"
+      - enchant: "implants"
+        level: "{1-3}"
       - enchant: "drunk"
         level: "{1-4}"
       - enchant: "armored"
         level: "{1-4}"
       - enchant: "enlighted"
         level: "{1-3}"
-      - enchant: "implants"
-        level: "{1-3}"
+      - enchant: "valor"
+        level: "{1-5}"
       - enchant: "angelic"
         level: "{1-5}"
       - enchant: "tank"
         level: "{1-4}"
+      - enchant: "hardened"
+        level: "{1-3}"
   chestplate:
-    name: '&r&c&lPhantom Shroud'
+    name: '&r&b&lBloody Yeti Torso'
+    # Item Flags
+    # https://
+    itemFlags: []
+    #  - 'HIDE_POTION_EFFECTS' # An Example Item Flag
     lore:
-      - '&r&cThe legendary shroud of the Phantom.'
+      - '&r&bThe impermeable chestplate of the Yeti.'
       - ''
-      - '&r&c&lPHANTOM SET BONUS'
-      - '&r&cDeal +25% damage to all enemies.'
-      - '&r&7&o(Requires all 4 phantom items.)'
+      - '&r&b&lYETI SET BONUS'
+      - '&r&b* Deal +10% damage to all enemies.'
+      - '&r&b* Enemies deal 10% less damage to you.'
+      - '&r&7&o(Requires all 4 yeti items.)'
     enchants: # Supports AdvancedEnchantments CE
       - enchant: "protection"
         level: 4
       - enchant: "unbreaking"
         level: 3
+      - enchant: "godlyoverload"
+        level: "{1-3}"
       - enchant: "armored"
         level: "{1-4}"
       - enchant: "enlighted"
         level: "{1-3}"
-      - enchant: "overload"
-        level: "{1-3}"
-      - enchant: dodge
-        level: "{1-4}"
+      - enchant: "guardians"
+        level: "{1-10}"
+      - enchant: "dodge"
+        level: "{1-5}"
       - enchant: "angelic"
         level: "{1-5}"
-      - enchant: tank
+      - enchant: "tank"
         level: "{1-4}"
   leggings:
-    name: '&r&c&lPhantom Robeset'
+    name: '&r&b&lFuzzy Yeti Leggings'
+    # Item Flags
+    # https://hub.spigotmc.org/javadocs/spigot/org/bukkit/inventory/ItemFlag.html
+    itemFlags: []
+    #  - 'HIDE_POTION_EFFECTS' # An Example Item Flag
     lore:
-      - '&r&cThe demonic robe of the Phantom.'
+      - '&r&bThe cozy yet monstrous legs of the Yeti.'
       - ''
-      - '&r&c&lPHANTOM SET BONUS'
-      - '&r&cDeal +25% damage to all enemies.'
-      - '&r&7&o(Requires all 4 phantom items.)'
+      - '&r&b&lYETI SET BONUS'
+      - '&r&b* Deal +10% damage to all enemies.'
+      - '&r&b* Enemies deal 10% less damage to you.'
+      - '&r&7&o(Requires all 4 yeti items.)'
     enchants: # Supports AdvancedEnchantments CE
       - enchant: "protection"
         level: 4
@@ -115,49 +138,69 @@ items:
         level: 3
       - enchant: "deathbringer"
         level: "{1-3}"
+      - enchant: "paladinarmored"
+        level: "{1-4}"
       - enchant: "armored"
         level: "{1-4}"
+      - enchant: "obsidianshield"
+        level: 1
       - enchant: "enlighted"
         level: "{1-3}"
-      - enchant: "obsdianshield"
-        level: 1
+      - enchant: "valor"
+        level: "{1-5}"
+      - enchant: "cactus"
+        level: "{1-2}"
       - enchant: "angelic"
         level: "{1-5}"
-      - enchant: cactus
-        level: "{1-2}"
-      - enchant: tank
+      - enchant: "clarity"
+        level: "{1-3}"
+      - enchant: "natureswrath"
         level: "{1-4}"
   boots:
-    name: '&r&c&lPhantom Sandals'
+    name: '&r&b&lBig-Yeti Boots'
+    # Item Flags
+    # https://hub.spigotmc.org/javadocs/spigot/org/bukkit/inventory/ItemFlag.html
+    itemFlags: []
+    #  - 'HIDE_POTION_EFFECTS' # An Example Item Flag
     lore:
-      - '&r&cThe silent sandals of the Phantom.'
+      - '&r&bBigfoot has nothing on these boots.'
       - ''
-      - '&r&c&lPHANTOM SET BONUS'
-      - '&r&cDeal +25% damage to all enemies.'
-      - '&r&7&o(Requires all 4 phantom items.)'
+      - '&r&b&lYETI SET BONUS'
+      - '&r&b* Deal +10% damage to all enemies.'
+      - '&r&b* Enemies deal 10% less damage to you.'
+      - '&r&7&o(Requires all 4 yeti items.)'
     enchants: # Supports AdvancedEnchantments CE
       - enchant: "protection"
         level: 4
       - enchant: "unbreaking"
         level: 3
-      - enchant: "deathbringer"
-        level: "{1-3}"
-      - enchant: armored
-        level: "{1-3}"
       - enchant: "enlighted"
         level: "{1-3}"
       - enchant: "gears"
         level: "{1-3}"
-      - enchant: "springs"
+      - enchant: "armored"
+        level: "{1-4}"
+      - enchant: "deathbringer"
         level: "{1-3}"
-      - enchant: tank
-        level: "{1-3}"
-      - enchant: rocketescape
+      - enchant: "valor"
+        level: "{1-5}"
+      - enchant: "enderwalker"
+        level: "{1-5}"
+      - enchant: "angelic"
+        level: "{1-5}"
+      - enchant: "tank"
+        level: "{1-4}"
+      - enchant: "hardened"
         level: "{1-3}"
 events:
   ATTACK:
     chance: 100
     effects:
-    - type: INCREASE_DAMAGE
-      amount: 25
+      - type: "INCREASE_DAMAGE"
+        amount: 10
+    cooldown: 0
+  DEFENSE:
+    chance: 100
+    effects:
+      - type: "DECREASE_DAMAGE"
     cooldown: 0
