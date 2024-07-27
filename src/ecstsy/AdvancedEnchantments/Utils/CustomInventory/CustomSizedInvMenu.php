@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace ecstsy\AdvancedEnchantments\Utils;
+namespace ecstsy\AdvancedEnchantments\Utils\CustomInventory;
 
 use ecstsy\AdvancedEnchantments\Loader;
-use muqsit\invmenu\InvMenu;
-use muqsit\invmenu\InvMenuHandler;
+use ecstsy\AdvancedEnchantments\libs\muqsit\invmenu\InvMenu;
+use ecstsy\AdvancedEnchantments\libs\muqsit\invmenu\InvMenuHandler;
 
 final class CustomSizedInvMenu {
 

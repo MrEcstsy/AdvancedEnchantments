@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace ecstsy\AdvancedEnchantments\Utils;
+namespace ecstsy\AdvancedEnchantments\Utils\CustomInventory;
 
-use muqsit\invmenu\inventory\InvMenuInventory;
-use muqsit\invmenu\InvMenu;
-use muqsit\invmenu\type\graphic\ActorInvMenuGraphic;
-use muqsit\invmenu\type\graphic\InvMenuGraphic;
-use muqsit\invmenu\type\graphic\network\ActorInvMenuGraphicNetworkTranslator;
-use muqsit\invmenu\type\InvMenuType;
+use ecstsy\AdvancedEnchantments\libs\muqsit\invmenu\inventory\InvMenuInventory;
+use ecstsy\AdvancedEnchantments\libs\muqsit\invmenu\InvMenu;
+use ecstsy\AdvancedEnchantments\libs\muqsit\invmenu\type\graphic\ActorInvMenuGraphic;
+use ecstsy\AdvancedEnchantments\libs\muqsit\invmenu\type\graphic\InvMenuGraphic;
+use ecstsy\AdvancedEnchantments\libs\muqsit\invmenu\type\graphic\network\ActorInvMenuGraphicNetworkTranslator;
+use ecstsy\AdvancedEnchantments\libs\muqsit\invmenu\type\InvMenuType;
 use pocketmine\entity\Entity;
 use pocketmine\inventory\Inventory;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataCollection;

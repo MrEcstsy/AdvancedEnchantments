@@ -10,13 +10,15 @@ use ecstsy\AdvancedEnchantments\Enchantments\CEGroups;
 use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantments;
 use ecstsy\AdvancedEnchantments\Listeners\EnchantmentListener;
 use ecstsy\AdvancedEnchantments\Listeners\ItemListener;
-use ecstsy\AdvancedEnchantments\Utils\CustomSizedInvMenuType;
+use ecstsy\AdvancedEnchantments\Utils\CustomInventory\CustomSizedInvMenuType;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
 use ecstsy\AdvancedEnchantments\Utils\LanguageManager;
 use ecstsy\AdvancedEnchantments\libs\libCustomPack\libCustomPack;
 use ecstsy\AdvancedEnchantments\libs\muqsit\invmenu\InvMenuHandler;
 use ecstsy\AdvancedEnchantments\Listeners\CustomArmorListener;
+use ecstsy\AdvancedEnchantments\Utils\AdvancedEffect;
+use ecstsy\AdvancedEnchantments\Utils\AdvancedTriggers;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\cache\StaticPacketCache;
 use pocketmine\resourcepacks\ZippedResourcePack;
@@ -62,15 +64,16 @@ class Loader extends PluginBase {
             new EnchanterCommand($this, "enchanter", "Open Enchanter", $config->getNested("commands.enchanter.aliases")),
             new ASetsCommand($this, "asets", "View the armor sets commands")
         ]);
-
-        $listeners = [new ItemListener($this->getConfig()), new EnchantmentListener(), new CustomArmorListener()];
+        $listeners = [new ItemListener($this->getConfig()), new EnchantmentListener(), new CustomArmorListener(), new AdvancedTriggers()];
 
         foreach ($listeners as $listener) {
             $this->getServer()->getPluginManager()->registerEvents($listener, $this);
         }
 
         CEGroups::init();
-
+        AdvancedTriggers::init();
+        AdvancedEffect::init();
+        
         if (!InvMenuHandler::isRegistered()) {
             InvMenuHandler::register($this);
         }

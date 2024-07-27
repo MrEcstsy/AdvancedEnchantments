@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace ecstsy\AdvancedEnchantments\Utils;
+namespace ecstsy\AdvancedEnchantments\Utils\CustomInventory;
 
-use muqsit\invmenu\type\graphic\InvMenuGraphic;
-use muqsit\invmenu\type\graphic\network\InvMenuGraphicNetworkTranslator;
+use ecstsy\AdvancedEnchantments\libs\muqsit\invmenu\type\graphic\InvMenuGraphic;
+use ecstsy\AdvancedEnchantments\libs\muqsit\invmenu\type\graphic\network\InvMenuGraphicNetworkTranslator;
 use pocketmine\inventory\Inventory;
 use pocketmine\player\Player;
 

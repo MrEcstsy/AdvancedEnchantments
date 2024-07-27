@@ -42,13 +42,13 @@
 #    effects: <effects are available in enchantments.yml>
 #    # E.g.: - 'INCREASED_DAMAGE:10'
 
-name: '&f&lMother of Yijki Armor'
+name: '&r&f&lMother of Yijki Armor'
 material: DIAMOND
 settings:
   equipped:
-    - '&r&a&l(!) &aYou have activated the Mother of Yijki set!'
+    - '&r&a&l(!) &r&aYou have activated the Mother of Yijki set!'
   unequipped:
-    - '&r&c&l(!) &cYou have deactivated the Mother of Yijki set!'
+    - '&r&c&l(!) &r&cYou have deactivated the Mother of Yijki set!'
 items:
   helmet:
     name: '&r&f&lMask of Yijki the Destroyer of Worlds'
@@ -222,7 +222,7 @@ events:
   DEFENSE:
     chance: 100
     effects:
-      - type: "NEGATE_DAMAGE"
+      - type: NEGATE_DAMAGE
         amount: 30
     cooldown: 0
   ATTACK:
@@ -230,7 +230,7 @@ events:
     cooldown: 10
     effects:
     - type: MESSAGE
-      text: "&r&f&l*** THE WRATH OF YIJKI <&r&b&l{attacker_name}&f&l>"
+      text: "&r&f&l*** THE WRATH OF YIJKI <&b&l{attacker_name}&f&l>"
       aoe:
         radius: 5
         target: damageable
@@ -238,7 +238,7 @@ events:
       aoe:
         radius: 5
         target: damageable
-    - type: ADD_HARM
+    - type: DO_HARM
       amount: 2
       aoe:
         radius: 5
