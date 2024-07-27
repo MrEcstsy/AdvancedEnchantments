@@ -11,7 +11,7 @@ use pocketmine\world\World;
 
 class TargetHandler {
 
-    public static function handleTarget(string $targetType, array $params, Entity $source): array {
+    public static function handleTarget(string $targetType, array $contextData, Entity $entity): array {
         switch ($targetType) {
             case TargetType::VICTIM:
                 return [$params['victim'] ?? null];
@@ -19,9 +19,8 @@ class TargetHandler {
             case TargetType::ATTACKER:
                 return [$params['attacker'] ?? null];
                 
-            case TargetType::SELF:
-                return [$source];
-            
+                case TargetType::SELF:
+                    return [$entity];
             default:
                 throw new \InvalidArgumentException("Unknown target type: $targetType");
         }
@@ -51,30 +50,26 @@ class TargetHandler {
         // Implementation here
     }
 
-    public static function getAOEEntities(World $world, int $radius, string $targetType, Living $attacker): array {
+    public static function getAOEEntities(World $world, int $radius, string $targetType, Player $attacker): array {
         $entities = [];
         foreach ($world->getNearbyEntities($attacker->getBoundingBox()->expandedCopy($radius, $radius, $radius)) as $entity) {
             if ($entity === $attacker) {
                 continue;
             }
-
-            switch ($targetType) {
+            switch (strtoupper($targetType)) {
                 case 'ALL':
                     $entities[] = $entity;
                     break;
-
                 case 'MOBS':
-                    if ($entity instanceof Entity && !$entity instanceof Player) {
+                    if ($entity instanceof Living && !$entity instanceof Player) {
                         $entities[] = $entity;
                     }
                     break;
-
                 case 'DAMAGEABLE':
                     if ($entity instanceof Living) {
                         $entities[] = $entity;
                     }
                     break;
-
                 case 'UNDAMAGEABLE':
                     if (AllyChecks::isAlly($attacker, $entity)) {
                         $entities[] = $entity;
@@ -82,7 +77,7 @@ class TargetHandler {
                     break;
             }
         }
-
+    
         return $entities;
     }
 
