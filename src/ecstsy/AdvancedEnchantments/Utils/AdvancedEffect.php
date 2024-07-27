@@ -26,29 +26,27 @@ class AdvancedEffect {
         self::$effects[$effectName] = $handler;
     }
 
-    public static function handleEffect(string $effectName, Player $player, array $effectData, array $contextData): void {    
-        if (isset($effectData['aoe_radius']) && isset($effectData['aoe_target'])) {
-            $radius = (int) $effectData['aoe_radius'];
-            $targetType = (string) $effectData['aoe_target'];
+    public static function handleEffect(string $effectName, Player $player, array $effectData, array $contextData): void {
+        if (isset($effectData['aoe']['radius']) && isset($effectData['aoe']['target'])) {
+            $radius = (int) $effectData['aoe']['radius'];
+            $targetType = (string) $effectData['aoe']['target'];
             $entities = TargetHandler::getAOEEntities($player->getWorld(), $radius, $targetType, $player);
     
             foreach ($entities as $entity) {
                 self::applyEffect($effectName, $entity, $effectData, $contextData);
             }
-        } 
-
-        self::applyEffect($effectName, $player, $effectData, $contextData);
-
-    }
+        } else {
+            self::applyEffect($effectName, $player, $effectData, $contextData);
+        }
+    }     
     
-
     private static function applyEffect(string $effectName, $entity, array $effectData, array $contextData): void {
         if (isset(self::$effects[$effectName])) {
             $handler = self::$effects[$effectName];
             if (is_callable($handler)) {
                 call_user_func($handler, $entity, $effectData, $contextData);
             } else {
-                error_log("Handler for effect '$effectName' is not callable.");
+                Loader::getInstance()->getLogger()->warning("Handler for effect '$effectName' is not callable.");
             }
             $handler($entity, $effectData, $contextData);
         } else {
@@ -402,17 +400,19 @@ class AdvancedEffect {
     }
 
     public static function handleDoHarm(Entity $entity, array $effectData, array $contextData): void {
-        if (isset($effectData['target']) && isset($effectData['amount'])) {
+        if (isset($effectData['amount'])) {
             $amount = Utils::parseLevel($effectData['amount']);
             $targetType = $effectData['target'] ?? 'self';
-            $target = TargetHandler::handleTarget($targetType, $contextData, $entity);
-
-            if ($target[0] instanceof Living) {
-                $entity->attack(new EntityDamageEvent($entity, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $amount));
+            $targets = TargetHandler::handleTarget($targetType, $contextData, $entity);
+    
+            foreach ($targets as $target) {
+                if ($target instanceof Living) {
+                    $target->attack(new EntityDamageEvent($target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $amount));
+                }
             }
         }
-    }
-
+    }    
+    
     public static function handleRemoveHealth(Entity $entity, array $effectData, array $contextData): void {
         if (isset($effectData['health'])) {
             $health = Utils::parseLevel($effectData['health']);
@@ -541,7 +541,9 @@ class AdvancedEffect {
             $target = TargetHandler::handleTarget($targetType, $contextData, $entity);
 
             if ($target[0] instanceof Player) {
-                $target[0]->sendMessage(C::colorize($effectData['text']));
+                $text = self::replaceTags($effectData['text'] ?? '', $contextData);
+                $target[0]->sendMessage(C::colorize($text));
+
             }
         }
     }
@@ -728,8 +730,9 @@ class AdvancedEffect {
 
     public static function handleSubtitle(Entity $entity, array $effectData, array $contextData): void {
         if (isset($effectData['text'])) {
+            $text = self::replaceTags($effectData['text'] ?? '', $contextData);
             if ($entity instanceof Player) {
-                $entity->sendSubtitle(C::colorize($effectData['text']));
+                $entity->sendSubTitle(C::colorize($text));
             }
         }
     }
