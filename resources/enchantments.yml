@@ -180,7 +180,7 @@ twinge:
       chance: 5
       cooldown: 3
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: 'slowness'
           amplifier: 0
           duration: 100
@@ -205,7 +205,7 @@ twinge:
       chance: 8
       cooldown: 3
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: 'slowness'
           amplifier: 0
           duration: 100
@@ -230,7 +230,7 @@ twinge:
       chance: 11
       cooldown: 5
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: 'slowness'
           amplifier: 0
           duration: 100
@@ -255,7 +255,7 @@ twinge:
       chance: 14
       cooldown: 6
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: 'slowness'
           amplifier: 0
           duration: 100
@@ -364,7 +364,7 @@ hasten:
       chance: 15
       cooldown: 3
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: 'haste'
           amplifier: 0
           duration: 40
@@ -373,7 +373,7 @@ hasten:
       chance: 25
       cooldown: 3
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: 'haste'
           amplifier: 1
           duration: 60
@@ -382,7 +382,7 @@ hasten:
       chance: 45
       cooldown: 3
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: 'haste'
           amplifier: 2
           duration: 80
@@ -596,12 +596,12 @@ berserk:
       chance: 4
       cooldown: 8
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: 'strength'
           amplifier: 0
           duration: 60
           target: attacker
-        - type: ADD_POTION
+        - type: POTION
           potion: 'mining_fatigue'
           amplifier: 0
           duration: 60
@@ -610,12 +610,12 @@ berserk:
       chance: 8
       cooldown: 7
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: 'strength'
           amplifier: 0
           duration: 80
           target: attacker
-        - type: ADD_POTION
+        - type: POTION
           potion: 'mining_fatigue'
           amplifier: 0
           duration: 80
@@ -624,12 +624,12 @@ berserk:
       chance: 12
       cooldown: 6
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: 'strength'
           amplifier: 0
           duration: 100
           target: attacker
-        - type: ADD_POTION
+        - type: POTION
           potion: 'mining_fatigue'
           amplifier: 0
           duration: 100
@@ -638,12 +638,12 @@ berserk:
       chance: 16
       cooldown: 5
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: 'strength'
           amplifier: 1
           duration: 80
           target: attacker
-        - type: ADD_POTION
+        - type: POTION
           potion: 'mining_fatigue'
           amplifier: 1
           duration: 80
@@ -652,12 +652,12 @@ berserk:
       chance: 20
       cooldown: 4
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: 'strength'
           amplifier: 1
           duration: 100
           target: attacker
-        - type: ADD_POTION
+        - type: POTION
           potion: 'mining_fatigue'
           amplifier: 1
           duration: 100
@@ -679,7 +679,7 @@ featherweight:
       chance: 35
       cooldown: 2
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: 'haste'
           amplifier: 0
           duration: 60
@@ -688,7 +688,7 @@ featherweight:
       chance: 55
       cooldown: 2
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: 'haste'
           amplifier: 1
           duration: 80
@@ -697,7 +697,7 @@ featherweight:
       chance: 75
       cooldown: 2
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: 'haste'
           amplifier: 2
           duration: 100
@@ -1216,7 +1216,7 @@ permafrost:
           target: victim
         - type: BLOOD
           target: victim
-        - type: ADD_POTION
+        - type: POTION
           potion: "slowness"
           amplifier: 0
           duration: 20
@@ -1244,7 +1244,7 @@ permafrost:
           target: victim
         - type: BLOOD
           target: victim
-        - type: ADD_POTION
+        - type: POTION
           potion: "slowness"
           amplifier: 0
           duration: 40
@@ -1272,7 +1272,7 @@ permafrost:
           target: victim
         - type: BLOOD
           target: victim
-        - type: ADD_POTION
+        - type: POTION
           potion: "slowness"
           amplifier: 0
           duration: 50
@@ -1300,7 +1300,7 @@ permafrost:
           target: victim
         - type: BLOOD
           target: victim
-        - type: ADD_POTION
+        - type: POTION
           potion: "slowness"
           amplifier: 0
           duration: 60
@@ -1328,7 +1328,7 @@ permafrost:
           target: victim
         - type: BLOOD
           target: victim
-        - type: ADD_POTION
+        - type: POTION
           potion: "slowness"
           amplifier: 1
           duration: 60
@@ -1421,12 +1421,12 @@ reaper:
       chance: 8
       cooldown: 16
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "wither"
           amplifier: 0
           duration: 35
           target: victim
-        - type: ADD_POTION
+        - type: POTION
           potion: "blindness"
           amplifier: 0
           duration: 35
@@ -1435,12 +1435,12 @@ reaper:
       chance: 10
       cooldown: 14
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "wither"
           amplifier: 0
           duration: 40
           target: victim
-        - type: ADD_POTION
+        - type: POTION
           potion: "blindness"
           amplifier: 0
           duration: 40
@@ -1449,12 +1449,12 @@ reaper:
       chance: 12
       cooldown: 12
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "wither"
           amplifier: 0
           duration: 50
           target: victim
-        - type: ADD_POTION
+        - type: POTION
           potion: "blindness"
           amplifier: 0
           duration: 50
@@ -1463,12 +1463,12 @@ reaper:
       chance: 99
       cooldown: 10
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "wither"
           amplifier: 0
           duration: 60
           target: victim
-        - type: ADD_POTION
+        - type: POTION
           potion: "blindness"
           amplifier: 0
           duration: 60
@@ -1578,7 +1578,7 @@ blind:
       chance: 17
       cooldown: 5
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "blindness"
           amplifier: 0
           duration: 60
@@ -1587,7 +1587,7 @@ blind:
       chance: 25
       cooldown: 5
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "blindness"
           amplifier: 1
           duration: 80
@@ -1596,7 +1596,7 @@ blind:
       chance: 33
       cooldown: 5
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "blindness"
           amplifier: 2
           duration: 100
@@ -1648,7 +1648,7 @@ frozen:
       chance: 19
       cooldown: 6
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "slowness"
           amplifier: 0
           duration: 40
@@ -1657,7 +1657,7 @@ frozen:
       chance: 19
       cooldown: 6
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "slowness"
           amplifier: 1
           duration: 50
@@ -1666,7 +1666,7 @@ frozen:
       chance: 26
       cooldown: 6
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "slowness"
           amplifier: 2
           duration: 60
@@ -1689,7 +1689,7 @@ poison:
       chance: 6
       cooldown: 2
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "poison"
           amplifier: 0
           duration: 80
@@ -1698,7 +1698,7 @@ poison:
       chance: 22
       cooldown: 2
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "poison"
           amplifier: 0
           duration: 120
@@ -1707,7 +1707,7 @@ poison:
       chance: 35
       cooldown: 2
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "poison"
           amplifier: 1
           duration: 80
@@ -1733,7 +1733,7 @@ virus:
       chance: 6
       cooldown: 2
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "poison"
           amplifier: 0
           duration: 80
@@ -1742,7 +1742,7 @@ virus:
       chance: 22
       cooldown: 2
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "poison"
           amplifier: 0
           duration: 120
@@ -1751,7 +1751,7 @@ virus:
       chance: 35
       cooldown: 2
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "poison"
           amplifier: 1
           duration: 80
@@ -1774,7 +1774,7 @@ poisoned:
       chance: 8
       cooldown: 6
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "poison"
           amplifier: 0
           duration: 60
@@ -1783,7 +1783,7 @@ poisoned:
       chance: 12
       cooldown: 6
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "poison"
           amplifier: 0
           duration: 120
@@ -1792,7 +1792,7 @@ poisoned:
       chance: 17
       cooldown: 6
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "poison"
           amplifier: 1
           duration: 60
@@ -1801,7 +1801,7 @@ poisoned:
       chance: 23
       cooldown: 6
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "poison"
           amplifier: 1
           duration: 120
@@ -1893,12 +1893,12 @@ snare:
       chance: 12
       cooldown: 3
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "slowness"
           amplifier: 0
           duration: 80
           target: victim
-        - type: ADD_POTION
+        - type: POTION
           potion: "mining_fatigue"
           amplifier: 0
           duration: 80
@@ -1907,12 +1907,12 @@ snare:
       chance: 19
       cooldown: 3
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "slowness"
           amplifier: 0
           duration: 120
           target: victim
-        - type: ADD_POTION
+        - type: POTION
           potion: "mining_fatigue"
           amplifier: 0
           duration: 120
@@ -1921,12 +1921,12 @@ snare:
       chance: 24
       cooldown: 3
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "slowness"
           amplifier: 1
           duration: 80
           target: victim
-        - type: ADD_POTION
+        - type: POTION
           potion: "mining_fatigue"
           amplifier: 1
           duration: 80
@@ -1935,12 +1935,12 @@ snare:
       chance: 29
       cooldown: 3
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "slowness"
           amplifier: 1
           duration: 120
           target: victim
-        - type: ADD_POTION
+        - type: POTION
           potion: "mining_fatigue"
           amplifier: 1
           duration: 120
@@ -1989,7 +1989,7 @@ voodoo:
       chance: 5
       cooldown: 2
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "weakness"
           amplifier: 0
           duration: 60
@@ -1998,7 +1998,7 @@ voodoo:
       chance: 7
       cooldown: 2
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "weakness"
           amplifier: 0
           duration: 100
@@ -2007,7 +2007,7 @@ voodoo:
       chance: 9
       cooldown: 2
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "weakness"
           amplifier: 0
           duration: 140
@@ -2016,7 +2016,7 @@ voodoo:
       chance: 13
       cooldown: 2
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "weakness"
           amplifier: 0
           duration: 60
@@ -2025,7 +2025,7 @@ voodoo:
       chance: 16
       cooldown: 2
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "weakness"
           amplifier: 0
           duration: 100
@@ -2034,7 +2034,7 @@ voodoo:
       chance: 21
       cooldown: 2
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "weakness"
           amplifier: 0
           duration: 120
@@ -2056,7 +2056,7 @@ wither:
       chance: 9
       cooldown: 3
       effects:  
-        - type: ADD_POTION
+        - type: POTION
           potion: "wither"
           amplifier: 0
           duration: 60
@@ -2065,7 +2065,7 @@ wither:
       chance: 11
       cooldown: 3
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "wither"
           amplifier: 0
           duration: 100
@@ -2074,7 +2074,7 @@ wither:
       chance: 14
       cooldown: 3
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "wither"
           amplifier: 0
           duration: 140
@@ -2083,7 +2083,7 @@ wither:
       chance: 17
       cooldown: 3
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "wither"
           amplifier: 1
           duration: 60
@@ -2092,7 +2092,7 @@ wither:
       chance: 21
       cooldown: 3
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "wither"
           amplifier: 1
           duration: 100
@@ -2118,7 +2118,7 @@ perish:
       chance: 9
       cooldown: 3
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "wither"
           amplifier: 0
           duration: 60
@@ -2127,7 +2127,7 @@ perish:
       chance: 11
       cooldown: 3
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "wither"
           amplifier: 0
           duration: 100
@@ -2136,7 +2136,7 @@ perish:
       chance: 14
       cooldown: 3
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "wither"
           amplifier: 0
           duration: 140
@@ -2145,7 +2145,7 @@ perish:
       chance: 17
       cooldown: 3
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "wither"
           amplifier: 1
           duration: 60
@@ -2154,7 +2154,7 @@ perish:
       chance: 21
       cooldown: 3
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "wither"
           amplifier: 1
           duration: 100
@@ -2623,7 +2623,7 @@ curse:
     '1':
       chance: 13
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "mining_fatigue"
           amplifier: 0
           duration: 100
@@ -2632,7 +2632,7 @@ curse:
       chance: 17
       cooldown: 15
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "mining_fatigue"
           amplifier: 1
           duration: 100
@@ -2653,7 +2653,7 @@ diminish:
     '1':
       chance: 13
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "mining_fatigue"
           amplifier: 0
           duration: 100
@@ -2674,7 +2674,7 @@ interrupt:
     '1':
       chance: 13
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "mining_fatigue"
           amplifier: 0
           duration: 100
@@ -2683,7 +2683,7 @@ interrupt:
       chance: 17
       cooldown: 15
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "mining_fatigue"
           amplifier: 1
           duration: 100
@@ -3038,7 +3038,7 @@ iceaspect:
       chance: 15
       cooldown: 2
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "slowness"
           amplifier: 1
           duration: 100
@@ -3047,7 +3047,7 @@ iceaspect:
       chance: 23
       cooldown: 2
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "slowness"
           amplifier: 1
           duration: 100
@@ -3056,7 +3056,7 @@ iceaspect:
       chance: 31
       cooldown: 2
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "slowness"
           amplifier: 1
           duration: 100
@@ -3129,7 +3129,7 @@ safeguard:
       chance: 5
       cooldown: 5
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "resistance"
           amplifier: 0
           duration: 60
@@ -3138,7 +3138,7 @@ safeguard:
       chance: 9
       cooldown: 5
       effects:
-        - type: ADD_POTION
+        - type: POTION
           potion: "resistance"
           amplifier: 1
           duration: 60
