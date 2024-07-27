@@ -2,9 +2,9 @@
 
 namespace ecstsy\AdvancedEnchantments\Utils\Menu;
 
-use muqsit\invmenu\InvMenu;
-use muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
-use muqsit\invmenu\type\InvMenuTypeIds;
+use ecstsy\AdvancedEnchantments\libs\muqsit\invmenu\InvMenu;
+use ecstsy\AdvancedEnchantments\libs\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
+use ecstsy\AdvancedEnchantments\libs\muqsit\invmenu\type\InvMenuTypeIds;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\item\VanillaItems;
 use pocketmine\utils\TextFormat as C;

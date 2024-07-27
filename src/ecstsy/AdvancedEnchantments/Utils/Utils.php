@@ -5,6 +5,8 @@ namespace ecstsy\AdvancedEnchantments\Utils;
 use ecstsy\AdvancedEnchantments\Enchantments\CEGroups;
 use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantment;
 use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantmentIds;
+use ecstsy\AdvancedEnchantments\Listeners\CustomArmorListener;
+use ecstsy\AdvancedEnchantments\Listeners\EnchantmentListener;
 use ecstsy\AdvancedEnchantments\Loader;
 use pocketmine\block\Block;
 use pocketmine\block\BlockTypeIds;
@@ -15,6 +17,7 @@ use pocketmine\data\bedrock\EnchantmentIdMap;
 use pocketmine\entity\effect\StringToEffectParser;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Living;
+use pocketmine\inventory\ArmorInventory;
 use pocketmine\inventory\Inventory;
 use pocketmine\item\Armor;
 use pocketmine\item\Axe;
@@ -42,6 +45,10 @@ use pocketmine\world\Position;
 class Utils {
 
     private static $isProcessing = false;
+
+    public static bool $activated = false;
+
+    public static array $activeSets = [];
 
     public static function getConfiguration(string $fileName): Config {
         $pluginFolder = Loader::getInstance()->getDataFolder();
@@ -524,62 +531,69 @@ class Utils {
         }
     }
 
-    public static function createArmorSet(string $setType, string $piece, int $amount = 1): ?Item {
+    public static function createArmorSet(string $setType, string $piece, int $amount = 1): ?array {
         $cfg = Utils::getConfiguration("armorSets/$setType.yml");
-
+    
         if ($cfg === null) {
             Loader::getInstance()->getLogger()->warning("The set type '$setType' does not exist.");
             return null;
         }
-
+    
         $validPieces = ['helmet', 'chestplate', 'leggings', 'boots'];
         if (!in_array($piece, $validPieces) && $piece !== 'ALL') {
             Loader::getInstance()->getLogger()->warning("Invalid armor piece specified: '$piece'.");
             return null;
         }
-
+    
         $materialType = strtoupper($cfg->get('material', 'DIAMOND'));
         $items = $cfg->get('items');
-
+    
+        $itemsToGive = [];
+    
         if ($piece === 'ALL') {
-            $itemsToGive = [];
             foreach ($validPieces as $validPiece) {
                 if (isset($items[$validPiece])) {
-                    $itemsToGive[] = self::createItem($materialType, $items[$validPiece], $validPiece, $amount);
+                    $item = self::createItem($materialType, $items[$validPiece], $validPiece, $amount);
+                    $item->getNamedTag()->setString("advancedsets", strtolower($setType));
+                    $itemsToGive[] = $item;
                 }
             }
             return $itemsToGive;
         }
-
+    
         if (!isset($items[$piece])) {
             Loader::getInstance()->getLogger()->warning("The piece '$piece' does not exist in the set type '$setType'.");
             return null;
         }
-
-        return self::createItem($materialType, $items[$piece], $piece, $amount);
+    
+        $item = self::createItem($materialType, $items[$piece], $piece, $amount);
+        $item->getNamedTag()->setString("advancedsets", strtolower($setType));
+        $itemsToGive[] = $item;
+    
+        return $itemsToGive;
     }
-
+    
     private static function createItem(string $materialType, array $itemConfig, string $piece, int $amount): ?Item {
         $item = null;
 
         $pieceMap = [
             'helmet' => [
                 'DIAMOND' => VanillaItems::DIAMOND_HELMET(),
-                'LEATHER' => VanillaItems::LEATHER_HELMET(),
+                'LEATHER' => VanillaItems::LEATHER_CAP(),
                 'IRON' => VanillaItems::IRON_HELMET(),
                 'GOLD' => VanillaItems::GOLDEN_HELMET(),
                 'CHAIN' => VanillaItems::CHAINMAIL_HELMET(),
             ],
             'chestplate' => [
                 'DIAMOND' => VanillaItems::DIAMOND_CHESTPLATE(),
-                'LEATHER' => VanillaItems::LEATHER_CHESTPLATE(),
+                'LEATHER' => VanillaItems::LEATHER_TUNIC(),
                 'IRON' => VanillaItems::IRON_CHESTPLATE(),
                 'GOLD' => VanillaItems::GOLDEN_CHESTPLATE(),
                 'CHAIN' => VanillaItems::CHAINMAIL_CHESTPLATE(),
             ],
             'leggings' => [
                 'DIAMOND' => VanillaItems::DIAMOND_LEGGINGS(),
-                'LEATHER' => VanillaItems::LEATHER_LEGGINGS(),
+                'LEATHER' => VanillaItems::LEATHER_PANTS(),
                 'IRON' => VanillaItems::IRON_LEGGINGS(),
                 'GOLD' => VanillaItems::GOLDEN_LEGGINGS(),
                 'CHAIN' => VanillaItems::CHAINMAIL_LEGGINGS(),
@@ -609,8 +623,11 @@ class Utils {
                 $level = self::parseLevel($enchantConfig['level']);
 
                 $enchantment = StringToEnchantmentParser::getInstance()->parse($enchant);
+
                 if ($enchantment !== null) {
                     $item->addEnchantment(new EnchantmentInstance($enchantment, $level));
+                } else {
+                    Loader::getInstance()->getLogger()->warning("Enchantment " . strtoupper($enchant) . " cannot be found.");
                 }
             }
         }
@@ -1050,7 +1067,6 @@ class Utils {
             } elseif ($type === 'IS_HOLDING') {
                 $target = $condition['target'] ?? 'self';
                 $value = strtolower($condition['value'] ?? '');
-                error_log("Target: $target, Value: $value");
     
                 $handItem = null;
     
@@ -1350,17 +1366,16 @@ class Utils {
     }
 
     public static function getEffectTypeErrors(string $effectType): ?array {
-        switch ($effectType) {
-            case 'BREAK_BLOCK':
-                $messages = [
-                    "&r&4Failed to activate effect '&f" . $effectType . "&r&4'.",
-                    "&r&cAdditional Information: &7Trench only supports odd numbers in order to work properly"
-                ];
-                return $messages;
-                break;
-        }
+        $messages = [
+            'BREAK_BLOCK' => [
+                "&r&4Failed to activate effect '&f{$effectType}&r&4'.",
+                "&r&cAdditional Information: &7Trench only supports odd numbers in order to work properly"
+            ],
+            
+            
+        ];
 
-        return null;
+        return $messages[$effectType] ?? null;
     }
 
     public static function applyItemEffects(Player $player, Item $item, array $enchantmentConfig): void
@@ -1373,7 +1388,7 @@ class Utils {
                     $enchantmentData = $enchantmentConfig[$enchantmentName];
                     $level = $enchantmentInstance->getLevel();
                     if (isset($enchantmentData['levels']["$level"]['effects'])) {
-                        EffectHandler::applyPlayerEffects($player, null, $enchantmentData['levels']["$level"]['effects']);
+                        //EffectHandler::applyPlayerEffects($player, null, $enchantmentData['levels']["$level"]['effects']);
                     }
                 }
             }
@@ -1395,6 +1410,86 @@ class Utils {
                 }
             }
         }
+    }
+
+    public static function hasActiveSet(Player $player, string $setTag): bool {
+        return isset(self::$activeSets[$player->getName()]) && self::$activeSets[$player->getName()] === $setTag;
+    }
+
+    public static function setPlayerActiveSet(Player $player, string $setTag): void {
+        self::$activeSets[$player->getName()] = $setTag;
+    }
+
+    public static function removePlayerActiveSet(Player $player): void {
+        unset(self::$activeSets[$player->getName()]);
+    }
+
+    public static function hasActiveAbility(Player $player, string $ability): bool {
+        return isset(CustomArmorListener::$activeAbilities[$player->getName()]) &&
+            is_array(CustomArmorListener::$activeAbilities[$player->getName()]) &&
+            in_array($ability, CustomArmorListener::$activeAbilities[$player->getName()]);
+    }
+
+    public static function checkArmorActivation(Player $player, ArmorInventory $inventory, string $setTag): void {
+        $config = self::getConfiguration("armorSets/$setTag.yml");
+        $activationMessage = $config->getNested("settings.equipped");
+        $deactivationMessage = $config->getNested("settings.unequipped");
+        $events = $config->getNested("events");
+    
+        $equippedPieces = self::getEquippedArmorPieces($inventory, $setTag);
+        $currentCount = count($equippedPieces);
+        $requiredPieces = 4; // Assuming a full set requires 4 pieces
+    
+        if ($currentCount === $requiredPieces && !self::hasActiveSet($player, $setTag)) {
+            foreach ($activationMessage as $message) {
+                $player->sendMessage(TextFormat::colorize($message));
+            }            
+            self::playSound($player, 'mob.bat.takeoff');
+            if (isset($events['EFFECT_STATIC'])) {
+                $staticEffects = $events['EFFECT_STATIC']['effects'] ?? [];
+                EffectHandler::applyPlayerEffects($player, null, $staticEffects);
+            }
+            self::setPlayerActiveSet($player, $setTag);
+        } elseif ($currentCount < $requiredPieces && self::hasActiveSet($player, $setTag)) {
+            foreach ($deactivationMessage as $message) {
+                $player->sendMessage(TextFormat::colorize($message));
+            }
+            if (isset($events['EFFECT_STATIC'])) {
+                $staticEffects = $events['EFFECT_STATIC']['effects'] ?? [];
+                Utils::removePlayerEffects($player, $staticEffects);
+            }
+            self::playSound($player, 'armor.equip_generic');
+            self::removePlayerActiveSet($player);
+        }
+    }
+    
+
+    public static function getEquippedArmorPieces(ArmorInventory $inventory, string $setTag): array
+    {
+        $equippedPieces = [];
+
+        foreach ($inventory->getContents() as $item) {
+            if ($item instanceof Item && self::hasTag($item, "advancedsets", $setTag)) {
+                $equippedPieces[] = $item;
+            }
+        }
+
+        return $equippedPieces;
+    }
+
+    public static function getEnchantmentsForItem(Item $item): array {
+        $enchantments = [];
+        foreach ($item->getEnchantments() as $enchantmentInstance) {
+            $enchantment = $enchantmentInstance->getType();
+            if ($enchantment instanceof CustomEnchantment) {
+                $enchantmentName = $enchantment->getName();
+                $enchantmentConfig = self::getConfiguration("enchantments.yml")->get($enchantmentName);
+                if ($enchantmentConfig !== null) {
+                    $enchantments[$enchantmentName] = $enchantmentConfig;
+                }
+            }
+        }
+        return $enchantments;
     }
 }
 

@@ -2,12 +2,12 @@
 
 namespace ecstsy\AdvancedEnchantments\Utils\Menu;
 
-use ecstsy\AdvancedEnchantments\Utils\CustomSizedInvMenu;
+use ecstsy\AdvancedEnchantments\Utils\CustomInventory\CustomSizedInvMenu;
 use ecstsy\AdvancedEnchantments\Utils\Utils;
 use ecstsy\essentialsx\Loader;
-use jojoe77777\FormAPI\CustomForm;
-use muqsit\invmenu\InvMenu;
-use muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
+use ecstsy\AdvancedEnchantments\libs\jojoe77777\FormAPI\CustomForm;
+use ecstsy\AdvancedEnchantments\libs\muqsit\invmenu\InvMenu;
+use ecstsy\AdvancedEnchantments\libs\muqsit\invmenu\transaction\DeterministicInvMenuTransaction;
 use pocketmine\item\StringToItemParser;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as C;
