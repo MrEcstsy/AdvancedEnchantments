@@ -92,7 +92,7 @@ class AdvancedTriggers implements Listener {
                                     'health' => $effect['health'] ?? 0,
                                     'formula' => $effect['formula'] ?? '',
                                     'direction' => $effect['direction'] ?? '',
-                                    ''
+                                    'distance' => $effect['distance'] ?? 0,
                                 ];
     
                                 $contextData = [
