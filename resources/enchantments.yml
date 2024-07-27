@@ -1,10 +1,12 @@
 # << Example configuration >>
 # lastchance:    <-- Enchantment name
 #  display: "{group-color}Last Chance"    <-- Display in item lore
-#  id: 1000 <-- Enchantment ID, using anythingb below 1000 is NOT recommended
-#  description: "Has a chance to heal when on low hearts"    <-- Enchantment Description
+#  id: 1000 <-- Enchantment ID, using anything below 1000 is NOT recommended, if enchantment is applied alongside a vanilla enchantment, change the to a different number
+#  description: 
+#    - "Has a chance to heal when on low hearts"    <-- Enchantment Description
 #  applies-to: "Chestplate"    <-- What applies to (display purposes)
-#  type: "DEFENSE"    <-- Enchantment type (controls when enchantment activates)
+#  type: 
+#    - "DEFENSE"    <-- Enchantment type (controls when enchantment activates)
 #  group: "COMMON"    <-- Enchantment group (For enchanter and right-click random books)
 #  settings:
 #    required-enchants:
@@ -20,7 +22,9 @@
 #      conditions: "%victim health% > 5 : %stop%"    <-- Condition (read more about it at Conditions)
 #      description: "Has the lowest chance to heal when on low hearts"    <-- Per level description (different description for each level - optional)
 #      effects:    <-- All enchantment effects
-#        - "ADD_HEALTH:2 %victim%"    <-- Effect(s) list
+#        - type: ADD_HEALTH     <-- Effect(s) list
+#          amount: 2  
+#          target: victim
 
 #  Display (String) (No spaces or enchantment will break)
 #    Determines how will enchantment look in item lore
@@ -54,19 +58,6 @@
 #    Effects for each level, use as display in examples.
 
 #  Enchantment Effect List: https://ae.advancedplugins.net/enchantments/creating-enchantments/effect-list
-
-#        # You can use tags <random word>word1,word2,word3</random word>, it will get a random word from listed words.
-#        # You can use tags <random number>x-y</random number> while x < y, it will generate a random number between two given integers.
-#        # e.g.: "STEAL_MONEY:<random number>10000-50000</random number>"
-#        # Use <chance>x</chance> to set per-effect chance, x being a chance percentage.
-#        # e.g.: "POTION:SPEED:1:100 {attacker} <chance>25</chance>"
-
-#        # You also may use {victim} or {attacker} flag to give effects to different players (in ATTACK, BOW, DEATH, KILL_PLAYER and DEFENSE types).
-#        # Example usage: - "POTION:POISON:1:50 attacker}', this will give Level 2 POISON potion effect to the player who attacked.
-#        # If none is provided, effects will be given to the player who had custom enchanted item.
-#        # You can add {combo} instead of numbers, to use number of combo's player has (eg. to limit combo number: "{combo} > 0 && {combo} < 5 : {continue}')
-#        # You can add {damage} instead of numbers, to use number of damage has been done (for ATTACK and DEFENSE)
-
 #  Area of effect: https://ae.advancedplugins.net/enchantments/radius-of-effect-enchantments
 #  Conditions:  https://ae.advancedplugins.net/enchantments/enchantment-conditions
 
@@ -82,9 +73,11 @@
 gemify:
   display: '{group-color}Gemify'
   id: 1000
-  description: Chance for an ore block to turn into it's block
+  description: 
+    - "Chance for an ore block to turn into it's block"
   applies-to: Pickaxe
-  type: MINING
+  type: 
+    - MINING
   group: FABLED
   settings:
     showActionBar: true
@@ -124,3 +117,3122 @@ gemify:
         - type: SET_BLOCK
           from: DIAMOND_ORE
           to: DIAMOND_BLOCK
+planter:
+  display: '{group-color}Planter'
+  id: 1001
+  description: 
+    - "Plant seeds in a 3x3 area"
+    - "by shift+right-clicking."
+  applies-to: Hoes
+  type: 
+    - RIGHT_CLICK
+  settings:
+    showActionBar: true
+  group: ULTIMATE
+  applies:
+    - ALL_HOE
+  levels:
+    '1':
+      conditions:
+        - type: IS_SNEAKING
+          target: self
+          value: true
+          condition_mode: allow  
+      cooldown: 3
+      effects:
+        - type: PLANT_SEEDS
+          radius: 1
+    '2':
+      conditions:
+        - type: IS_SNEAKING
+          target: self
+          value: true
+          condition_mode: allow  
+      cooldown: 2
+      effects:
+        - type: PLANT_SEEDS
+          radius: 1
+    '3':
+      conditions:
+        - type: IS_SNEAKING
+          target: self
+          value: true
+          condition_mode: allow  
+      effects:
+        - type: PLANT_SEEDS
+          radius: 1
+twinge:
+  display: '{group-color}Twinge'
+  id: 1002
+  description: 
+    - "Make your enemy bleed, if"
+    - "hit using melee attack."
+  applies-to: Trident
+  type: 
+    - ATTACK
+  group: LEGENDARY
+  settings:
+    showActionBar: true
+  applies:
+    - TRIDENT
+  levels:
+    '1':
+      chance: 5
+      cooldown: 3
+      effects:
+        - type: ADD_POTION
+          potion: 'slowness'
+          amplifier: 0
+          duration: 100
+          target: victim
+        - type: DO_HARM
+          target: victim
+          value: "{1-3}"
+        - type: MESSAGE
+          text: "&r&4You're bleeding!"
+          target: victim
+        - type: WAIT
+          time: 20
+        - type: DO_HARM
+          target: victim
+          value: "{1-3}"
+        - type: WAIT
+          time: 20
+        - type: DO_HARM
+          target: victim
+          value: "{1-3}"
+    '2':
+      chance: 8
+      cooldown: 3
+      effects:
+        - type: ADD_POTION
+          potion: 'slowness'
+          amplifier: 0
+          duration: 100
+          target: victim
+        - type: DO_HARM
+          target: victim
+          value: "{1-3}"
+        - type: MESSAGE
+          text: "&r&4You're bleeding!"
+          target: victim
+        - type: WAIT
+          time: 20
+        - type: DO_HARM
+          target: victim
+          value: "{1-3}"
+        - type: WAIT
+          time: 20
+        - type: DO_HARM
+          target: victim
+          value: "{1-3}"
+    '3':
+      chance: 11
+      cooldown: 5
+      effects:
+        - type: ADD_POTION
+          potion: 'slowness'
+          amplifier: 0
+          duration: 100
+          target: victim
+        - type: DO_HARM
+          target: victim
+          value: "{1-3}"
+        - type: MESSAGE
+          text: "&r&4You're bleeding!"
+          target: victim
+        - type: WAIT
+          time: 20
+        - type: DO_HARM
+          target: victim
+          value: "{1-3}"
+        - type: WAIT
+          time: 20
+        - type: DO_HARM
+          target: victim
+          value: "{1-3}"
+    '4':
+      chance: 14
+      cooldown: 6
+      effects:
+        - type: ADD_POTION
+          potion: 'slowness'
+          amplifier: 0
+          duration: 100
+          target: victim
+        - type: DO_HARM
+          target: victim
+          value: "{1-3}"
+          text: "&r&4You're bleeding!"
+          target: victim
+        - type: WAIT
+          time: 20
+        - type: DO_HARM
+          target: victim
+          value: "{1-3}"
+        - type: WAIT
+          time: 20
+        - type: DO_HARM
+          target: victim
+          value: "{1-3}"
+jellylegs:
+  display: '{group-color}Jelly Legs'
+  id: 1003
+  description: 
+    - "Chance to negate fall damage.:"
+  applies-to: Boots
+  type: 
+    - FALL_DAMAGE
+  settings:
+    showActionBar: true
+  group: ULTIMATE
+  applies:
+    - ALL_BOOTS
+  levels:
+    '1':
+      chance: 40
+      effects:
+        - type: CANCEL_EVENT
+    '2':
+      chance: 80
+      effects:
+        - type: CANCEL_EVENT
+    '3':
+      effects:
+        - type: CANCEL_EVENT
+aquatic:
+  display: '{group-color}Aquatic'
+  id: 1004
+  description: 
+    - "Breathe underwater."
+  applies-to: Helmets
+  type: 
+    - EFFECT_STATIC
+  group: SIMPLE
+  applies:
+    - ALL_HELMET
+  levels:
+    '1':
+      effects:
+        - type: EFFECT_STATIC
+          effect: 'water_breathing'
+          amplifier: 0
+haste:
+  display: '{group-color}Haste'
+  id: 1005
+  description: 
+    - "Allows you to swing your tools faster."
+  applies-to: Tools
+  type: 
+    - HELD
+  group: FABLED
+  applies:
+    - ALL_PICKAXE
+    - ALL_SHOVEL
+    - ALL_AXE
+  levels:
+    '1':
+      effects:
+        - type: EFFECT_STATIC
+          effect: 'haste'
+          amplifier: 0
+    '2':
+      effects:
+        - type: EFFECT_STATIC
+          effect: 'haste'
+          amplifier: 1
+    '3':
+      effects:
+        - type: EFFECT_STATIC
+          effect: 'haste'
+          amplifier: 2       
+hasten:
+  display: '{group-color}Hasten'
+  id: 1006
+  description: 
+    - "Chance to gain Haste after breaking blocks."
+  applies-to: Tools
+  type: 
+    - MINING
+  group: SIMPLE
+  applies:
+    - ALL_PICKAXE
+    - ALL_SPADE
+    - ALL_AXE
+  levels:
+    '1':
+      chance: 15
+      cooldown: 3
+      effects:
+        - type: ADD_POTION
+          potion: 'haste'
+          amplifier: 0
+          duration: 40
+          target: self       
+    '2':
+      chance: 25
+      cooldown: 3
+      effects:
+        - type: ADD_POTION
+          potion: 'haste'
+          amplifier: 1
+          duration: 60
+          target: self    
+    '3':
+      chance: 45
+      cooldown: 3
+      effects:
+        - type: ADD_POTION
+          potion: 'haste'
+          amplifier: 2
+          duration: 80
+          target: self
+glowing:
+  display: '{group-color}Glowing'
+  id: 1007
+  description: 
+    - "Gives permanent night vision."
+  applies-to: Helmet
+  type: 
+    - EFFECT_STATIC
+  group: SIMPLE
+  applies:
+    - ALL_HELMET
+  levels:
+    '1':
+      effects:
+        - type: EFFECT_STATIC
+          effect: 'night_vision' 
+          amplifier: 0
+inquisitive:
+  display: '{group-color}Inquisitive'
+  id: 1008
+  description: 
+    - "Chance to increase EXP drops from mobs."
+  applies-to: Swords
+  settings:
+    showActionBar: true
+  type: 
+    - KILL_MOB
+  group: LEGENDARY
+  applies:
+    - ALL_SWORD
+  levels:
+    '1':
+      chance: 30
+      cooldown: 4
+      effects:
+        - type: EXP
+          formula: '{exp} * (1.0 + 0.25 * {level})'
+    '2':
+      chance: 35
+      cooldown: 4
+      effects:
+        - type: EXP
+          formula: '{exp} * (1.0 + 0.25 * {level})'
+    '3':
+      chance: 40
+      cooldown: 4
+      effects:
+        - type: EXP
+          formula: '{exp} * (1.0 + 0.25 * {level})'
+    '4':
+      chance: 45
+      cooldown: 4
+      effects:
+        - type: EXP
+          formula: '{exp} * (1.0 + 0.25 * {level})'
+lifesteal:
+  display: '{group-color}Lifesteal'
+  id: 1009
+  description: 
+    - "A chance to steal health"
+    - "when attacking."
+  applies-to: Swords
+  type: 
+    - ATTACK
+  group: LEGENDARY
+  applies:
+    - ALL_SWORD
+  levels:
+    '1':
+      chance: 9
+      cooldown: 15
+      effects:
+        - type: STEAL_HEALTH
+          amount: "{1-3}"
+          target: attacker
+    '2':
+      chance: 13
+      cooldown: 15
+      effects:
+        - type: STEAL_HEALTH
+          amount: "{1-3}"
+          target: attacker
+    '3':
+      chance: 17
+      cooldown: 15
+      effects:
+        - type: STEAL_HEALTH
+          amount: "{1-4}"
+          target: attacker
+    '4':
+      chance: 21
+      cooldown: 15
+      effects:
+        - type: STEAL_HEALTH
+          amount: "{1-5}"
+          target: attacker
+    '5':
+      chance: 25
+      cooldown: 15
+      effects:
+        - type: STEAL_HEALTH
+          amount: "{1-5}"
+          target: attacker      
+overload:
+  display: '{group-color}Overload'
+  id: 1010
+  description: 
+    - "Unlocks additional hearts."
+  applies-to: Armor
+  type: 
+    - EFFECT_STATIC
+  group: LEGENDARY
+  applies:
+    - ALL_ARMOR
+  levels:
+    '1':
+      effects:
+        - type: EFFECT_STATIC
+          effect: 'health_boost'
+          amplifier: 0
+    '2':
+      effects:
+        - type: EFFECT_STATIC
+          effect: 'health_boost'
+          amplifier: 1
+    '3':
+      effects:
+        - type: EFFECT_STATIC
+          effect: 'health_boost'
+          amplifier: 2
+armored:
+  display: '{group-color}Armored'
+  id: 1011
+  description: 
+    - "Decreases damage from enemy"
+    - "swords by 2% per level."
+  applies-to: Armor
+  type: 
+    - DEFENSE
+  group: LEGENDARY
+  applies:
+    - ALL_ARMOR
+  levels:
+    '1':
+      chance: 6
+      cooldown: 8
+      conditions:
+        - type: IS_HOLDING
+          target: attacker
+          value: sword
+          condition_mode: allow     
+      effects:
+        - type: DECREASE_DAMAGE
+          amount: 2
+          target: attacker
+    '2':
+      chance: 12
+      cooldown: 8
+      conditions:
+        - type: IS_HOLDING
+          target: attacker
+          value: sword
+          condition_mode: allow        
+      effects:
+        - type: DECREASE_DAMAGE
+          amount: 4
+          target: attacker
+    '3':
+      chance: 16
+      cooldown: 8
+      conditions:
+        - type: IS_HOLDING
+          target: attacker
+          value: sword
+          condition_mode: allow     
+      effects:
+        - type: DECREASE_DAMAGE
+          amount: 6
+          target: attacker
+    '4':
+      chance: 20
+      cooldown: 8
+      conditions:
+        - type: IS_HOLDING
+          target: attacker
+          value: sword
+          condition_mode: allow     
+      effects:
+        - type: DECREASE_DAMAGE
+          amount: 8
+          target: attacker         
+berserk:
+  display: '{group-color}Berserk'
+  id: 1012
+  description: 
+    - "Chance of strength"
+    - "and mining fatigue."
+  applies-to: Swords, Axes
+  type: 
+    - ATTACK
+  group: UNIQUE
+  applies:
+    - ALL_SWORD
+    - ALL_AXE
+  levels:
+    '1':
+      chance: 4
+      cooldown: 8
+      effects:
+        - type: ADD_POTION
+          potion: 'strength'
+          amplifier: 0
+          duration: 60
+          target: attacker
+        - type: ADD_POTION
+          potion: 'mining_fatigue'
+          amplifier: 0
+          duration: 60
+          target: attacker
+    '2':
+      chance: 8
+      cooldown: 7
+      effects:
+        - type: ADD_POTION
+          potion: 'strength'
+          amplifier: 0
+          duration: 80
+          target: attacker
+        - type: ADD_POTION
+          potion: 'mining_fatigue'
+          amplifier: 0
+          duration: 80
+          target: attacker
+    '3':
+      chance: 12
+      cooldown: 6
+      effects:
+        - type: ADD_POTION
+          potion: 'strength'
+          amplifier: 0
+          duration: 100
+          target: attacker
+        - type: ADD_POTION
+          potion: 'mining_fatigue'
+          amplifier: 0
+          duration: 100
+          target: attacker
+    '4':
+      chance: 16
+      cooldown: 5
+      effects:
+        - type: ADD_POTION
+          potion: 'strength'
+          amplifier: 1
+          duration: 80
+          target: attacker
+        - type: ADD_POTION
+          potion: 'mining_fatigue'
+          amplifier: 1
+          duration: 80
+          target: attacker
+    '5':
+      chance: 20
+      cooldown: 4
+      effects:
+        - type: ADD_POTION
+          potion: 'strength'
+          amplifier: 1
+          duration: 100
+          target: attacker
+        - type: ADD_POTION
+          potion: 'mining_fatigue'
+          amplifier: 1
+          duration: 100
+          target: attacker   
+featherweight:
+  display: '{group-color}Featherweight'
+  id: 1013
+  description: Chance to get a burst of haste.
+  applies-to: Swords, Axes
+  type: 
+    - ATTACK
+    - ATTACK_MOB
+  group: UNIQUE
+  applies:
+    - ALL_SWORD
+    - ALL_AXE
+  levels:
+    '1':
+      chance: 35
+      cooldown: 2
+      effects:
+        - type: ADD_POTION
+          potion: 'haste'
+          amplifier: 0
+          duration: 60
+          target: attacker
+    '2':
+      chance: 55
+      cooldown: 2
+      effects:
+        - type: ADD_POTION
+          potion: 'haste'
+          amplifier: 1
+          duration: 80
+          target: attacker
+    '3':
+      chance: 75
+      cooldown: 2
+      effects:
+        - type: ADD_POTION
+          potion: 'haste'
+          amplifier: 2
+          duration: 100
+          target: attacker
+molten:
+  display: '{group-color}Molten'
+  id: 1014
+  description: 
+    - "Chance of setting your attacker ablaze."
+  applies-to: Armor
+  type: 
+    - DEFENSE
+  group: UNIQUE
+  applies:
+    - ALL_ARMOR
+  levels:
+    '1':
+      chance: 21
+      cooldown: 2
+      effects:
+        - type: BURN
+          time: 2
+          target: attacker
+    '2':
+      chance: 32
+      cooldown: 2
+      effects:
+        - type: BURN
+          time: 4
+          target: attacker
+    '3':
+      chance: 49
+      cooldown: 2
+      effects:
+        - type: BURN
+          time: 6
+          target: attacker
+    '4':
+      chance: 63
+      cooldown: 2
+      effects:
+        - type: BURN
+          time: 8
+          target: attacker        
+ravenous:
+  display: '{group-color}Ravenous'
+  id: 1015
+  description: 
+    - Chance to regain hunger
+    - while fighting.
+  applies-to: Swords, Axes
+  type: 
+    - ATTACK
+  group: UNIQUE
+  applies:
+    - ALL_SWORD
+    - ALL_AXE
+  levels:
+    '1':
+      chance: 14
+      cooldown: 2
+      effects:
+        - type: ADD_FOOD
+          amount: "{1-4}"
+          target: attacker
+    '2':
+      chance: 18
+      cooldown: 2
+      effects:
+        - type: ADD_FOOD
+          amount: "{1-4}"
+          target: attacker
+    '3':
+      chance: 22
+      cooldown: 2
+      effects:
+        - type: ADD_FOOD
+          amount: "{1-4}"
+          target: attacker
+    '4':
+      chance: 26
+      cooldown: 2
+      effects:
+        - type: ADD_FOOD
+          amount: "{1-4}"
+          target: attacker
+enderslayer:
+  display: '{group-color}Ender Slayer'
+  id: 1016
+  description: 
+    - "Increases damage dealt to Enderman and Ender dragons."
+  applies-to: Weapons
+  type: 
+    - ATTACK_MOB
+  group: ELITE
+  applies:
+    - ALL_SWORD
+    - ALL_AXE
+  levels:
+    '1':
+      chance: 16
+      cooldown: 2
+      conditions:
+        - type: IS_MOB_TYPE
+          mobs:
+            - ENDER_DRAGON
+            - ENDERMAN
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '2':
+      chance: 21
+      cooldown: 2
+      conditions:
+        - type: IS_MOB_TYPE
+          mobs:
+            - ENDER_DRAGON
+            - ENDERMAN
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '3':
+      chance: 29
+      cooldown: 2
+      conditions:
+        - type: IS_MOB_TYPE
+          mobs:
+            - ENDER_DRAGON
+            - ENDERMAN
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '4':
+      chance: 34
+      cooldown: 2
+      conditions:
+        - type: IS_MOB_TYPE
+          mobs:
+            - ENDER_DRAGON
+            - ENDERMAN
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '5':
+      chance: 41
+      cooldown: 2
+      conditions:
+        - type: IS_MOB_TYPE
+          mobs:
+            - ENDER_DRAGON
+            - ENDERMAN
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker             
+deathpunch:
+  display: '{group-color}Death Punch'
+  id: 1017
+  description: 
+     - Increases damage dealt to Zombies.
+  applies-to: Swords, Axes
+  type: 
+    - ATTACK_MOB
+  group: SIMPLE
+  applies:
+    - ALL_SWORD
+    - ALL_AXE
+  levels:
+    '1':
+      chance: 16
+      cooldown: 2
+      conditions:
+        - type: IS_MOB_TYPE
+          mobs:
+            - ZOMBIE
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '2':
+      chance: 20
+      cooldown: 2
+      conditions:
+        - type: IS_MOB_TYPE
+          mobs:
+            - ZOMBIE
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '3':
+      chance: 40
+      cooldown: 2
+      conditions:
+        - type: IS_MOB_TYPE
+          mobs:
+            - ZOMBIE
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '4':
+      chance: 60
+      cooldown: 1
+      conditions:
+        - type: IS_MOB_TYPE
+          mobs:
+            - ZOMBIE
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '5':
+      chance: 80
+      conditions:
+        - type: IS_MOB_TYPE
+          mobs:
+            - ZOMBIE
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker     
+bonecrusher:
+  display: '{group-color}Bone Crusher'
+  id: 1018
+  description: 
+    - "Increases damage dealt to Skeletons."
+  applies-to: Swords, Axes
+  type: 
+    - ATTACK_MOB
+  group: SIMPLE
+  applies:
+    - ALL_SWORD
+    - ALL_AXE
+  levels:
+    '1':
+      chance: 25
+      cooldown: 2
+      conditions:
+        - type: IS_MOB_TYPE
+          mobs:
+            - SKELETON
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '2':
+      chance: 50
+      cooldown: 2
+      conditions:
+        - type: IS_MOB_TYPE
+          mobs:
+            - SKELETON
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '3':
+      chance: 75
+      cooldown: 1
+      conditions:
+        - type: IS_MOB_TYPE
+          mobs:
+            - SKELETON
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker      
+immolate:
+  display: '{group-color}Immolate'
+  id: 1019
+  description: 
+    - Increases damage dealt to Spiders.
+  applies-to: Swords, Axes
+  type: 
+    - ATTACK_MOB
+  group: ELITE
+  applies:
+    - ALL_SWORD
+    - ALL_AXE
+  levels:
+    '1':
+      chance: 25
+      cooldown: 2
+      conditions:
+        - type: IS_MOB_TYPE
+          mobs:
+            - SPIDER
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '2':
+      chance: 50
+      cooldown: 2
+      conditions:
+        - type: IS_MOB_TYPE
+          mobs:
+            - SPIDER
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '3':
+      chance: 75
+      conditions:
+        - type: IS_MOB_TYPE
+          mobs:
+            - SPIDER
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+slayer:
+  display: '{group-color}Slayer'
+  id: 1020
+  description: 
+    - Increases damage dealt to Passive Mobs.
+  applies-to: Swords, Axes
+  type: 
+    - ATTACK_MOB
+  group: UNIQUE
+  applies:
+    - ALL_SWORD
+    - ALL_AXE
+  levels:
+    '1':
+      chance: 25
+      cooldown: 2
+      conditions:
+        - type: IS_HOSTILE
+          value: false
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '2':
+      chance: 50
+      cooldown: 2
+      conditions:
+        - type: IS_HOSTILE
+          value: false
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '3':
+      chance: 75
+      conditions:
+        - type: IS_HOSTILE
+          value: false
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '4':
+      conditions:
+        - type: IS_HOSTILE
+          value: false
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+hunter:
+  display: '{group-color}Hunter'
+  id: 1021
+  description: 
+    - Increases damage dealt to Passive Mobs.
+  applies-to: Bow, Crossbow, Trident
+  type: 
+    - SHOOT_MOB
+  group: UNIQUE
+  applies:
+    # - TRIDENT commented out because trident doesnt have a functionality in PM
+    - BOW
+    - CROSSBOW
+  levels:
+    '1':
+      chance: 25
+      cooldown: 2
+      conditions:
+        - type: IS_HOSTILE
+          value: false
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '2':
+      chance: 50
+      cooldown: 2
+      conditions:
+        - type: IS_HOSTILE
+          value: false
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '3':
+      chance: 75
+      conditions:
+        - type: IS_HOSTILE
+          value: false
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '4':
+      conditions:
+        - type: IS_HOSTILE
+          value: false
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+beastslayer:
+  display: '{group-color}Beastslayer'
+  id: 1022
+  description: 
+    - Increases damage dealt to Hostile Mobs.
+  applies-to: Swords, Axes
+  type: 
+     - ATTACK_MOB
+  group: LEGENDARY
+  applies:
+    - ALL_SWORD
+    - ALL_AXE
+  levels:
+    '1':
+      chance: 25
+      cooldown: 2
+      conditions:
+        - type: IS_HOSTILE
+          value: true
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '2':
+      chance: 50
+      cooldown: 2
+      conditions:
+        - type: IS_HOSTILE
+          value: true
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '3':
+      chance: 75
+      conditions:
+        - type: IS_HOSTILE
+          value: true
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '4':
+      conditions:
+        - type: IS_HOSTILE
+          value: true
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+permafrost:
+  display: '{group-color}Permafrost'
+  id: 1023
+  description: 
+    - Chance slow and bleed opponents.
+  applies-to: Swords
+  type: 
+    - ATTACK
+    - ATTACK_MOB
+  group: ULTIMATE
+  applies:
+    - ALL_SWORD
+  levels:
+    '1':
+      chance: 15
+      cooldown: 12
+      effects:
+        - type: DO_HARM
+          value: 1
+          target: victim
+        - type: BLOOD
+          target: victim
+        - type: ADD_POTION
+          potion: "slowness"
+          amplifier: 0
+          duration: 20
+          target: victim
+        - type: WAIT
+          time: 20
+        - type: DO_HARM
+          value: 1
+          target: victim
+        - type: BLOOD
+          target: victim
+        - type: WAIT
+          time: 20
+        - type: DO_HARM
+          value: 1
+          target: victim
+        - type: BLOOD
+          target: victim
+    '2':
+      chance: 18
+      cooldown: 12
+      effects:
+        - type: DO_HARM
+          value: 2
+          target: victim
+        - type: BLOOD
+          target: victim
+        - type: ADD_POTION
+          potion: "slowness"
+          amplifier: 0
+          duration: 40
+          target: victim
+        - type: WAIT
+          time: 20
+        - type: DO_HARM
+          value: 2
+          target: victim
+        - type: BLOOD
+          target: victim
+        - type: WAIT
+          time: 20
+        - type: DO_HARM
+          value: 1
+          target: victim
+        - type: BLOOD
+          target: victim
+    '3':
+      chance: 19
+      cooldown: 12
+      effects:
+        - type: DO_HARM
+          value: 3
+          target: victim
+        - type: BLOOD
+          target: victim
+        - type: ADD_POTION
+          potion: "slowness"
+          amplifier: 0
+          duration: 50
+          target: victim
+        - type: WAIT
+          time: 20
+        - type: DO_HARM
+          value: 2
+          target: victim
+        - type: BLOOD
+          target: victim
+        - type: WAIT
+          time: 20
+        - type: DO_HARM
+          value: 1
+          target: victim
+        - type: BLOOD
+          target: victim
+    '4':
+      chance: 21
+      cooldown: 13
+      effects:
+        - type: DO_HARM
+          value: 3
+          target: victim
+        - type: BLOOD
+          target: victim
+        - type: ADD_POTION
+          potion: "slowness"
+          amplifier: 0
+          duration: 60
+          target: victim
+        - type: WAIT
+          time: 20
+        - type: DO_HARM
+          value: 2
+          target: victim
+        - type: BLOOD
+          target: victim
+        - type: WAIT
+          time: 20
+        - type: DO_HARM
+          value: 2
+          target: victim
+        - type: BLOOD
+          target: victim
+    '5':
+      chance: 25
+      cooldown: 13
+      effects:
+        - type: DO_HARM
+          value: 3
+          target: victim
+        - type: BLOOD
+          target: victim
+        - type: ADD_POTION
+          potion: "slowness"
+          amplifier: 1
+          duration: 60
+          target: victim
+        - type: WAIT
+          time: 20
+        - type: DO_HARM
+          value: 3
+          target: victim
+        - type: BLOOD
+          target: victim
+        - type: WAIT
+          time: 20
+        - type: DO_HARM
+          value: 2
+          target: victim
+        - type: BLOOD
+          target: victim                    
+soulless:
+  display: '{group-color}Soulless'
+  id: 1065
+  description: Increases damage dealt to Hostile Mobs.
+  applies-to: Bow, Crossbow, Trident
+  type: 
+    - SHOOT_MOB
+  group: UNIQUE
+  applies:
+  # - TRIDENT
+    - BOW
+    - CROSSBOW
+  levels:
+    '1':
+      chance: 25
+      cooldown: 2
+      conditions:
+        - type: IS_HOSTILE
+          value: true
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '2':
+      chance: 50
+      cooldown: 2
+      conditions:
+        - type: IS_HOSTILE
+          value: true
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '3':
+      chance: 75
+      conditions:
+        - type: IS_HOSTILE
+          value: true
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '4':
+      conditions:
+        - type: IS_HOSTILE
+          value: true
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+reaper:
+  display: '{group-color}Reaper'
+  id: 1066
+  description: 
+    - A chance to give your opponent the
+    - Wither and Blindness effects
+    - while dealing damage
+  applies-to: Axe
+  settings:
+    showActionBar: true
+  type: 
+    - ATTACK
+  group: ELITE
+  applies:
+    - ALL_AXE
+  levels:
+    '1':
+      chance: 8
+      cooldown: 16
+      effects:
+        - type: ADD_POTION
+          potion: "wither"
+          amplifier: 0
+          duration: 35
+          target: victim
+        - type: ADD_POTION
+          potion: "blindness"
+          amplifier: 0
+          duration: 35
+          target: victim
+    '2':
+      chance: 10
+      cooldown: 14
+      effects:
+        - type: ADD_POTION
+          potion: "wither"
+          amplifier: 0
+          duration: 40
+          target: victim
+        - type: ADD_POTION
+          potion: "blindness"
+          amplifier: 0
+          duration: 40
+          target: victim
+    '3':
+      chance: 12
+      cooldown: 12
+      effects:
+        - type: ADD_POTION
+          potion: "wither"
+          amplifier: 0
+          duration: 50
+          target: victim
+        - type: ADD_POTION
+          potion: "blindness"
+          amplifier: 0
+          duration: 50
+          target: victim
+    '4':
+      chance: 99
+      cooldown: 10
+      effects:
+        - type: ADD_POTION
+          potion: "wither"
+          amplifier: 0
+          duration: 60
+          target: victim
+        - type: ADD_POTION
+          potion: "blindness"
+          amplifier: 0
+          duration: 60
+          target: victim
+netherslayer:
+  display: '{group-color}Nether Slayer'
+  id: 1072
+  description: 
+    - Increases damage dealt to nether mobs.
+  applies-to: Weapons
+  type: 
+    - ATTACK_MOB
+  group: ELITE
+  applies:
+    - ALL_SWORD
+    - ALL_AXE
+  levels:
+    '1':
+      chance: 16
+      cooldown: 2
+      conditions:
+        - type: IS_MOB_TYPE
+          mobs:
+            - BLAZE
+            - ZOMBIE_PIGMAN
+            - PIG_ZOMBIE
+            - GHAST
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '2':
+      chance: 21
+      cooldown: 2
+      conditions:
+        - type: IS_MOB_TYPE
+          mobs:
+            - BLAZE
+            - ZOMBIE_PIGMAN
+            - PIG_ZOMBIE
+            - GHAST
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '3':
+      chance: 29
+      cooldown: 2
+      conditions:
+        - type: IS_MOB_TYPE
+          mobs:
+            - BLAZE
+            - ZOMBIE_PIGMAN
+            - PIG_ZOMBIE
+            - GHAST
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '4':
+      chance: 34
+      cooldown: 2
+      conditions:
+        - type: IS_MOB_TYPE
+          mobs:
+            - BLAZE
+            - ZOMBIE_PIGMAN
+            - PIG_ZOMBIE
+            - GHAST
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+    '5':
+      chance: 41
+      cooldown: 2
+      conditions:
+        - type: IS_MOB_TYPE
+          mobs:
+            - BLAZE
+            - ZOMBIE_PIGMAN
+            - PIG_ZOMBIE
+            - GHAST
+          condition_mode: allow
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{10-40}"
+          target: attacker
+blind:
+  display: '{group-color}Blind'
+  id: 1073
+  description: 
+    - A chance of causing blindness
+    - when attacking.
+  applies-to: Swords
+  type: 
+    - ATTACK
+  group: ELITE
+  applies:
+    - ALL_SWORD
+  levels:
+    '1':
+      chance: 17
+      cooldown: 5
+      effects:
+        - type: ADD_POTION
+          potion: "blindness"
+          amplifier: 0
+          duration: 60
+          target: victim
+    '2':
+      chance: 25
+      cooldown: 5
+      effects:
+        - type: ADD_POTION
+          potion: "blindness"
+          amplifier: 1
+          duration: 80
+          target: victim
+    '3':
+      chance: 33
+      cooldown: 5
+      effects:
+        - type: ADD_POTION
+          potion: "blindness"
+          amplifier: 2
+          duration: 100
+          target: victim             
+allure:
+  display: '{group-color}Allure'
+  id: 1074
+  description: 
+    - Your attack pulls mobs towards you.
+  applies-to: Swords
+  type: 
+    - ATTACK_MOB
+  group: ELITE
+  applies:
+    - ALL_SWORD
+  levels:
+    '1':
+      chance: 30
+      effects:
+        - type: PULL_CLOSER
+          distance: 1
+          target: victim
+    '2':
+      chance: 60
+      effects:
+        - type: PULL_CLOSER
+          distance: 1.5
+          target: victim
+    '3':
+      effects:
+        - type: PULL_CLOSER
+          distance: 2
+          target: victim
+frozen:
+  display: '{group-color}Frozen'
+  id: 1075
+  description: 
+    - Can cause slowness to attacker
+    - when defending.
+  applies-to: Armor
+  type: 
+    - DEFENSE
+    - DEFENSE_MOB
+  group: ELITE
+  applies:
+    - ALL_ARMOR
+  levels:
+    '1':
+      chance: 19
+      cooldown: 6
+      effects:
+        - type: ADD_POTION
+          potion: "slowness"
+          amplifier: 0
+          duration: 40
+          target: attacker
+    '2':
+      chance: 19
+      cooldown: 6
+      effects:
+        - type: ADD_POTION
+          potion: "slowness"
+          amplifier: 1
+          duration: 50
+          target: attacker
+    '3':
+      chance: 26
+      cooldown: 6
+      effects:
+        - type: ADD_POTION
+          potion: "slowness"
+          amplifier: 2
+          duration: 60
+          target: attacker    
+poison:
+  display: '{group-color}Poison'
+  id: 1077
+  description: 
+    - A chance of giving poison effect.
+  applies-to: Swords, Axes
+  type: 
+    - ATTACK
+    - ATTACK_MOB
+  group: ELITE
+  applies:
+    - ALL_SWORD
+    - ALL_AXE
+  levels:
+    '1':
+      chance: 6
+      cooldown: 2
+      effects:
+        - type: ADD_POTION
+          potion: "poison"
+          amplifier: 0
+          duration: 80
+          target: victim
+    '2':
+      chance: 22
+      cooldown: 2
+      effects:
+        - type: ADD_POTION
+          potion: "poison"
+          amplifier: 0
+          duration: 120
+          target: victim
+    '3':
+      chance: 35
+      cooldown: 2
+      effects:
+        - type: ADD_POTION
+          potion: "poison"
+          amplifier: 1
+          duration: 80
+          target: victim       
+virus:
+  display: '{group-color}Virus'
+  id: 1071
+  description: 
+    - A chance of giving poison effect.
+  applies-to: Bow, Crossbow, Trident
+  type: 
+    - SHOOT_MOB
+    - SHOOT
+  settings:
+    showActionBar: true
+  group: UNIQUE
+  applies:
+    - TRIDENT
+    - BOW
+    - CROSSBOW
+  levels:
+    '1':
+      chance: 6
+      cooldown: 2
+      effects:
+        - type: ADD_POTION
+          potion: "poison"
+          amplifier: 0
+          duration: 80
+          target: victim
+    '2':
+      chance: 22
+      cooldown: 2
+      effects:
+        - type: ADD_POTION
+          potion: "poison"
+          amplifier: 0
+          duration: 120
+          target: victim
+    '3':
+      chance: 35
+      cooldown: 2
+      effects:
+        - type: ADD_POTION
+          potion: "poison"
+          amplifier: 1
+          duration: 80
+          target: victim  
+poisoned:
+  display: '{group-color}Poisoned'
+  id: 1076
+  description: 
+    - Chance to give poison to your attacker.
+  applies-to: Armor
+  type: 
+    - DEFENSE
+    - DEFENSE_MOB
+    - DEFENSE_PROJECTILE
+  group: ELITE
+  applies:
+    - ALL_ARMOR
+  levels:
+    '1':
+      chance: 8
+      cooldown: 6
+      effects:
+        - type: ADD_POTION
+          potion: "poison"
+          amplifier: 0
+          duration: 60
+          target: attacker
+    '2':
+      chance: 12
+      cooldown: 6
+      effects:
+        - type: ADD_POTION
+          potion: "poison"
+          amplifier: 0
+          duration: 120
+          target: attacker
+    '3':
+      chance: 17
+      cooldown: 6
+      effects:
+        - type: ADD_POTION
+          potion: "poison"
+          amplifier: 1
+          duration: 60
+          target: attacker
+    '4':
+      chance: 23
+      cooldown: 6
+      effects:
+        - type: ADD_POTION
+          potion: "poison"
+          amplifier: 1
+          duration: 120
+          target: attacker     
+reforged:
+  display: '{group-color}Reforged'
+  id: 1078
+  description: 
+    - Protects weapons and tools durability, items will be take
+    - longer to break.
+  applies-to: Weapons and tools
+  type: 
+    - ATTACK_MOB
+    - MINING
+  group: ELITE
+  applies:
+    - ALL_AXE
+    - ALL_SWORD
+    - ALL_PICKAXE
+    - ALL_SPADE
+  levels:
+    '1':
+      chance: 10
+      effects:
+        - type: ADD_DURABILITY_ITEM
+          amount: 1
+    '2':
+      chance: 20
+      effects:
+        - type: ADD_DURABILITY_ITEM
+          amount: 1
+    '3':
+      chance: 30
+      effects:
+        - type: ADD_DURABILITY_ITEM
+          amount: 1
+    '4':
+      chance: 40
+      effects:
+        - type: ADD_DURABILITY_ITEM
+          amount: 1
+    '5':
+      chance: 50
+      effects:
+        - type: ADD_DURABILITY_ITEM
+          amount: 1
+    '6':
+      chance: 60
+      effects:
+        - type: ADD_DURABILITY_ITEM
+          amount: 1
+    '7':
+      chance: 70
+      effects:
+        - type: ADD_DURABILITY_ITEM
+          amount: 1
+    '8':
+      chance: 80
+      effects:
+        - type: ADD_DURABILITY_ITEM
+          amount: 1
+    '9':
+      chance: 90
+      effects:
+        - type: ADD_DURABILITY_ITEM
+          amount: 1
+    '10':
+      effects:
+        - type: ADD_DURABILITY_ITEM
+          amount: 1   
+snare:
+  display: '{group-color}Snare'
+  id: 1079
+  description: 
+    - Chance to slow and fatigue
+    - enemies with projectiles.
+  applies-to: Bows
+  type:
+    - SHOOT
+    - SHOOT_MOB
+  settings:
+    showActionBar: true
+  group: ELITE
+  applies:
+    - BOW
+    - CROSSBOW
+  levels:
+    '1':
+      chance: 12
+      cooldown: 3
+      effects:
+        - type: ADD_POTION
+          potion: "slowness"
+          amplifier: 0
+          duration: 80
+          target: victim
+        - type: ADD_POTION
+          potion: "mining_fatigue"
+          amplifier: 0
+          duration: 80
+          target: victim
+    '2':
+      chance: 19
+      cooldown: 3
+      effects:
+        - type: ADD_POTION
+          potion: "slowness"
+          amplifier: 0
+          duration: 120
+          target: victim
+        - type: ADD_POTION
+          potion: "mining_fatigue"
+          amplifier: 0
+          duration: 120
+          target: victim
+    '3':
+      chance: 24
+      cooldown: 3
+      effects:
+        - type: ADD_POTION
+          potion: "slowness"
+          amplifier: 1
+          duration: 80
+          target: victim
+        - type: ADD_POTION
+          potion: "mining_fatigue"
+          amplifier: 1
+          duration: 80
+          target: victim
+    '4':
+      chance: 29
+      cooldown: 3
+      effects:
+        - type: ADD_POTION
+          potion: "slowness"
+          amplifier: 1
+          duration: 120
+          target: victim
+        - type: ADD_POTION
+          potion: "mining_fatigue"
+          amplifier: 1
+          duration: 120
+          target: victim
+springs:
+  display: '{group-color}Springs'
+  id: 1080
+  description: 
+    - Gives jump boost.
+  applies-to: Boots
+  type: 
+    - EFFECT_STATIC
+  group: ELITE
+  applies:
+    - ALL_BOOTS
+  levels:
+    '1':
+      effects:  
+        - type: EFFECT_STATIC
+          potion: "jump_boost"
+          amplifier: 0
+    '2':
+      effects:
+        - type: EFFECT_STATIC
+          potion: "jump_boost"
+          amplifier: 1
+    '3':
+      effects:
+        - type: EFFECT_STATIC
+          potion: "jump_boost"
+          amplifier: 3
+voodoo:
+  display: '{group-color}Voodoo'
+  id: 1082
+  description: 
+    - Gives a chance to deal weakness.
+  applies-to: Armor
+  type: 
+    - DEFENSE
+    - DEFENSE_MOB
+  group: ELITE
+  applies:
+    - ALL_ARMOR
+  levels:
+    '1':
+      chance: 5
+      cooldown: 2
+      effects:
+        - type: ADD_POTION
+          potion: "weakness"
+          amplifier: 0
+          duration: 60
+          target: attacker
+    '2':
+      chance: 7
+      cooldown: 2
+      effects:
+        - type: ADD_POTION
+          potion: "weakness"
+          amplifier: 0
+          duration: 100
+          target: attacker
+    '3':
+      chance: 9
+      cooldown: 2
+      effects:
+        - type: ADD_POTION
+          potion: "weakness"
+          amplifier: 0
+          duration: 140
+          target: attacker
+    '4':
+      chance: 13
+      cooldown: 2
+      effects:
+        - type: ADD_POTION
+          potion: "weakness"
+          amplifier: 0
+          duration: 60
+          target: attacker
+    '5':
+      chance: 16
+      cooldown: 2
+      effects:
+        - type: ADD_POTION
+          potion: "weakness"
+          amplifier: 0
+          duration: 100
+          target: attacker
+    '6':
+      chance: 21
+      cooldown: 2
+      effects:
+        - type: ADD_POTION
+          potion: "weakness"
+          amplifier: 0
+          duration: 120
+          target: attacker
+wither:
+  display: '{group-color}Wither'
+  id: 1081
+  description: 
+    - A chance to give the wither effect.
+  applies-to: Armor
+  type: 
+    - DEFENSE
+    - DEFENSE_MOB
+  group: ELITE
+  applies:
+    - ALL_ARMOR
+  levels:
+    '1':
+      chance: 9
+      cooldown: 3
+      effects:  
+        - type: ADD_POTION
+          potion: "wither"
+          amplifier: 0
+          duration: 60
+          target: attacker
+    '2':
+      chance: 11
+      cooldown: 3
+      effects:
+        - type: ADD_POTION
+          potion: "wither"
+          amplifier: 0
+          duration: 100
+          target: attacker
+    '3':
+      chance: 14
+      cooldown: 3
+      effects:
+        - type: ADD_POTION
+          potion: "wither"
+          amplifier: 0
+          duration: 140
+          target: attacker
+    '4':
+      chance: 17
+      cooldown: 3
+      effects:
+        - type: ADD_POTION
+          potion: "wither"
+          amplifier: 1
+          duration: 60
+          target: attacker
+    '5':
+      chance: 21
+      cooldown: 3
+      effects:
+        - type: ADD_POTION
+          potion: "wither"
+          amplifier: 1
+          duration: 100
+          target: attacker
+perish:
+  display: '{group-color}Perish'
+  id: 1068
+  description: 
+    - A chance to give the wither effect.
+  applies-to: Bow, Crossbow, Trident
+  type:
+    - SHOOT_MOB
+    - SHOOT
+  settings:
+    showActionBar: true
+  group: UNIQUE
+  applies:
+    - TRIDENT
+    - BOW
+    - CROSSBOW
+  levels:
+    '1':
+      chance: 9
+      cooldown: 3
+      effects:
+        - type: ADD_POTION
+          potion: "wither"
+          amplifier: 0
+          duration: 60
+          target: victim
+    '2':
+      chance: 11
+      cooldown: 3
+      effects:
+        - type: ADD_POTION
+          potion: "wither"
+          amplifier: 0
+          duration: 100
+          target: victim
+    '3':
+      chance: 14
+      cooldown: 3
+      effects:
+        - type: ADD_POTION
+          potion: "wither"
+          amplifier: 0
+          duration: 140
+          target: victim
+    '4':
+      chance: 17
+      cooldown: 3
+      effects:
+        - type: ADD_POTION
+          potion: "wither"
+          amplifier: 1
+          duration: 60
+          target: victim
+    '5':
+      chance: 21
+      cooldown: 3
+      effects:
+        - type: ADD_POTION
+          potion: "wither"
+          amplifier: 1
+          duration: 100
+          target: victim    
+extinguish:
+  display: '{group-color}Extinguish'
+  id: 1083
+  description: 
+    - Chance to extinguish yourself
+    - when on fire.
+  applies-to: Leggings
+  type: 
+    - DEFENSE
+    - DEFENSE_MOB
+    - FIRE
+  group: ELITE
+  applies:
+    - ALL_LEGGINGS
+  levels:
+    '1':
+      chance: 20
+      effects:
+        - type: WAIT
+          time: 1
+        - type: EXTINGUISH
+          target: victim
+    '2':
+      chance: 60
+      effects:
+        - type: WAIT
+          time: 1
+        - type: EXTINGUISH
+          target: victim
+    '3':
+      chance: 80
+      effects:
+        - type: WAIT
+          time: 1
+        - type: EXTINGUISH
+          target: victim     
+vampire:
+  display: '{group-color}Vampire'
+  id: 1084
+  description: 
+    - A chance to heal you for up to
+    - 3hp a few seconds after you strike.
+  applies-to: Swords
+  type:
+    - ATTACK
+    - ATTACK_MOB
+  group: ELITE
+  applies:
+    - ALL_SWORD
+  levels:
+    '1':
+      chance: 7
+      cooldown: 4
+      effects:
+        - type: WAIT
+          time: 40
+          target: self
+        - type: ADD_HEALTH
+          amount: "{1-6}"
+          target: self
+    '2':
+      chance: 12
+      cooldown: 4
+      effects:
+        - type: WAIT
+          time: 40
+          target: self
+        - type: ADD_HEALTH
+          amount: "{1-6}"
+          target: self
+    '3':
+      chance: 15
+      cooldown: 4
+      effects:
+        - type: WAIT
+          time: 40
+          target: self
+        - type: ADD_HEALTH
+          amount: "{1-6}"
+          target: self
+greatsword:
+  display: '{group-color}Greatsword'
+  id: 1085
+  description: 
+    - Multiplies damage against players who are
+    - wielding a Bow at the time they are hit.
+  applies-to: Sword
+  type: 
+    - ATTACK
+  group: ELITE
+  settings:
+    showActionBar: true
+  applies:
+    - ALL_SWORD
+  levels:
+    '1':
+      chance: 15
+      cooldown: 2
+      conditions:
+        - type: IS_HOLDING
+          target: victim
+          value: bow
+          force: true
+          condition_mode: allow 
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{45-70}"
+          target: attacker
+    '2':
+      chance: 25
+      cooldown: 2
+      conditions:
+        - type: IS_HOLDING
+          target: victim
+          value: bow
+          condition_mode: allow 
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{75-90}"
+          target: attacker
+    '3':
+      chance: 35
+      cooldown: 2
+      conditions:
+        - type: IS_HOLDING
+          target: victim
+          value: bow
+          condition_mode: allow 
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{85-165}"
+          target: attacker
+    '4':
+      chance: 45
+      cooldown: 2
+      conditions:
+        - type: IS_HOLDING
+          target: victim
+          value: bow
+          condition_mode: allow 
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{105-205}"
+          target: attacker
+    '5':
+      chance: 55
+      cooldown: 2
+      conditions:
+        - type: IS_HOLDING
+          target: victim
+          value: bow
+          condition_mode: allow 
+      effects:
+        - type: INCREASE_DAMAGE
+          amount: "{105-205}"
+          target: attacker
+hardened:
+  display: '{group-color}Hardened'
+  id: 1101
+  description: 
+    - Chance to recover durability when damaged by players.
+  applies-to: Armor
+  type: 
+    - DEFENSE
+  group: LEGENDARY
+  applies:
+    - ALL_ARMOR
+  levels:
+    '1':
+      chance: 25
+      cooldown: 7
+      effects:
+        - type: ADD_DURABILITY_CURRENT_ITEM
+          amount: 1
+          target: victim
+    '2':
+      chance: 35
+      cooldown: 7
+      effects:
+        - type: ADD_DURABILITY_CURRENT_ITEM
+          amount: 1
+          target: victim
+    '3':
+      chance: 45
+      cooldown: 7
+      effects:
+        - type: ADD_DURABILITY_CURRENT_ITEM
+          amount: 1
+          target: victim          
+ward:
+  display: '{group-color}Ward'
+  id: 1069
+  description: 
+    - A chance to absorb enemy damage
+  applies-to: Armor
+  type: 
+    - DEFENSE
+    - DEFENSE_MOB
+  group: UNIQUE
+  applies:
+    - ALL_ARMOR
+  levels:
+    '1':
+      chance: 3
+      cooldown: 5
+      effects:
+        - type: CANCEL_EVENT
+    '2':
+      chance: 7
+      cooldown: 5
+      effects:
+        - type: CANCEL_EVENT
+
+    '3':
+      chance: 11
+      cooldown: 5
+      effects:
+        - type: CANCEL_EVENT
+
+    '4':
+      chance: 15
+      cooldown: 5
+      effects:
+        - type: CANCEL_EVENT
+patch:
+  display: '{group-color}Patch'
+  id: 1102
+  description: 
+    - Chance to recover durability when damaged by mobs.
+  applies-to: Armor
+  type: 
+    - DEFENSE_MOB
+  group: LEGENDARY
+  applies:
+    - ALL_ARMOR
+  levels:
+    '1':
+      chance: 25
+      cooldown: 7
+      effects:
+        - type: ADD_DURABILITY_CURRENT_ITEM
+          amount: 1
+          target: victim
+    '2':
+      chance: 35
+      cooldown: 7
+      effects:
+        - type: ADD_DURABILITY_CURRENT_ITEM
+          amount: 1
+          target: victim
+    '3':
+      chance: 45
+      cooldown: 7
+      effects:
+        - type: ADD_DURABILITY_CURRENT_ITEM
+          amount: 2
+          target: victim
+trickster:
+  display: '{group-color}Trickster'
+  id: 1087
+  description: 
+    - When hit you have a
+    - chance to teleport directly
+    - behind your opponent.
+  applies-to: Armor
+  type: 
+    - DEFENSE
+    - DEFENSE_MOB
+  settings:
+    showActionBar: true
+  group: ELITE
+  applies:
+    - ALL_ARMOR
+  levels:
+    '1':
+      chance: 8
+      cooldown: 5
+      effects:
+        - type: TELEPORT_BEHIND
+          target: victim
+    '2':
+      chance: 14
+      cooldown: 5
+      effects:
+        - type: TELEPORT_BEHIND
+          target: victim
+    '3':
+      chance: 17
+      cooldown: 5
+      effects:
+        - type: TELEPORT_BEHIND
+          target: victim
+    '4':
+      chance: 21
+      cooldown: 5
+      effects:
+        - type: TELEPORT_BEHIND
+          target: victim
+    '5':
+      chance: 29
+      cooldown: 5
+      effects:
+        - type: TELEPORT_BEHIND
+          target: victim
+    '6':
+      chance: 37
+      cooldown: 5
+      effects:
+        - type: TELEPORT_BEHIND
+          target: victim
+    '7':
+      chance: 46
+      cooldown: 5
+      effects:
+        - type: TELEPORT_BEHIND
+          target: victim
+    '8':
+      chance: 51
+      cooldown: 5
+      effects:
+        - type: TELEPORT_BEHIND
+          target: victim         
+cleave:
+  display: '{group-color}Cleave'
+  id: 1088
+  description: 
+    - Damages players within a radius
+    - that increases with the level of enchant.
+  applies-to: Axes
+  type: 
+    - ATTACK
+  settings:
+    showActionBar: true
+  group: ULTIMATE
+  applies:
+    - ALL_AXE
+  levels:
+    '1':
+      chance: 4
+      cooldown: 8
+      effects:
+        - type: DO_HARM
+          amount: "{1-2}"
+          aoe:
+            radius: 2
+            target: damageable
+    '2':
+      chance: 5
+      cooldown: 8
+      effects:
+        - type: DO_HARM
+          amount: "{1-2}"
+          aoe:
+            radius: 2
+            target: damageable
+    '3':
+      chance: 6
+      cooldown: 9
+      effects:
+        - type: DO_HARM
+          amount: "{1-3}"
+          aoe:
+            radius: 3
+            target: damageable
+    '4':
+      chance: 7
+      cooldown: 9
+      effects:
+        - type: DO_HARM
+          amount: "{1-3}"
+          aoe:
+            radius: 4
+            target: damageable
+    '5':
+      chance: 9
+      cooldown: 10
+      effects:
+        - type: DO_HARM
+          amount: "{2-3}"
+          aoe:
+            radius: 5
+            target: damageable
+    '6':
+      chance: 12
+      cooldown: 12
+      effects:
+        - type: DO_HARM
+          amount: "{2-3}"
+          aoe:
+            radius: 6
+            target: damageable
+    '7':
+      chance: 15
+      cooldown: 14
+      effects:
+        - type: DO_HARM
+          amount: "{2-3}"
+          aoe:
+            radius: 7
+            target: damageable  
+angelic:
+  display: '{group-color}Angelic'
+  id: 1089
+  description: 
+    -  Heals when damaged.
+  applies-to: Armor
+  type: 
+    - DEFENSE
+    - DEFENSE_MOB
+  group: ULTIMATE
+  applies:
+    - ALL_CHESTPLATE
+  levels:
+    '1':
+      chance: 9
+      cooldown: 7
+      effects:
+        - type: ADD_HEALTH
+          amount: "{1-3}"
+          target: victim
+    '2':
+      chance: 14
+      cooldown: 9
+      effects:
+        - type: ADD_HEALTH
+          amount: "{1-3}"
+          target: victim
+    '3':
+      chance: 17
+      cooldown: 11
+      effects:
+        - type: ADD_HEALTH
+          amount: "{1-3}"
+          target: victim
+    '4':
+      chance: 26
+      cooldown: 13
+      effects:
+        - type: ADD_HEALTH
+          amount: "{1-4}"
+          target: victim
+    '5':
+      chance: 34
+      cooldown: 15
+      effects:
+        - type: ADD_HEALTH
+          amount: "{1-4}"
+          target: victim 
+curse:
+  display: '{group-color}Curse'
+  id: 1086
+  description: 
+    - Chance to give your enemy mining fatigue.
+  applies-to: Armor
+  type: 
+    - DEFENSE
+    - DEFENSE_MOB
+  group: ELITE
+  applies:
+    - ALL_ARMOR
+  levels:
+    '1':
+      chance: 13
+      effects:
+        - type: ADD_POTION
+          potion: "mining_fatigue"
+          amplifier: 0
+          duration: 100
+          target: attacker
+    '2':
+      chance: 17
+      cooldown: 15
+      effects:
+        - type: ADD_POTION
+          potion: "mining_fatigue"
+          amplifier: 1
+          duration: 100
+          target: attacker
+diminish:
+  display: '{group-color}Diminish'
+  id: 1090
+  description: 
+    - Chance to give your enemy mining fatigue.
+  applies-to: Axes
+  type: 
+    - ATTACK
+    - ATTACK_MOB
+  group: ULTIMATE
+  applies:
+    - ALL_AXE
+  levels:
+    '1':
+      chance: 13
+      effects:
+        - type: ADD_POTION
+          potion: "mining_fatigue"
+          amplifier: 0
+          duration: 100
+          target: victim     
+interrupt:
+  display: '{group-color}Interrupt'
+  id: 1091
+  description: 
+    - Chance to give your enemy mining fatigue.
+  applies-to: Swords
+  type: 
+    - ATTACK
+    - ATTACK_MOB
+  group: ULTIMATE
+  applies:
+    - ALL_SWORD
+  levels:
+    '1':
+      chance: 13
+      effects:
+        - type: ADD_POTION
+          potion: "mining_fatigue"
+          amplifier: 0
+          duration: 100
+          target: victim
+    '2':
+      chance: 17
+      cooldown: 15
+      effects:
+        - type: ADD_POTION
+          potion: "mining_fatigue"
+          amplifier: 1
+          duration: 100
+          target: victim    
+exalted:
+  display: '{group-color}Exalted'
+  id: 1092
+  description: 
+    - A chance of removing
+    - bad potion effects.
+  applies-to: Swords
+  type: 
+    - ATTACK
+  group: ULTIMATE
+  applies:
+    - ALL_SWORD
+  levels:
+    '1':
+      chance: 12
+      cooldown: 8
+      effects:
+        - type: CURE
+          potion: "slowness"
+          target: attacker
+        - type: CURE
+          potion: "nausea"
+          target: attacker
+        - type: CURE
+          potion: "blindness"
+          target: attacker
+        - type: CURE
+          potion: "poison"
+          target: attacker
+        - type: CURE
+          potion: "wither"
+          target: attacker
+        - type: CURE
+          potion: "hunger"
+          target: attacker
+        - type: CURE
+          potion: "weakness"
+          target: attacker
+        - type: CURE
+          potion: "mining_fatigue"
+          target: attacker
+    '2':
+      chance: 16
+      cooldown: 8
+      effects:
+        - type: CURE
+          potion: "slowness"
+          target: attacker
+        - type: CURE
+          potion: "nausea"
+          target: attacker
+        - type: CURE
+          potion: "blindness"
+          target: attacker
+        - type: CURE
+          potion: "poison"
+          target: attacker
+        - type: CURE
+          potion: "wither"
+          target: attacker
+        - type: CURE
+          potion: "hunger"
+          target: attacker
+        - type: CURE
+          potion: "weakness"
+          target: attacker
+        - type: CURE
+          potion: "mining_fatigue"
+          target: attacker
+    '3':
+      chance: 22
+      cooldown: 8
+      effects:
+        - type: CURE
+          potion: "slowness"
+          target: attacker
+        - type: CURE
+          potion: "nausea"
+          target: attacker
+        - type: CURE
+          potion: "blindness"
+          target: attacker
+        - type: CURE
+          potion: "poison"
+          target: attacker
+        - type: CURE
+          potion: "wither"
+          target: attacker
+        - type: CURE
+          potion: "hunger"
+          target: attacker
+        - type: CURE
+          potion: "weakness"
+          target: attacker
+        - type: CURE
+          potion: "mining_fatigue"
+          target: attacker
+    '4':
+      chance: 36
+      cooldown: 8
+      effects:
+        - type: CURE
+          potion: "slowness"
+          target: attacker
+        - type: CURE
+          potion: "nausea"
+          target: attacker
+        - type: CURE
+          potion: "blindness"
+          target: attacker
+        - type: CURE
+          potion: "poison"
+          target: attacker
+        - type: CURE
+          potion: "wither"
+          target: attacker
+        - type: CURE
+          potion: "hunger"
+          target: attacker
+        - type: CURE
+          potion: "weakness"
+          target: attacker
+        - type: CURE
+          potion: "mining_fatigue"
+          target: attacker     
+ragdoll:
+  display: '{group-color}Ragdoll'
+  id: 1093
+  description: 
+    - Chance to be pushed
+    - back when getting hit.
+  applies-to: Armor
+  type: 
+    - DEFENSE
+    - DEFENSE_MOB
+  group: ULTIMATE
+  applies:
+    - ALL_ARMOR
+  levels:
+    '1':
+      chance: 10
+      cooldown: 4
+      effects:
+        - type: PULL_AWAY
+          distance: 0.1
+          target: victim
+    '2':
+      chance: 20
+      cooldown: 4
+      effects:
+        - type: PULL_AWAY
+          distance: 0.2
+          target: victim
+    '3':
+      chance: 30
+      cooldown: 4
+      effects:
+        - type: PULL_AWAY
+          distance: 0.3
+          target: victim
+    '4':
+      chance: 50
+      cooldown: 4
+      effects:
+        - type: PULL_AWAY
+          distance: 0.4
+          target: victim        
+trench:
+  display: '{group-color}Trench'
+  id: 1094
+  description: 
+    - Chance to break in 3x3 area.
+  applies-to: Pickaxes, Shovels
+  type: 
+    - MINING
+  group: ULTIMATE
+  applies:
+    - ALL_PICKAXE
+    - ALL_SPADE
+  levels:
+    '1':
+      chance: 13
+      effects:
+        - type: BREAK_BLOCK
+          radius: 3
+          effect: Trench
+    '2':
+      chance: 26
+      effects:
+        - type: BREAK_BLOCK
+          radius: 3
+          effect: Trench
+    '3':
+      chance: 36
+      effects:
+        - type: BREAK_BLOCK
+          radius: 3
+          effect: Trench
+    '4':
+      chance: 49
+      effects:
+        - type: BREAK_BLOCK
+          radius: 3
+          effect: Trench
+    '5':
+      chance: 59
+      effects:
+        - type: BREAK_BLOCK
+          radius: 3
+          effect: Trench
+    '6':
+      chance: 72
+      effects:
+        - type: BREAK_BLOCK
+          radius: 3
+          effect: Trench
+    '7':
+      chance: 85
+      effects:
+        - type: BREAK_BLOCK
+          radius: 3
+          effect: Trench
+    '8':
+      chance: 90
+      effects:
+        - type: BREAK_BLOCK
+          radius: 3
+          effect: Trench
+    '9':
+      chance: 100
+      effects:
+        - type: BREAK_BLOCK
+          radius: 3
+          effect: Trench        
+dodge:
+  display: '{group-color}Dodge'
+  id: 1095
+  description: 
+    - Chance to dodge physical enemy,
+    - chance increases when sneaking.
+  applies-to: Armor
+  type: 
+    - DEFENSE
+  group: ULTIMATE
+  applies:
+    - ALL_ARMOR
+  levels:
+    '1':
+      chance: 7
+      cooldown: 8
+      conditions:
+        - type: IS_SNEAKING
+          value: true
+          target: victim
+          force: false
+          effects:
+            - type: BOOST_CHANCE
+              value: 7
+      effects:
+        - type: CANCEL_EVENT
+        - type: PLAY_SOUND
+          sound: ENTITY_BAT_TAKEOFF
+          target: victim
+          volume: 0.7
+    '2':
+      chance: 12
+      cooldown: 8
+      conditions:
+        - type: IS_SNEAKING
+          value: true
+          target: victim
+          force: false
+          effects:
+            - type: BOOST_CHANCE
+              value: 7
+      effects:
+        - type: CANCEL_EVENT
+        - type: PLAY_SOUND
+          sound: ENTITY_BAT_TAKEOFF
+          target: victim
+          volume: 0.7
+    '3':
+      chance: 16
+      cooldown: 8
+      conditions:
+        - type: IS_SNEAKING
+          value: true
+          target: victim
+          force: false
+          effects:
+            - type: BOOST_CHANCE
+              value: 7
+      effects:
+        - type: CANCEL_EVENT
+        - type: PLAY_SOUND
+          sound: ENTITY_BAT_TAKEOFF
+          target: victim
+          volume: 0.7
+    '4':
+      chance: 22
+      cooldown: 8
+      conditions:
+        - type: IS_SNEAKING
+          value: true
+          target: victim
+          force: false
+          effects:
+            - type: BOOST_CHANCE
+              value: 7
+      effects:
+        - type: CANCEL_EVENT
+        - type: PLAY_SOUND
+          sound: ENTITY_BAT_TAKEOFF
+          target: victim
+          volume: 0.7
+    '5':
+      chance: 27
+      cooldown: 8
+      conditions:
+        - type: IS_SNEAKING
+          value: true
+          target: victim
+          force: false
+          effects:
+            - type: BOOST_CHANCE
+              value: 7
+      effects:
+        - type: CANCEL_EVENT
+        - type: PLAY_SOUND
+          sound: ENTITY_BAT_TAKEOFF
+          target: victim
+          volume: 0.7     
+iceaspect:
+  display: '{group-color}Ice Aspect'
+  id: 1096
+  description: 
+    - A chance of causing the slowness
+    - effect on your enemy.
+  applies-to: Swords
+  type: 
+    - ATTACK
+    - ATTACK_MOB
+  group: ULTIMATE
+  applies:
+    - ALL_SWORD
+  levels:
+    '1':
+      chance: 15
+      cooldown: 2
+      effects:
+        - type: ADD_POTION
+          potion: "slowness"
+          amplifier: 1
+          duration: 100
+          target: victim
+    '2':
+      chance: 23
+      cooldown: 2
+      effects:
+        - type: ADD_POTION
+          potion: "slowness"
+          amplifier: 1
+          duration: 100
+          target: victim
+    '3':
+      chance: 31
+      cooldown: 2
+      effects:
+        - type: ADD_POTION
+          potion: "slowness"
+          amplifier: 1
+          duration: 100
+          target: victim
+implants:
+  display: '{group-color}Implants'
+  id: 1097
+  description: 
+    - Chance to restore food every few seconds.
+  applies-to: Helmets
+  type: 
+    - REPEATING
+  group: ULTIMATE
+  applies:
+    - ALL_HELMET
+  levels:
+    '1':
+      chance: 30
+      time: 5
+      effects:
+        - type: ADD_FOOD
+          amount: 1
+          target: self
+    '2':
+      chance: 50
+      time: 5
+      effects:
+        - type: ADD_FOOD
+          amount: 1
+          target: self
+    '3':
+      chance: 70
+      time: 5
+      effects:
+        - type: ADD_FOOD
+          amount: 1
+          target: self
+obsidianshield:
+  display: '{group-color}Obsidianshield'
+  id: 1098
+  description: 
+    - Gives permanent fire resistance.
+  applies-to: Armor
+  type: 
+    - EFFECT_STATIC
+  group: ULTIMATE
+  applies:
+    - ALL_ARMOR
+  levels:
+    '1':
+      effects:
+        - type: EFFECT_STATIC
+          effect: FIRE_RESISTANCE
+          amplifier: 0
+safeguard:
+  display: '{group-color}Safeguard'
+  id: 1099
+  description: 
+    - Chance to gain Damage Resistance
+    - when defending.
+  applies-to: Armor
+  type: 
+    - DEFENSE
+    - DEFENSE_MOB
+  group: ULTIMATE
+  applies:
+    - ALL_ARMOR
+  levels:
+    '1':
+      chance: 5
+      cooldown: 5
+      effects:
+        - type: ADD_POTION
+          potion: "resistance"
+          amplifier: 0
+          duration: 60
+          target: victim
+    '2':
+      chance: 9
+      cooldown: 5
+      effects:
+        - type: ADD_POTION
+          potion: "resistance"
+          amplifier: 1
+          duration: 60
+          target: victim
+devour:
+  display: '{group-color}Devour'
+  id: 10
+  description: 
+    - Chance to restore food while killing mobs.
+  applies-to: Weapons
+  type: 
+    - KILL_MOB
+  group: UNIQUE
+  applies:
+    - ALL_SWORD
+    - ALL_AXE
+  levels:
+    '1':
+      chance: 10
+      effects:
+        - type: ADD_FOOD
+          amount: 1
+          target: attacker
+    '2':
+      chance: 15
+      effects:
+        - type: ADD_FOOD
+          amount: 1
+          target: attacker
+    '3':
+      chance: 20
+      effects:
+        - type: ADD_FOOD
+          amount: 1
+          target: attacker
+tank:
+  display: '{group-color}Tank'
+  id: 1100
+  description: 
+    - Chance to decreases damage from enemy
+    - axes by 2% per level.
+  applies-to: Armor
+  type: 
+    - DEFENSE
+    - DEFENSE_MOB
+  group: ULTIMATE
+  applies:
+    - ALL_ARMOR
+  levels:
+    '1':
+      chance: 5
+      cooldown: 3
+      conditions:
+        - type: IS_HOLDING
+          value: axe
+          target: attacker
+          condition_mode: allow
+      effects:
+        - type: DECREASE_DAMAGE
+          amount: 2
+          target: victim
+    '2':
+      chance: 8
+      cooldown: 3
+      conditions:
+        - type: IS_HOLDING
+          value: axe
+          target: attacker
+          condition_mode: allow
+      effects:
+        - type: DECREASE_DAMAGE
+          amount: 4
+          target: victim
+    '3':
+      chance: 12
+      cooldown: 3
+      conditions:
+        - type: IS_HOLDING
+          value: axe
+          target: attacker
+          condition_mode: allow
+      effects:
+        - type: DECREASE_DAMAGE
+          amount: 6
+          target: victim
+    '4':
+      chance: 16
+      cooldown: 3
+      conditions:
+        - type: IS_HOLDING
+          value: axe
+          target: attacker
+          condition_mode: allow
+      effects:
+        - type: DECREASE_DAMAGE
+          amount: 8
+          target: victim
