@@ -49,29 +49,41 @@ class Utils {
     public static bool $activated = false;
 
     public static array $activeSets = [];
+    
+    private static array $configCache = [];
 
-    public static function getConfiguration(string $fileName): Config {
+    public static function getConfiguration(string $fileName): ?Config {
         $pluginFolder = Loader::getInstance()->getDataFolder();
         $filePath = $pluginFolder . $fileName;
+
+        if (isset(self::$configCache[$filePath])) {
+            return self::$configCache[$filePath];
+        }
 
         if (!file_exists($filePath)) {
             Loader::getInstance()->getLogger()->warning("Configuration file '$filePath' not found.");
             return null;
         }
+        
         $extension = pathinfo($fileName, PATHINFO_EXTENSION);
 
         switch ($extension) {
             case 'yml':
             case 'yaml':
-                    return new Config($filePath, Config::YAML);
+                $config = new Config($filePath, Config::YAML);
+                break;
     
-             case 'json':
-                return new Config($filePath, Config::JSON);
+            case 'json':
+                $config = new Config($filePath, Config::JSON);
+                break;
     
             default:
                 Loader::getInstance()->getLogger()->warning("Unsupported configuration file format for '$filePath'.");
                 return null;
         }
+
+        self::$configCache[$filePath] = $config;
+        return $config;
     }
 
     /**
