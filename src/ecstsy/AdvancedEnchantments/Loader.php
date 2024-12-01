@@ -8,6 +8,8 @@ use ecstsy\AdvancedEnchantments\Commands\ASetsCommand;
 use ecstsy\AdvancedEnchantments\Commands\EnchanterCommand;
 use ecstsy\AdvancedEnchantments\Enchantments\CEGroups;
 use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantments;
+use ecstsy\AdvancedEnchantments\libs\ecstsy\advancedAbilities\AdvancedAbilityHandler;
+use ecstsy\AdvancedEnchantments\libs\JackMD\ConfigUpdater\ConfigUpdater;
 use ecstsy\AdvancedEnchantments\Listeners\EnchantmentListener;
 use ecstsy\AdvancedEnchantments\Listeners\ItemListener;
 use ecstsy\AdvancedEnchantments\Utils\CustomInventory\CustomSizedInvMenuType;
@@ -64,7 +66,7 @@ class Loader extends PluginBase {
             new EnchanterCommand($this, "enchanter", "Open Enchanter", $config->getNested("commands.enchanter.aliases")),
             new ASetsCommand($this, "asets", "View the armor sets commands")
         ]);
-        $listeners = [new ItemListener($this->getConfig()), new EnchantmentListener(), new CustomArmorListener(), new AdvancedTriggers()];
+        $listeners = [new ItemListener($this->getConfig()), new EnchantmentListener(), new CustomArmorListener()];
 
         foreach ($listeners as $listener) {
             $this->getServer()->getPluginManager()->registerEvents($listener, $this);
@@ -77,6 +79,10 @@ class Loader extends PluginBase {
         if (!InvMenuHandler::isRegistered()) {
             InvMenuHandler::register($this);
         }
+
+	if (!AdvancedAbilityHandler::isRegistered()) {
+            AdvancedAbilityHandler::register($this);
+        }	
 
         CustomEnchantments::getAll();
 
