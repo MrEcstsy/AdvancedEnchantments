@@ -5,14 +5,19 @@ namespace ecstsy\AdvancedEnchantments\Listeners;
 use ecstsy\AdvancedEnchantments\Enchantments\CEGroups;
 use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantment;
 use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantments;
+use ecstsy\AdvancedEnchantments\libs\ecstsy\advancedAbilities\triggers\AttackTrigger;
+use ecstsy\AdvancedEnchantments\libs\ecstsy\advancedAbilities\triggers\DefenseTrigger;
+use ecstsy\AdvancedEnchantments\libs\ecstsy\advancedAbilities\triggers\GenericTrigger;
 use ecstsy\AdvancedEnchantments\Loader;
 use ecstsy\AdvancedEnchantments\Tasks\ApplyBlockBreakEffectTask;
 use ecstsy\AdvancedEnchantments\Utils\AdvancedTriggers;
 use ecstsy\AdvancedEnchantments\Utils\EffectHandler;
 use ecstsy\AdvancedEnchantments\Utils\Utils;
 use pocketmine\block\Farmland;
+use pocketmine\entity\Living;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
+use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityDeathEvent;
 use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
@@ -75,13 +80,26 @@ class EnchantmentListener implements Listener {
     
                 if (!$newItem->isNull() && Utils::isArmorItem($newItem)) {
                     $newItemEnchantments = $newItem->getEnchantments();
-                    if (!empty($newItemEnchantments)) {
-                        AdvancedTriggers::applyEnchantmentEffects($player, null, $newItemEnchantments, "EFFECT_STATIC");
+                    $filteredEnchantments = [];
+    
+                    foreach ($newItemEnchantments as $enchantmentInstance) {
+                        $enchantment = $enchantmentInstance->getType();
+                        if ($enchantment instanceof CustomEnchantment) {
+                            $enchantmentData = Utils::getConfiguration("enchantments.yml")->getAll()[$enchantment->getName()];
+                            
+                            if (isset($enchantmentData['type']) && in_array("EFFECT_STATIC", $enchantmentData['type'])) {
+                                $filteredEnchantments[] = $enchantmentInstance;  
+                            }
+                        }
+                    }
+    
+                    if (!empty($filteredEnchantments)) {
+                        AdvancedTriggers::applyEnchantmentEffects($player, null, $filteredEnchantments, "EFFECT_STATIC");
                     }
                 }
             }
         }
-    }
+    }    
     
     private function onInventorySlotChange(PlayerInventory $inventory, int $slot, Item $oldItem): void
     {
@@ -89,19 +107,24 @@ class EnchantmentListener implements Listener {
         if ($player instanceof Player) {
             $heldSlot = $player->getInventory()->getHeldItemIndex();
             $newItem = $inventory->getItem($slot);
-    
+            
             if ($slot === $heldSlot) {
                 if (!$oldItem->equals($newItem, false)) {
                     if (!$oldItem->isNull()) {
                         Utils::removeItemEffects($player, $oldItem);
                     }
-    
+                    
                     if (!$newItem->isNull()) {
                         $newItemEnchantments = $newItem->getEnchantments();
                         if (!$newItem->isNull() && !Utils::isArmorItem($newItem)) {
                             $newItemEnchantments = $newItem->getEnchantments();
+                            $triggers = Utils::getTriggersContext($newItem);
                             if (!empty($newItemEnchantments)) {
-                                AdvancedTriggers::applyEnchantmentEffects($player, null, $newItemEnchantments, "HELD");
+                                foreach ($triggers as $context) {
+                                    if ($context === "HELD") {
+                                        AdvancedTriggers::applyEnchantmentEffects($player, null, $newItemEnchantments, "HELD");
+                                    }
+                                }
                             }
                         }
                     }
@@ -129,265 +152,136 @@ class EnchantmentListener implements Listener {
                         }
     
                         if (!$newItem->isNull()) {
-                            AdvancedTriggers::applyEnchantmentEffects($player, null, $newItem->getEnchantments(), "EFFECT_STATIC");
+                            $newItemEnchantments = $newItem->getEnchantments();
+                            $filteredEnchantments = [];
+    
+                            foreach ($newItemEnchantments as $enchantmentInstance) {
+                                $enchantment = $enchantmentInstance->getType();
+                                if ($enchantment instanceof CustomEnchantment) {
+                                    $enchantmentData = Utils::getConfiguration("enchantments.yml")->getAll()[$enchantment->getName()];
+    
+                                    if (isset($enchantmentData['type']) && in_array("EFFECT_STATIC", $enchantmentData['type'])) {
+                                        $filteredEnchantments[] = $enchantmentInstance;  
+                                    }
+                                }
+                            }
+    
+                            if (!empty($filteredEnchantments)) {
+                                AdvancedTriggers::applyEnchantmentEffects($player, null, $filteredEnchantments, "EFFECT_STATIC");
+                            }
                         }
                     }
                 }
             }
         }
+    }
+
+    public function onPlayerAttack(EntityDamageByEntityEvent $event): void {
+        if ($event->isCancelled()) {
+            return;
+        }
+    
+        $attacker = $event->getDamager();
+        $victim = $event->getEntity();
+    
+        if (!$attacker instanceof Player || $attacker->getInventory()->getItemInHand()->isNull()) {
+            return;
+        }
+    
+        $item = $attacker->getInventory()->getItemInHand();
+        $enchantments = Utils::extractEnchantmentsFromItems([$item]);
+    
+        if (empty($enchantments)) {
+            return;
+        }
+    
+        foreach ($enchantments as &$enchantmentConfig) {
+            $level = $enchantmentConfig['level'] ?? null;
+            $chance = $enchantmentConfig['config']['levels'][$level]['chance'] ?? 100;
+            if ($level !== null) {
+                $extraData = ['enchant-level' => $level, "chance" => $chance];
+            }
+        }
+        
+        $trigger = new GenericTrigger();
+        $trigger->execute($attacker, $victim, $enchantments, 'ATTACK', $extraData);
+        
     }    
-
-    public function onPlayerInteract(PlayerInteractEvent $event): void {
-        $player = $event->getPlayer();
-        $item = $player->getInventory()->getItemInHand();
-        $block = $event->getBlock();
-
-        if ($event->getAction() === PlayerInteractEvent::LEFT_CLICK_BLOCK) {
-            foreach ($item->getEnchantments() as $enchantmentInstance) {
-                $enchantment = $enchantmentInstance->getType();
-
-                if ($enchantment instanceof CustomEnchantment) {
-                    $enchantmentName = $enchantment->getName();
-                    $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
-                    if ($enchantmentConfig !== null && isset($enchantmentConfig[$enchantmentName])) {
-                        $enchantmentData = $enchantmentConfig[$enchantmentName];
-
-                        foreach ($enchantmentData['type'] as $type) {
-                            if ($type === 'MINING') {
-                                $playerName = $player->getName();
-                                $level = $enchantmentInstance->getLevel();
-
-                                if ($this->hasCooldown($playerName, $enchantmentName)) {
-                                    continue;
-                                }
-
-                                if (isset($enchantmentData['levels'][$level])) {
-                                    $chance = $enchantmentData['levels'][$level]['chance'] ?? 100;
-                                    if (mt_rand(1, 100) <= $chance) {
-                                        Utils::applyBlockEffects($player, $block, $enchantmentData['levels'][$level]['effects']);
-
-                                        $cooldown = $enchantmentData['levels'][$level]['cooldown'] ?? 0;
-                                        $this->setCooldown($playerName, $enchantmentName, $cooldown);
-
-                                        $color = CEGroups::translateGroupToColor($enchantment->getRarity());
-
-                                        if (isset($enchantmentData['settings']['showActionBar']) && $enchantmentData['settings']['showActionBar']) {
-                                            $actionBarMessage = str_replace(["{enchant-color}", "{level}"], [$color . ucfirst($enchantmentName), Utils::getRomanNumeral($level)], Loader::getInstance()->getLang()->getNested("effects.used"));
-                                            $player->sendActionBarMessage(C::colorize($actionBarMessage));
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+    
+    public function onPlayerDefend(EntityDamageByEntityEvent $event): void {
+        if ($event->isCancelled()) {
+            return;
+        }
+    
+        $caster = $event->getEntity();
+        $attacker = $event->getDamager();
+    
+        if (!$caster instanceof Living) {
+            return;
+        }
+    
+        $armorItems = $caster->getArmorInventory()->getContents();
+        $enchantmentsToApply = Utils::extractEnchantmentsFromItems($armorItems);
+    
+        foreach ($enchantmentsToApply as &$enchantmentConfig) {
+            $level = $enchantmentConfig['level'] ?? null;
+            if ($level !== null) {
+                $enchantmentConfig['enchant-level'] = $level;
             }
         }
-
-        if ($event->getAction() === PlayerInteractEvent::RIGHT_CLICK_BLOCK && $player->isSneaking()) {
-            if ($block instanceof Farmland) {
-                $enchantments = $item->getEnchantments();
-                foreach ($enchantments as $enchantmentInstance) {
-                    $enchantment = $enchantmentInstance->getType();
-                    if ($enchantment instanceof CustomEnchantment) {
-                        $enchantmentName = $enchantment->getName();
-                        $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
-
-                        if ($enchantmentConfig !== null && isset($enchantmentConfig[$enchantmentName])) {
-                            $enchantmentData = $enchantmentConfig[$enchantmentName];
-                            $level = $enchantmentInstance->getLevel();
-
-                            if (isset($enchantmentData['levels']["$level"]['effects'])) {
-                                foreach ($enchantmentData['levels']["$level"]['effects'] as $effect) {
-                                    foreach ($enchantmentData['type'] as $type) {
-                                        if ($type === 'PLANT_SEEDS') {
-                                            $radius = $effect['radius'] ?? 1;
-                                            $seedType = $effect['seed-type'] ?? null;
-                                            Utils::plantSeeds($player, $block, $radius, $seedType);
-
-                                            $color = CEGroups::translateGroupToColor($enchantment->getRarity());
-
-                                            if (isset($enchantmentData['settings']['showActionBar']) && $enchantmentData['settings']['showActionBar']) {
-                                                $actionBarMessage = str_replace(["{enchant-color}", "{level}"], [$color . ucfirst($enchantmentName), Utils::getRomanNumeral($level)], Loader::getInstance()->getLang()->getNested("effects.used"));
-                                                $player->sendActionBarMessage(C::colorize($actionBarMessage));
-                                            }
-                                            break; 
-                                        }
-                                    }
-                                }
-                                break; 
-                            }
-                        }
-                    }
-                }
-            }
+    
+        if (!empty($enchantmentsToApply)) {
+            $trigger = new DefenseTrigger();
+            $trigger->execute($attacker, $caster, $enchantmentsToApply, 'DEFENSE', ["enchant-level" => $level]);
         }
     }
 
-    public function onBlockBreak(BlockBreakEvent $event) {
-        $player = $event->getPlayer();
-        $item = $player->getInventory()->getItemInHand();
-        $block = $event->getBlock();
-
-        foreach ($item->getEnchantments() as $enchantmentInstance) {
-            $enchantment = $enchantmentInstance->getType();
-
-            if ($enchantment instanceof CustomEnchantment) {
-                $enchantmentName = $enchantment->getName();
-                $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
-                if ($enchantmentConfig !== null && isset($enchantmentConfig[$enchantmentName])) {
-                    $enchantmentData = $enchantmentConfig[$enchantmentName];
-
-                    foreach ($enchantmentData['type'] as $type) {
-                        if ($type === 'MINING') {
-                            $playerName = $player->getName();
-                            $level = $enchantmentInstance->getLevel();
-
-                            if ($this->hasCooldown($playerName, $enchantmentName)) {
-                                continue;
-                            }
-
-                            if (isset($enchantmentData['levels'][$level])) {
-                                $chance = $enchantmentData['levels'][$level]['chance'] ?? 100;
-                                if (mt_rand(1, 100) <= $chance) {
-                                    foreach ($enchantmentData['levels'][$level]['effects'] as $effect) {
-                                        if ($effect['type'] === 'BREAK_BLOCK') {
-                                            $radius = $effect['radius'] ?? 1;
-                                            $target = $effect['target'] ?? null;
-                                            
-                                            if ($target !== null) {
-                                                $targetBlock = Utils::getStringToBlock($target); 
-                                                if ($block->getTypeId() !== $targetBlock->getTypeId()) {
-                                                    continue; 
-                                                }
-                                            }
-
-                                            $task = new ApplyBlockBreakEffectTask(
-                                                $player->getName(),
-                                                $player->getWorld()->getFolderName(),
-                                                [
-                                                    $block->getPosition()->getX(),
-                                                    $block->getPosition()->getY(),
-                                                    $block->getPosition()->getZ()
-                                                ],
-                                                $radius
-                                            );
-
-                                            Server::getInstance()->getAsyncPool()->submitTask($task);
-                                        }
-                                    }
-
-                                    Utils::applyBlockEffects($player, $block, $enchantmentData['levels'][$level]['effects']);
-
-                                    $cooldown = $enchantmentData['levels'][$level]['cooldown'] ?? 0;
-                                    $this->setCooldown($playerName, $enchantmentName, $cooldown);
-
-                                    $color = CEGroups::translateGroupToColor($enchantment->getRarity());
-
-                                    if (isset($enchantmentData['settings']['showActionBar']) && $enchantmentData['settings']['showActionBar']) {
-                                        $actionBarMessage = str_replace(["{enchant-color}", "{level}"], [$color . ucfirst($enchantmentName), Utils::getRomanNumeral($level)], Loader::getInstance()->getLang()->getNested("effects.used"));
-                                        $player->sendActionBarMessage(C::colorize($actionBarMessage));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public function onEntityDeath(EntityDeathEvent $event) {
+    public function onEntityDamage(EntityDamageEvent $event): void {
         $entity = $event->getEntity();
-        $cause = $entity->getLastDamageCause();
-    
-        if ($cause instanceof EntityDamageByEntityEvent) {
-            $attacker = $cause->getDamager();
-            if ($attacker instanceof Player) {
-                $hand = $attacker->getInventory()->getItemInHand();
-                foreach ($hand->getEnchantments() as $enchantmentInstance) {
-                    $enchantment = $enchantmentInstance->getType();
-                    if ($enchantment instanceof CustomEnchantment) {
-                        $enchantmentName = $enchantment->getName();
-                        $enchantmentConfig = Utils::getConfiguration("enchantments.yml")->getAll();
-    
-                        if ($enchantmentConfig !== null && isset($enchantmentConfig[$enchantmentName])) {
-                            $enchantmentData = $enchantmentConfig[$enchantmentName];
-    
-                            $typeMatches = false;
-                            foreach ($enchantmentData['type'] as $type) {
-                                if ($type === 'KILL_MOB') {
-                                    $typeMatches = true;
-                                    break;
-                                }
-                            }
-                            
-                            if ($enchantmentData['type'] === 'KILL_MOB') {
-                                $level = $enchantmentInstance->getLevel();
-                                if ($typeMatches && isset($enchantmentData['levels']["$level"]['effects'])) {
-                                    $effects = $enchantmentData['levels']["$level"]['effects'];
 
-                                    EffectHandler::applyPlayerEffects($attacker, $entity, $effects, function ($formula, $level) use ($event) {
-                                        $exp = $event->getXpDropAmount();
-                                        $newFormula = str_replace(['{exp}', '{level}'], [$exp, $level], $formula);
-                                        try {
-                                            $newExp = Utils::evaluateFormula($newFormula, $level);
-                                            $event->setXpDropAmount($newExp);
-                                        } catch (\Throwable $e) {
-                                            Loader::getInstance()->getLogger()->error("Failed to evaluate formula: " . $e->getMessage());
-                                        }
-                                    });
+        if (!$entity instanceof Living) {
+            return;
+        }
 
-                                    if (isset($enchantmentData['levels']["$level"]['effects'])) {
-                                        foreach ($effects as $effect) {
-                                            if ($effect['type'] === 'TP_DROPS') {
-                                                foreach ($entity->getDrops() as $drop) {
-                                                    if ($attacker->getInventory()->canAddItem($drop)) {
-                                                        $attacker->getInventory()->addItem($drop);
-                                                    } else {
-                                                        $attacker->getWorld()->dropItem($attacker->getPosition(), $drop);
-                                                    }
-                                                }
-                                                $event->setDrops([]);
-                                            }
-                                        }
-                                    }
+        $armorItems = $entity->getArmorInventory()->getContents();
+        $effects = Utils::getEffectsFromItems($armorItems, "FALL_DAMAGE");
 
-                                    $color = CEGroups::translateGroupToColor($enchantment->getRarity());
-    
-                                    if (isset($enchantmentData['settings']['showActionBar']) && $enchantmentData['settings']['showActionBar']) {
-                                        $actionBarMessage = str_replace(["{enchant-color}", "{level}"], [$color . ucfirst($enchantmentName), Utils::getRomanNumeral($level)], Loader::getInstance()->getLang()->getNested("effects.used"));
-                                        $attacker->sendActionBarMessage(C::colorize($actionBarMessage));
-                                    }
-                                }
-                            }
-                        }
-                    }
+        if ($event->getCause() === EntityDamageEvent::CAUSE_FALL) {
+            foreach ($effects as $effect) {
+                if ($effect['type'] === "CANCEL_EVENT") {
+                    $event->cancel();
+                    break;
                 }
             }
         }
-    }    
-
-    public function setCooldown(string $playerName, string $enchantmentName, int $time) {
-        $this->cooldowns[$playerName][$enchantmentName] = time() + $time;
     }
 
-    public function hasCooldown(string $playerName, string $enchantmentName): bool {
-        if (isset($this->cooldowns[$playerName][$enchantmentName])) {
-            if (time() < $this->cooldowns[$playerName][$enchantmentName]) {
-                return true;
-            } else {
-                unset($this->cooldowns[$playerName][$enchantmentName]);
+    public function onEntityDamageDecrease(EntityDamageByEntityEvent $event): void {
+        $victim = $event->getEntity();
+        $attacker = $event->getDamager();
+
+        if ($event->isCancelled()) {
+            return;
+        }
+
+        if (!$victim instanceof Living || !$attacker instanceof Player) {
+            return;
+        }
+
+        $armorItems = $victim->getArmorInventory()->getContents();
+        $effects = Utils::getEffectsFromItems($armorItems, "DEFENSE");
+
+        foreach ($effects as $effect) {
+            if ($effect['type'] === "DECREASE_DAMAGE") {
+                $percentage = isset($effect['amount']) && is_numeric($effect['amount']) ? $effect['amount'] : 10;
+                $damage = $event->getBaseDamage();
+                $reduction = $damage * ($percentage / 100);
+
+                var_dump("before reduction: " . $damage);
+                $event->setModifier(-$reduction, EntityDamageByEntityEvent::CAUSE_ENTITY_ATTACK);
+                var_dump("after reduction: " . $event->getFinalDamage());
             }
         }
-        return false;
-    }
-
-    public function getCooldownTime(string $playerName, string $enchantmentName): int {
-        if (isset($this->cooldowns[$playerName][$enchantmentName])) {
-            return max(0, $this->cooldowns[$playerName][$enchantmentName] - time());
-        }
-        return 0;
     }
     
 }
