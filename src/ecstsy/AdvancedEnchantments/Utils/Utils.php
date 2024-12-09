@@ -6,7 +6,6 @@ use ecstsy\AdvancedEnchantments\Enchantments\CEGroups;
 use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantment;
 use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantmentIds;
 use ecstsy\AdvancedEnchantments\Listeners\CustomArmorListener;
-use ecstsy\AdvancedEnchantments\Listeners\EnchantmentListener;
 use ecstsy\AdvancedEnchantments\Loader;
 use pocketmine\block\Block;
 use pocketmine\block\BlockTypeIds;
@@ -26,6 +25,7 @@ use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\enchantment\StringToEnchantmentParser;
 use pocketmine\item\Item;
+use pocketmine\item\ItemTypeIds;
 use pocketmine\item\StringToItemParser;
 use pocketmine\item\Sword;
 use pocketmine\item\Tool;
@@ -49,7 +49,7 @@ class Utils {
     public static bool $activated = false;
 
     public static array $activeSets = [];
-    
+
     private static array $configCache = [];
 
     public static function getConfiguration(string $fileName): ?Config {
@@ -119,7 +119,7 @@ class Utils {
         return $found;
     }
 
-       /**
+    /**
      * @param Entity $player
      * @param string $sound
      * @param int $volume
@@ -646,30 +646,6 @@ class Utils {
 
         return $item;
     }
-
-    public static function parseLevel(string $level): int {
-        if (preg_match('/\{(\d+)-(\d+)\}/', $level, $matches)) {
-            $min = (int) $matches[1];
-            $max = (int) $matches[2];
-            return mt_rand($min, $max);
-        }
-        return (int) $level;
-    }
-
-    public static function parseDynamicMessage(string $message): string {
-        $pattern = "/<random_word>(.*?)<\/random_word>/";
-        preg_match($pattern, $message, $matches);
-
-        if (isset($matches[1])) {
-            $wordCandidates = explode(",", $matches[1]);
-            $randomIndex = mt_rand(0, count($wordCandidates) - 1);
-            $word = $wordCandidates[$randomIndex];
-
-            return str_replace("<random_word>" . $matches[1] . "</random_word>", $word, $message);
-        }
-
-        return $message;
-    }
     
     /**
      * @param Item $item
@@ -782,7 +758,7 @@ class Utils {
             }, $lore));
                 
             if ($bookConfig['force-glow']) {
-                // make the item have the fake ench
+                self::applyDisplayEnchant($item);
             }
                 
             $item->getNamedTag()->setString("random_book", strtoupper($group)); 
@@ -929,19 +905,6 @@ class Utils {
             return $block;
         }
         return null;
-    }
-
-    public static function getTargetPlayer(string $targetType, Player $sourcePlayer): ?Player {
-        switch ($targetType) {
-            case 'self':
-                return $sourcePlayer;
-            case 'victim':
-                return $sourcePlayer;
-            case 'attacker':
-                return $sourcePlayer;    
-            default:
-                return null;
-        }
     }
 
     public static function plantSeeds(Player $player, Block $targetBlock, int $radius, ?string $seedType): void {
@@ -1262,6 +1225,17 @@ class Utils {
                         $player->getEffects()->remove($potion);
                     }
                     break;
+                case 'POTION':
+                    if (isset($effect['potion'])) {
+                        $potion = StringToEffectParser::getInstance()->parse($effect['potion']);
+                        if ($potion === null) {
+                            throw new \RuntimeException("Invalid potion effect '" . $effect['potion'] . "'");
+                        }
+
+                        $player->getEffects()->remove($potion);
+                    }
+                    break;
+                
             }
         }
     }
@@ -1390,25 +1364,9 @@ class Utils {
         return $messages[$effectType] ?? null;
     }
 
-    public static function applyItemEffects(Player $player, Item $item, array $enchantmentConfig): void
+    public static function removeItemEffects(Player $player, Item $item): void
     {
-        foreach ($item->getEnchantments() as $enchantmentInstance) {
-            $enchantment = $enchantmentInstance->getType();
-            if ($enchantment instanceof CustomEnchantment) {
-                $enchantmentName = strtolower($enchantment->getName());
-                if (isset($enchantmentConfig[$enchantmentName])) {
-                    $enchantmentData = $enchantmentConfig[$enchantmentName];
-                    $level = $enchantmentInstance->getLevel();
-                    if (isset($enchantmentData['levels']["$level"]['effects'])) {
-                        //EffectHandler::applyPlayerEffects($player, null, $enchantmentData['levels']["$level"]['effects']);
-                    }
-                }
-            }
-        }
-    }
-
-    public static function removeItemEffects(Player $player, Item $item, array $enchantmentConfig): void
-    {
+        $enchantmentConfig = self::getConfiguration("enchantments.yml")->getAll();
         foreach ($item->getEnchantments() as $enchantmentInstance) {
             $enchantment = $enchantmentInstance->getType();
             if ($enchantment instanceof CustomEnchantment) {
@@ -1503,5 +1461,198 @@ class Utils {
         }
         return $enchantments;
     }
+
+    public static function getTriggersContext(Item $item): array {
+        $config = self::getConfiguration("enchantments.yml")->getAll();
+        $enchantments = $item->getEnchantments();
+        $context = [];
+        foreach ($enchantments as $enchantmentInstance) {
+            if ($enchantmentInstance instanceof EnchantmentInstance) {
+                $enchantment = $enchantmentInstance->getType();
+                if ($enchantment instanceof CustomEnchantment) {
+                    $enchantmentName = $enchantment->getName();
+                    $enchantmentData = $config[$enchantmentName];
+                    if (isset($enchantmentData['type'])) {
+                        $context = array_merge($context, $enchantmentData['type']);
+                    }
+                }
+            }
+        }
+
+        return array_unique($context); 
+    }
+
+    public static function isArmorItem(Item $item): bool
+    {
+
+        $armorItems = [
+            ItemTypeIds::DIAMOND_HELMET,
+            ItemTypeIds::DIAMOND_CHESTPLATE,
+            ItemTypeIds::DIAMOND_LEGGINGS,
+            ItemTypeIds::DIAMOND_BOOTS,
+            ItemTypeIds::NETHERITE_HELMET,
+            ItemTypeIds::NETHERITE_CHESTPLATE,
+            ItemTypeIds::NETHERITE_LEGGINGS,
+            ItemTypeIds::NETHERITE_BOOTS,
+            ItemTypeIds::CHAINMAIL_HELMET,
+            ItemTypeIds::CHAINMAIL_CHESTPLATE,
+            ItemTypeIds::CHAINMAIL_LEGGINGS,
+            ItemTypeIds::CHAINMAIL_BOOTS,
+            ItemTypeIds::LEATHER_CAP,
+            ItemTypeIds::LEATHER_TUNIC,
+            ItemTypeIds::LEATHER_PANTS,
+            ItemTypeIds::LEATHER_BOOTS,
+            ItemTypeIds::GOLDEN_HELMET,
+            ItemTypeIds::GOLDEN_CHESTPLATE,
+            ItemTypeIds::GOLDEN_LEGGINGS,
+            ItemTypeIds::GOLDEN_BOOTS,
+            ItemTypeIds::IRON_HELMET,
+            ItemTypeIds::IRON_CHESTPLATE,
+            ItemTypeIds::IRON_LEGGINGS,
+            ItemTypeIds::IRON_BOOTS
+
+        ];
+
+        return in_array($item->getTypeId(), $armorItems, true);
+    }
+
+    public static function getEnchantmentTriggerType(array $enchantments): array {
+        $config = self::getConfiguration("enchantments.yml")->getAll();
+        
+        $types = [];
+        foreach ($enchantments as $ench) {
+            if ($ench instanceof EnchantmentInstance) {
+                $enchantment = $ench->getType();
+                if ($enchantment instanceof CustomEnchantment) {
+                    $enchName = $enchantment->getName();
+                    
+                    if (isset($config[$enchName]['type'])) {
+                        $enchData = $config[$enchName]['type'];
+                        $types = array_merge($types, (array) $enchData);
+                    }
+                }
+            }
+        }
+    
+        return array_unique($types);
+    }     
+
+    public static function getEnchantmentEffectsType(array $enchantments): array {
+        $config = self::getConfiguration("enchantments.yml")->getAll();
+    
+        $effects = [];
+        foreach ($enchantments as $ench) {
+            if ($ench instanceof EnchantmentInstance) {
+                $enchantment = $ench->getType();
+                if ($enchantment instanceof CustomEnchantment) {
+                    $enchName = $enchantment->getName();
+                    $level = $ench->getLevel();
+                    if (isset($config[$enchName]['levels'][$level]['effects'])) {
+                        foreach ($config[$enchName]['levels'][$level]['effects'] as $effect) {
+                            if (isset($effect['type'])) {
+                                $effects[] = $effect['type'];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    
+        return $effects;
+    }
+    
+    public static function getEffectsFromItems(array $items, string $trigger): array {
+        $effects = [];
+    
+        foreach ($items as $item) {
+            $itemEnchantments = $item->getEnchantments();
+            if ($itemEnchantments === null) {
+                continue;
+            }
+    
+            $config = Utils::getConfiguration("enchantments.yml")->getAll();
+    
+            foreach ($itemEnchantments as $enchantmentData) {
+                if ($enchantmentData->getType() instanceof CustomEnchantment) {
+                    $enchantmentIdentifier = strtolower($enchantmentData->getType()->getName());
+    
+                    if (isset($config[$enchantmentIdentifier])) {
+                        $enchantmentConfig = $config[$enchantmentIdentifier];
+                        if (in_array($trigger, $enchantmentConfig['type'], true)) {
+                            $effects = array_merge($effects, $enchantmentConfig['levels'][$enchantmentData->getLevel()]['effects'] ?? []);
+                        }
+                    }
+                }
+            }
+        }
+    
+        return $effects;
+    }
+    
+    /**
+     * Fetches enchantments from an item based on the specified trigger type.
+     */
+    public static function fetchEnchantments(Item $item, string $trigger): array {
+        $itemEnchantments = $item->getEnchantments();
+
+        if ($itemEnchantments === null) {
+            return [];
+        }
+
+        $config = self::getConfiguration("enchantments.yml")->getAll();
+        $enchantmentsToApply = [];
+
+        foreach ($itemEnchantments as $enchantmentData) {
+            if ($enchantmentData->getType() instanceof CustomEnchantment) {
+                $enchantmentIdentifier = strtolower($enchantmentData->getType()->getName());
+
+                if (isset($config[$enchantmentIdentifier]) && $config[$enchantmentIdentifier]['type'] === $trigger) {
+                    $level = $enchantmentData->getLevel();
+                    $enchantmentConfig = $config[$enchantmentIdentifier];
+                    $enchantmentConfig['level'] = $level;
+                    $enchantmentsToApply[] = $enchantmentConfig;
+                }
+            }
+        }
+
+        return $enchantmentsToApply;
+    }
+
+    /**
+     * Extract enchantments from items and enrich them with their configuration.
+     * 
+     * @param Item[] $items
+     * @return array
+     */
+    public static function extractEnchantmentsFromItems(array $items): array {
+        $enchantmentsToApply = [];
+        $enchantmentConfigs = self::getConfiguration("enchantments.yml")->getAll(); 
+    
+        foreach ($items as $item) {
+            if ($item->isNull()) continue;
+    
+            $itemEnchantments = $item->getEnchantments();
+            
+            foreach ($itemEnchantments as $enchantmentData) {
+                if ($enchantmentData->getType() instanceof CustomEnchantment) {
+                    $enchantmentId = strtolower($enchantmentData->getType()->getName());
+    
+                    if (isset($enchantmentConfigs[$enchantmentId])) {
+                        $level = $enchantmentData->getLevel();
+                        $enchantmentConfig = $enchantmentConfigs[$enchantmentId];
+                        $enchantmentConfig['level'] = $level;  
+                        $enchantmentsToApply[] = [
+                            'id' => $enchantmentId,
+                            'level' => $level, 
+                            'config' => $enchantmentConfig
+                        ];
+                    }
+                }
+            }
+        }
+    
+        return $enchantmentsToApply;
+    }
+    
 }
 
