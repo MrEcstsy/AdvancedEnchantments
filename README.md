@@ -6,7 +6,7 @@
 * [Issue tracker](https://github.com/MrEcstsy/AdvancedEnchantments/issues)
 
 # TODO
-- [ ] enchantment cooldowns
+- [x] enchantment cooldowns
 - [ ] finish the effect types
 - [ ] add entities for guard effect type
 - [x] implement armor orbs
