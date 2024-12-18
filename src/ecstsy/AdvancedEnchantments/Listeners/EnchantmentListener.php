@@ -2,25 +2,12 @@
 
 namespace ecstsy\AdvancedEnchantments\Listeners;
 
-use ecstsy\AdvancedEnchantments\Enchantments\CEGroups;
 use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantment;
 use ecstsy\AdvancedEnchantments\Enchantments\CustomEnchantments;
-use ecstsy\AdvancedEnchantments\libs\ecstsy\advancedAbilities\triggers\AttackTrigger;
-use ecstsy\AdvancedEnchantments\libs\ecstsy\advancedAbilities\triggers\DefenseTrigger;
-use ecstsy\AdvancedEnchantments\Loader;
-use ecstsy\AdvancedEnchantments\Tasks\ApplyBlockBreakEffectTask;
 use ecstsy\AdvancedEnchantments\Utils\AdvancedTriggers;
-use ecstsy\AdvancedEnchantments\Utils\EffectHandler;
 use ecstsy\AdvancedEnchantments\Utils\Utils;
-use pocketmine\block\Farmland;
-use pocketmine\entity\Living;
-use pocketmine\event\block\BlockBreakEvent;
-use pocketmine\event\entity\EntityDamageByEntityEvent;
-use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\entity\EntityDeathEvent;
 use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\inventory\ArmorInventory;
@@ -31,12 +18,8 @@ use pocketmine\inventory\transaction\action\SlotChangeAction;
 use pocketmine\item\Item;
 use pocketmine\network\mcpe\protocol\MobEquipmentPacket;
 use pocketmine\player\Player;
-use pocketmine\Server;
-use pocketmine\utils\TextFormat as C;
 
 class EnchantmentListener implements Listener {
-
-    private array $cooldowns = [];
 
     public function onDataPacketReceive(DataPacketReceiveEvent $event): void
     {
@@ -174,124 +157,4 @@ class EnchantmentListener implements Listener {
             }
         }
     }
-
-    public function onPlayerAttack(EntityDamageByEntityEvent $event): void {
-        if ($event->isCancelled()) {
-            return;
-        }
-
-        $attacker = $event->getDamager();
-        $victim = $event->getEntity();
-
-        if (!$attacker instanceof Player || $attacker->getInventory()->getItemInHand()->isNull()) {
-            return;
-        }
-
-        $item = $attacker->getInventory()->getItemInHand();
-    
-        $itemEnchantments = $item->getEnchantments(); 
-
-        if ($itemEnchantments === null) {
-            return;
-        }
-    
-        $config = Utils::getConfiguration("enchantments.yml")->getAll();
-    
-        $enchantmentsToApply = [];
-
-        foreach ($itemEnchantments as $enchantmentData) {
-            if ($enchantmentData->getType() instanceof CustomEnchantment) {
-                $enchantmentIdentifier = strtolower($enchantmentData->getType()->getName());
-                
-                if (isset($config[$enchantmentIdentifier])) {
-                    $level = $enchantmentData->getLevel(); 
-                    $enchantmentConfig = $config[$enchantmentIdentifier];
-                    $enchantmentConfig['level'] = $level; 
-                    $enchantmentsToApply[] = $enchantmentConfig;
-                }
-            }
-        }
-    
-        if (empty($enchantmentsToApply)) {
-            return;
-        }
-
-        $trigger = new AttackTrigger();
-        $trigger->execute($attacker, $victim, $enchantmentsToApply, 'ATTACK', ["enchant-level" => $enchantmentData->getLevel(),]);
-    }
-
-    public function onPlayerDefend(EntityDamageByEntityEvent $event): void {
-        if ($event->isCancelled()) {
-            return;
-        }
-
-        $attacker = $event->getDamager();
-        $victim = $event->getEntity();
-
-        if (!$victim instanceof Living) {
-            return;
-        }
-
-        $items = $victim->getArmorInventory()->getContents();
-
-        foreach ($items as $item) {
-            if ($item === null || $item->isNull()) {
-                continue;
-            }
-
-            
-            $itemEnchantments = $item->getEnchantments(); 
-
-            if ($itemEnchantments === null) {
-                continue;
-            }
-        
-            $config = Utils::getConfiguration("enchantments.yml")->getAll();
-        
-            $enchantmentsToApply = [];
-    
-            foreach ($itemEnchantments as $enchantmentData) {
-                if ($enchantmentData->getType() instanceof CustomEnchantment) {
-                    $enchantmentIdentifier = strtolower($enchantmentData->getType()->getName());
-                    
-                    if (isset($config[$enchantmentIdentifier])) {
-                        $level = $enchantmentData->getLevel(); 
-                        $enchantmentConfig = $config[$enchantmentIdentifier];
-                        $enchantmentConfig['level'] = $level; 
-                        $enchantmentsToApply[] = $enchantmentConfig;
-                    }
-                }
-            }
-        
-            if (empty($enchantmentsToApply)) {
-                return;
-            }
-    
-            $trigger = new DefenseTrigger();
-            $trigger->execute($attacker, $victim, $enchantmentsToApply, 'DEFENSE', ["enchant-level" => $enchantmentData->getLevel(),]);
-        }
-    }
-
-    public function setCooldown(string $playerName, string $enchantmentName, int $time) {
-        $this->cooldowns[$playerName][$enchantmentName] = time() + $time;
-    }
-
-    public function hasCooldown(string $playerName, string $enchantmentName): bool {
-        if (isset($this->cooldowns[$playerName][$enchantmentName])) {
-            if (time() < $this->cooldowns[$playerName][$enchantmentName]) {
-                return true;
-            } else {
-                unset($this->cooldowns[$playerName][$enchantmentName]);
-            }
-        }
-        return false;
-    }
-
-    public function getCooldownTime(string $playerName, string $enchantmentName): int {
-        if (isset($this->cooldowns[$playerName][$enchantmentName])) {
-            return max(0, $this->cooldowns[$playerName][$enchantmentName] - time());
-        }
-        return 0;
-    }
-    
 }
