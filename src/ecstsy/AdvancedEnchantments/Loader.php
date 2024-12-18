@@ -36,17 +36,22 @@ class Loader extends PluginBase {
 
     public $economyProvider;
 
-	public const TYPE_DYNAMIC_PREFIX = "muqsit:customsizedinvmenu_";
+    public const TYPE_DYNAMIC_PREFIX = "muqsit:customsizedinvmenu_";
+
+    public const CFG_VERSION = 1;
 
     public function onLoad(): void {
         self::setInstance($this);
     }
 
     public function onEnable(): void {
-        $resources = ["config.yml", "enchantments.yml", "groups.yml"];
+        $resources = ["enchantments.yml", "groups.yml"];
+	    
         foreach ($resources as $resource) {
             $this->saveResource($resource);
         }
+	    
+        ConfigUpdater::checkUpdate($this, $this->getConfig(), "version", self::CFG_VERSION);
 
         $subDirectories = ["locale", "armorSets", "menus"];
 
@@ -55,8 +60,8 @@ class Loader extends PluginBase {
         }
 
         $config = $this->getConfig();
-
         $language = $config->get("language", "en-us");
+	    
         $this->languageManager = new LanguageManager($this, $language);
 
         $this->getLogger()->info("AdvancedEnchantments enabled with language: " . $language);
@@ -66,6 +71,7 @@ class Loader extends PluginBase {
             new EnchanterCommand($this, "enchanter", "Open Enchanter", $config->getNested("commands.enchanter.aliases")),
             new ASetsCommand($this, "asets", "View the armor sets commands")
         ]);
+	    
         $listeners = [new ItemListener($this->getConfig()), new EnchantmentListener(), new CustomArmorListener()];
 
         foreach ($listeners as $listener) {
