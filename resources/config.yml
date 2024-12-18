@@ -225,7 +225,7 @@ items:
     - '&7Contains: &bMagic, &fMystery &7dust.'
     - '&7An unidentified satchel of dust.'
   mystery-dust:
-    type: 'gunpoweder'
+    type: 'gunpowder'
     name: '&fMystery Dust'
     lore:
     - '&7A failed bi-product'
