@@ -108,7 +108,12 @@ class Loader extends PluginBase {
 		);
 
         libPiggyEconomy::init();
-        $this->economyProvider = libPiggyEconomy::getProvider($this->getConfig()->get("economy"));
+	    
+        if ($this->getConfig()->getNested("economy.enabled") === "true") {
+            $this->economyProvider = libPiggyEconomy::getProvider($this->getConfig()->get("economy"));
+        } else {
+            $this->getLogger()->warning("Economy has not been enabled.");
+        }
     }
 
     public function onDisable(): void {
