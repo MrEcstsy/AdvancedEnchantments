@@ -33,7 +33,8 @@ Version: 1.0.0
 # Change default messages language. You can modify all messages in AdvancedEnchantments `locale` folder.
 # See all default languages & other info here: https://ae.advancedplugins.net/general-information/languages
 economy:
-  provider: essentialsx
+  enabled: false
+  provider: BedrockEconomy
 
 language: en-us
 
