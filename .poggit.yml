@@ -22,4 +22,6 @@ projects:
         version: ^1.0.1
       - src: MrEcstsy/advancedAbilities/AdvancedAbilities
         version: ^1.0.0
+      - src: ifera-mc/ConfigUpdater/ConfigUpdater
+        version: ^2.1.0
 ...
